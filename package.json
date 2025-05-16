@@ -1,0 +1,20 @@
+{
+  "name": "death-star-battles",
+  "version": "0.0.1",
+  "description": "Re-implementation of the classic Death Star Battles Java game by Ian Bollard",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "cd frontend && vite",
+    "build": "tsc -b shared frontend",
+    "start": "vite preview --config frontend/vite.config.ts"
+  },
+  "author": "Moai-",
+  "license": "ISC",
+  "dependencies": {
+    "bitecs": "^0.3.40",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
