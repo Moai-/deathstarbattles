@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bitecs": "^0.3.40",
     "phaser": "^3.88.2",
     "vite": "^6.3.5"
   },
