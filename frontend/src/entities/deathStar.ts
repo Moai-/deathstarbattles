@@ -1,6 +1,7 @@
 import { addComponent, addEntity, IWorld } from 'bitecs';
 import { Position } from 'shared/src/ecs/components/position';
 import { Velocity } from 'shared/src/ecs/components/velocity';
+import { AffectedByGravity } from 'shared/src/ecs/components/affectedByGravity';
 import { Projectile } from 'shared/src/ecs/components/projectile';
 import { LeavesTrail } from '../render/components/leavesTrail';
 import { Renderable } from '../render/components/renderable';
@@ -37,12 +38,13 @@ export const fireProjectile = (
   addComponent(world, Renderable, eid);
   addComponent(world, LeavesTrail, eid);
   addComponent(world, Projectile, eid);
+  addComponent(world, AffectedByGravity, eid);
 
   Projectile.parent[eid] = parentEid;
   Position.x[eid] = Position.x[parentEid];
   Position.y[eid] = Position.y[parentEid];
-  Velocity.angle[eid] = angle;
-  Velocity.speed[eid] = speed;
+  Velocity.x[eid] = Math.cos(angle) * speed;
+  Velocity.y[eid] = Math.sin(angle) * speed;
   Renderable.type[eid] = RenderableTypes.DEATHBEAM;
   Renderable.col[eid] = Renderable.col[parentEid];
   LeavesTrail.col[eid] = Renderable.col[parentEid];

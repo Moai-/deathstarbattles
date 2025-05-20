@@ -12,10 +12,10 @@ export const createMovementSystem = () => {
     const dt = (world as GameWorld).delta;
     const entities = movingQuery(world);
     for (const eid of entities) {
-      const angle = Velocity.angle[eid];
-      const speed = Velocity.speed[eid];
-      const dx = Math.cos(angle) * speed * dt * slow;
-      const dy = Math.sin(angle) * speed * dt * slow;
+      const vx = Velocity.x[eid];
+      const vy = Velocity.y[eid];
+      const dx = vx * dt * slow;
+      const dy = vy * dt * slow;
       Position.x[eid] += dx;
       Position.y[eid] += dy;
 

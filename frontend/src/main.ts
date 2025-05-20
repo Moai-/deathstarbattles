@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { GameScene } from './scenes/gameScene';
 
 const config: Phaser.Types.Core.GameConfig = {
-  type: Phaser.AUTO,
+  type: Phaser.WEBGL,
   width: 1800,
   height: 900,
   scene: [GameScene],
