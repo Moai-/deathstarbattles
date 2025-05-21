@@ -12,7 +12,7 @@ import { RenderableTypes } from '../render/types';
 import { colToUi32 } from '../util/col';
 import { GameWorld } from 'shared/src/ecs/world';
 
-export const DEFAULT_DEATHSTAR_SIZE = 30;
+export const DEFAULT_DEATHSTAR_RADIUS = 30;
 export const DEFAULT_DEATHBEAM_RADIUS = 2;
 
 export const createDeathStar = (
@@ -29,7 +29,7 @@ export const createDeathStar = (
 
   Position.x[eid] = x;
   Position.y[eid] = y;
-  Collision.radius[eid] = DEFAULT_DEATHSTAR_SIZE;
+  Collision.radius[eid] = DEFAULT_DEATHSTAR_RADIUS;
   Renderable.type[eid] = RenderableTypes.DEATHSTAR;
   Renderable.col[eid] = colToUi32(color);
 

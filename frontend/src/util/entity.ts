@@ -22,6 +22,6 @@ const getPosition = (eid: number) => ({
   y: Position.y[eid],
 });
 
-const getSize = (eid: number) => Collision.radius[eid];
+const getRadius = (eid: number) => Collision.radius[eid];
 
-export { setPosition, getPosition, getSize };
+export { setPosition, getPosition, getRadius };

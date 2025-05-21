@@ -5,6 +5,7 @@ import { Renderable } from './components/renderable';
 import { GameObjectManager } from './objectManager';
 import { LeavesTrail } from './components/leavesTrail';
 import { ui32ToCol } from '../util/col';
+import { Collision } from 'shared/src/ecs/components/collision';
 
 const renderQuery = defineQuery([Position, Renderable]);
 const renderQueryEnter = enterQuery(renderQuery);
@@ -42,8 +43,9 @@ export const createRenderSystem = (
     for (const eid of updatedTrails) {
       const x = Position.x[eid];
       const y = Position.y[eid];
+      const radius = Collision.radius[eid];
       const col = ui32ToCol(LeavesTrail.col[eid]);
-      const circle = scene.add.circle(x, y, 3, col, 1);
+      const circle = scene.add.circle(x, y, radius, col, 1);
       objectManager.createChild(eid, circle);
     }
 

@@ -1,7 +1,7 @@
 import { createDeathStar, fireProjectile } from '../entities/deathStar';
 import { createRandomAsteroid } from '../entities/asteroid';
 import playerCols from './playerCols';
-import { getPosition, getSize, setPosition } from '../util';
+import { getPosition, getRadius, setPosition } from '../util';
 import { GameWorld } from 'shared/src/ecs/world';
 
 type TurnInput = {
@@ -67,7 +67,7 @@ export default class GameManager {
     // this.players.push(player1, player2);
 
     const playerPositions = this.generateNonOverlappingPositions(
-      this.players.map(getSize),
+      this.players.map(getRadius),
       playerClearance,
     );
 
@@ -83,7 +83,7 @@ export default class GameManager {
     }
 
     const asteroidPositions = this.generateNonOverlappingPositions(
-      asteroids.map(getSize),
+      asteroids.map(getRadius),
       objectClearance,
       playerPositions,
     );
