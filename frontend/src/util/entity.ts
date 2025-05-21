@@ -1,5 +1,5 @@
+import { Collision } from 'shared/src/ecs/components/collision';
 import { Position } from 'shared/src/ecs/components/position';
-import { Renderable } from '../render/components/renderable';
 
 interface AnyPoint {
   x: number;
@@ -22,6 +22,6 @@ const getPosition = (eid: number) => ({
   y: Position.y[eid],
 });
 
-const getSize = (eid: number) => Renderable.size[eid];
+const getSize = (eid: number) => Collision.radius[eid];
 
 export { setPosition, getPosition, getSize };

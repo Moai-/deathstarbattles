@@ -1,25 +1,35 @@
-import { addComponent, addEntity, IWorld } from 'bitecs';
+import { addComponent, addEntity } from 'bitecs';
 import { Position } from 'shared/src/ecs/components/position';
 import { Velocity } from 'shared/src/ecs/components/velocity';
+import { Collision } from 'shared/src/ecs/components/collision';
 import { AffectedByGravity } from 'shared/src/ecs/components/affectedByGravity';
 import { Projectile } from 'shared/src/ecs/components/projectile';
+import { HasLifetime } from 'shared/src/ecs/components/hasLifetime';
+import { Destructible } from 'shared/src/ecs/components/destructible';
 import { LeavesTrail } from '../render/components/leavesTrail';
 import { Renderable } from '../render/components/renderable';
 import { RenderableTypes } from '../render/types';
 import { colToUi32 } from '../util/col';
+import { GameWorld } from 'shared/src/ecs/world';
+
+export const DEFAULT_DEATHSTAR_SIZE = 30;
+export const DEFAULT_DEATHBEAM_RADIUS = 2;
 
 export const createDeathStar = (
-  world: IWorld,
+  world: GameWorld,
   x: number,
   y: number,
   color: number,
 ) => {
   const eid = addEntity(world);
   addComponent(world, Position, eid);
+  addComponent(world, Collision, eid);
   addComponent(world, Renderable, eid);
+  addComponent(world, Destructible, eid);
 
   Position.x[eid] = x;
   Position.y[eid] = y;
+  Collision.radius[eid] = DEFAULT_DEATHSTAR_SIZE;
   Renderable.type[eid] = RenderableTypes.DEATHSTAR;
   Renderable.col[eid] = colToUi32(color);
 
@@ -27,7 +37,7 @@ export const createDeathStar = (
 };
 
 export const fireProjectile = (
-  world: IWorld,
+  world: GameWorld,
   parentEid: number,
   angle: number,
   speed: number,
@@ -35,28 +45,27 @@ export const fireProjectile = (
   const eid = addEntity(world);
   addComponent(world, Position, eid);
   addComponent(world, Velocity, eid);
+  addComponent(world, Collision, eid);
   addComponent(world, Renderable, eid);
   addComponent(world, LeavesTrail, eid);
   addComponent(world, Projectile, eid);
   addComponent(world, AffectedByGravity, eid);
-
-  console.log(
-    'firing for %s at angle %s and speed %s',
-    parentEid,
-    angle,
-    speed,
-  );
+  addComponent(world, HasLifetime, eid);
 
   const angleRad = Phaser.Math.DegToRad(angle);
 
   Projectile.parent[eid] = parentEid;
-  Position.x[eid] = Position.x[parentEid];
-  Position.y[eid] = Position.y[parentEid];
+  Collision.radius[eid] = DEFAULT_DEATHBEAM_RADIUS;
+  // slight offset to avoid triggering collision on firing
+  const offset = Collision.radius[parentEid] + DEFAULT_DEATHBEAM_RADIUS;
+  Position.x[eid] = Position.x[parentEid] + Math.cos(angleRad) * offset;
+  Position.y[eid] = Position.y[parentEid] + Math.sin(angleRad) * offset;
   Velocity.x[eid] = Math.cos(angleRad) * speed;
   Velocity.y[eid] = Math.sin(angleRad) * speed;
   Renderable.type[eid] = RenderableTypes.DEATHBEAM;
   Renderable.col[eid] = Renderable.col[parentEid];
   LeavesTrail.col[eid] = Renderable.col[parentEid];
+  HasLifetime.createdAt[eid] = Math.floor(world.time); // or Date.now(), but `performance.now()` is more precise
 
   return eid;
 };

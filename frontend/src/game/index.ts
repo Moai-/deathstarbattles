@@ -1,8 +1,8 @@
-import { IWorld } from 'bitecs';
 import { createDeathStar, fireProjectile } from '../entities/deathStar';
 import { createRandomAsteroid } from '../entities/asteroid';
 import playerCols from './playerCols';
 import { getPosition, getSize, setPosition } from '../util';
+import { GameWorld } from 'shared/src/ecs/world';
 
 type TurnInput = {
   playerId: number;
@@ -20,7 +20,7 @@ const objectClearance: ClearanceFunction = (a, b) => a + b + 30;
 export default class GameManager {
   // globals
   private scene: Phaser.Scene;
-  private world: IWorld;
+  private world: GameWorld;
 
   // UI
   private circle?: Phaser.GameObjects.Arc;
@@ -41,7 +41,7 @@ export default class GameManager {
   private activePlayer = -1;
   private turnInputs: Array<TurnInput> = [];
 
-  constructor(scene: Phaser.Scene, world: IWorld) {
+  constructor(scene: Phaser.Scene, world: GameWorld) {
     this.scene = scene;
     this.world = world;
     this.endTurnBtn!.onclick = () => this.endTurn();
@@ -61,18 +61,20 @@ export default class GameManager {
     this.scene.input.on('pointerdown', this.handlePointerClick, this);
 
     const player1 = createDeathStar(this.world, 0, 0, playerCols[0]);
-    const player2 = createDeathStar(this.world, 0, 0, playerCols[1]);
+    // const player2 = createDeathStar(this.world, 0, 0, playerCols[1]);
 
-    this.players.push(player1, player2);
+    this.players.push(player1);
+    // this.players.push(player1, player2);
 
     const playerPositions = this.generateNonOverlappingPositions(
-      this.players.map(() => 30),
+      this.players.map(getSize),
       playerClearance,
     );
 
     playerPositions.map((pt, eid) => setPosition(eid, pt));
 
-    const numAsteroids = Phaser.Math.Between(3, 10);
+    const numAsteroids = 1;
+    // const numAsteroids = Phaser.Math.Between(3, 10);
 
     const asteroids: Array<number> = [];
 
@@ -115,10 +117,7 @@ export default class GameManager {
       angle: this.currentAngle,
       power: this.currentPower,
     });
-    console.log(
-      'recorded these inputs',
-      this.turnInputs[this.turnInputs.length - 1],
-    );
+
     if (this.activePlayer + 1 === this.players.length) {
       this.activePlayer = -1;
       this.history.push([...this.turnInputs]);
@@ -148,7 +147,6 @@ export default class GameManager {
   private createGraphic(): void {
     const center = getPosition(this.activePlayer);
     const radius = 60;
-    console.log('create graphic at', center, radius);
 
     this.circle = this.scene.add
       .circle(center.x, center.y, radius, 0xffffff, 0)
@@ -184,7 +182,6 @@ export default class GameManager {
 
   private handlePointerClick(pointer: Phaser.Input.Pointer): void {
     if (this.activePlayer < 0) {
-      console.log('no active player');
       return;
     }
     const center = getPosition(this.activePlayer);

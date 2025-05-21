@@ -1,11 +1,12 @@
 import { Position } from 'shared/src/ecs/components/position';
 import { RenderObject } from '../types';
-import { Renderable } from '../components/renderable';
+import { Collision } from 'shared/src/ecs/components/collision';
 
 const renderAsteroid: RenderObject = (scene, eid) => {
   const x = Position.x[eid];
   const y = Position.y[eid];
-  return scene.add.circle(x, y, Renderable.size[eid], 0x774e00);
+  const size = Collision.radius[eid];
+  return scene.add.circle(x, y, size, 0x774e00);
 };
 
 export default renderAsteroid;
