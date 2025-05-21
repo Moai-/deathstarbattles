@@ -4,6 +4,9 @@ import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { Renderable } from '../render/components/renderable';
 import { RenderableTypes } from '../render/types';
 
+export const MIN_ASTEROID_SIZE = 10;
+export const MAX_ASTEROID_SIZE = 50;
+
 export const createAsteroid = (
   world: IWorld,
   x: number,
@@ -22,4 +25,9 @@ export const createAsteroid = (
   HasGravity.strength[eid] = size * 25;
 
   return eid;
+};
+
+export const createRandomAsteroid = (world: IWorld) => {
+  const size = Phaser.Math.Between(MIN_ASTEROID_SIZE, MAX_ASTEROID_SIZE);
+  return createAsteroid(world, 0, 0, size);
 };

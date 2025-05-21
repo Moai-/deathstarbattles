@@ -18,8 +18,6 @@ export const createMovementSystem = () => {
       const dy = vy * dt * slow;
       Position.x[eid] += dx;
       Position.y[eid] += dy;
-
-      console.log(Position.x[eid]);
     }
     return world;
   });

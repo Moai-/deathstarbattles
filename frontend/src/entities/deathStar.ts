@@ -40,11 +40,20 @@ export const fireProjectile = (
   addComponent(world, Projectile, eid);
   addComponent(world, AffectedByGravity, eid);
 
+  console.log(
+    'firing for %s at angle %s and speed %s',
+    parentEid,
+    angle,
+    speed,
+  );
+
+  const angleRad = Phaser.Math.DegToRad(angle);
+
   Projectile.parent[eid] = parentEid;
   Position.x[eid] = Position.x[parentEid];
   Position.y[eid] = Position.y[parentEid];
-  Velocity.x[eid] = Math.cos(angle) * speed;
-  Velocity.y[eid] = Math.sin(angle) * speed;
+  Velocity.x[eid] = Math.cos(angleRad) * speed;
+  Velocity.y[eid] = Math.sin(angleRad) * speed;
   Renderable.type[eid] = RenderableTypes.DEATHBEAM;
   Renderable.col[eid] = Renderable.col[parentEid];
   LeavesTrail.col[eid] = Renderable.col[parentEid];
