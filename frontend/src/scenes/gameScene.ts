@@ -35,6 +35,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
+    this.gameManager.create();
     this.gameManager.startGame();
   }
 
