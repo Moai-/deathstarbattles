@@ -10,7 +10,6 @@ export const createCollisionSystem = (
   onCollision: (projEid: number, targetEid: number) => void = () => {},
 ) => {
   return defineSystem((world) => {
-    // Loop through projectiles
     const projectiles = projectileQuery(world);
     const targets = targetQuery(world);
 
@@ -19,7 +18,6 @@ export const createCollisionSystem = (
       const pos1 = { x: Position.x[eid1], y: Position.y[eid1] };
       const rad1 = Collision.radius[eid1];
 
-      // Check against potential targets
       for (let j = 0; j < targets.length; j++) {
         const eid2 = targets[j];
         if (eid1 === eid2) continue;
@@ -28,8 +26,6 @@ export const createCollisionSystem = (
         const rad2 = Collision.radius[eid2];
 
         if (circlesDoOverlap(pos1.x, pos1.y, rad1, pos2.x, pos2.y, rad2)) {
-          // Do collision logic
-          console.log('bop');
           onCollision(eid1, eid2);
         }
       }

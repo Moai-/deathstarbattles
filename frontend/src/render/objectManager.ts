@@ -31,6 +31,30 @@ export class GameObjectManager {
     }
   }
 
+  hideChildren(eid: number) {
+    if (this.children.has(eid)) {
+      for (const child of this.children.get(eid)!) {
+        (child as Phaser.GameObjects.Graphics).setVisible(false);
+      }
+    }
+  }
+
+  showChildren(eid: number) {
+    if (this.children.has(eid)) {
+      for (const child of this.children.get(eid)!) {
+        (child as Phaser.GameObjects.Graphics).setVisible(true);
+      }
+    }
+  }
+
+  hideAllchildren() {
+    for (const [_, value] of this.children.entries()) {
+      for (const child of value) {
+        (child as Phaser.GameObjects.Graphics).setVisible(false);
+      }
+    }
+  }
+
   removeChildren(eid: number) {
     if (this.children.has(eid)) {
       for (const child of this.children.get(eid)!) {

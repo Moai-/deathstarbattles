@@ -3,14 +3,26 @@ import { createRandomAsteroid } from '../entities/asteroid';
 import playerCols from './playerCols';
 import { getPosition, getRadius, setPosition } from '../util';
 import { GameWorld } from 'shared/src/ecs/world';
+import { hasComponent, removeEntity } from 'bitecs';
+import { Destructible } from 'shared/src/ecs/components/destructible';
+import { GameObjectManager } from '../render/objectManager';
+
+const HYPER_ON = 'Hyperspace [ENGAGED]';
+const HYPER_OFF = 'Hyperspace [OFFLINE]';
+
+enum OtherActions {
+  NONE,
+  HYPERSPACE,
+}
 
 type TurnInput = {
   playerId: number;
   angle: number;
   power: number;
+  otherAction?: OtherActions | null;
 };
 
-type GameObject = { x: number; y: number; radius: number };
+type GameObject = { x: number; y: number; radius: number; eid?: number };
 
 type ClearanceFunction = (a: number, b: number) => number;
 
@@ -21,6 +33,7 @@ export default class GameManager {
   // globals
   private scene: Phaser.Scene;
   private world: GameWorld;
+  private objectManager: GameObjectManager;
 
   // UI
   private circle?: Phaser.GameObjects.Arc;
@@ -32,18 +45,32 @@ export default class GameManager {
     'power',
   ) as HTMLInputElement;
   private endTurnBtn = window.document.getElementById('endtn');
+  private hyperBtn = window.document.getElementById('hyper');
   private currentAngle = 0;
   private currentPower = 20;
+  private currentOtherAction: OtherActions | null = null;
 
   // game management
   private history: Array<Array<TurnInput>> = [];
   private players: Array<number> = [];
   private activePlayer = -1;
   private turnInputs: Array<TurnInput> = [];
+  private activeProjectiles: Array<number> = [];
+  private projectilesCleaned = 0;
+  private allObjects: Array<GameObject> = [];
+  private willHyperspace: Array<number> = [];
 
-  constructor(scene: Phaser.Scene, world: GameWorld) {
+  constructor(
+    scene: Phaser.Scene,
+    world: GameWorld,
+    objectManager: GameObjectManager,
+  ) {
     this.scene = scene;
     this.world = world;
+    this.objectManager = objectManager;
+    this.hyperBtn!.onclick = () => {
+      this.toggleHyperspace();
+    };
     this.endTurnBtn!.onclick = () => this.endTurn();
     this.angleInput.onchange = (evt) =>
       this.collectInput(
@@ -57,14 +84,26 @@ export default class GameManager {
       );
   }
 
+  onCollision(eid1: number, eid2: number) {
+    this.removeActiveProjectile(eid1);
+    if (hasComponent(this.world, Destructible, eid2)) {
+      removeEntity(this.world, eid2);
+      this.players = this.players.filter((pid) => pid !== eid2);
+    }
+  }
+
+  onCleanup(eid: number) {
+    this.removeActiveProjectile(eid);
+  }
+
   startGame() {
     this.scene.input.on('pointerdown', this.handlePointerClick, this);
 
     const player1 = createDeathStar(this.world, 0, 0, playerCols[0]);
-    // const player2 = createDeathStar(this.world, 0, 0, playerCols[1]);
+    const player2 = createDeathStar(this.world, 0, 0, playerCols[1]);
 
-    this.players.push(player1);
-    // this.players.push(player1, player2);
+    // this.players.push(player1);
+    this.players.push(player1, player2);
 
     const playerPositions = this.generateNonOverlappingPositions(
       this.players.map(getRadius),
@@ -73,8 +112,8 @@ export default class GameManager {
 
     playerPositions.map((pt, eid) => setPosition(eid, pt));
 
-    const numAsteroids = 1;
-    // const numAsteroids = Phaser.Math.Between(3, 10);
+    // const numAsteroids = 1;
+    const numAsteroids = Phaser.Math.Between(3, 10);
 
     const asteroids: Array<number> = [];
 
@@ -90,12 +129,21 @@ export default class GameManager {
 
     asteroids.map((eid, astIdx) => setPosition(eid, asteroidPositions[astIdx]));
 
+    this.allObjects = [...playerPositions, ...asteroidPositions];
+
     this.startTurn();
   }
 
   private startTurn() {
     if (this.activePlayer < 0) {
       this.activePlayer = 0;
+    }
+    this.createGraphic();
+    this.objectManager.hideAllchildren();
+
+    if (this.players.length < 2) {
+      console.log('player %s wins', this.players[0]);
+      return;
     }
     if (this.history.length) {
       const lastTurn = this.history[this.history.length - 1];
@@ -105,9 +153,13 @@ export default class GameManager {
       if (thisPlayerInput) {
         const { angle, power } = thisPlayerInput;
         this.collectInput(power, angle);
+        if (thisPlayerInput.otherAction !== OtherActions.HYPERSPACE) {
+          this.objectManager.showChildren(
+            this.activeProjectiles[this.activePlayer],
+          );
+        }
       }
     }
-    this.createGraphic();
   }
 
   private endTurn() {
@@ -116,11 +168,12 @@ export default class GameManager {
       playerId: this.activePlayer,
       angle: this.currentAngle,
       power: this.currentPower,
+      otherAction: this.currentOtherAction,
     });
+    this.toggleHyperspace(true);
 
     if (this.activePlayer + 1 === this.players.length) {
       this.activePlayer = -1;
-      this.history.push([...this.turnInputs]);
       this.firePhase();
     } else {
       this.activePlayer = this.activePlayer + 1;
@@ -128,18 +181,62 @@ export default class GameManager {
     }
   }
 
+  private toggleHyperspace(reset = false) {
+    if (this.currentOtherAction === OtherActions.HYPERSPACE || reset === true) {
+      this.currentOtherAction = null;
+      this.hyperBtn!.innerHTML = HYPER_OFF;
+    } else {
+      this.currentOtherAction = OtherActions.HYPERSPACE;
+      this.hyperBtn!.innerHTML = HYPER_ON;
+    }
+  }
+
+  private useHyperspace(eid: number) {
+    const myRadius = getRadius(eid);
+    const [newPosition] = this.generateNonOverlappingPositions(
+      [myRadius],
+      objectClearance,
+      this.allObjects,
+    );
+    const { x, y } = newPosition;
+    setPosition(eid, x, y);
+    this.allObjects[eid].x = x;
+    this.allObjects[eid].y = y;
+  }
+
   private firePhase() {
-    this.turnInputs.forEach(({ playerId, angle, power }) => {
-      fireProjectile(this.world, playerId, angle, power);
+    this.objectManager.removeAllChildren();
+    this.activeProjectiles = [];
+    this.projectilesCleaned = 0;
+    this.turnInputs.forEach(({ playerId, angle, power, otherAction }) => {
+      if (!otherAction) {
+        const bullet = fireProjectile(this.world, playerId, angle, power);
+        this.activeProjectiles.push(bullet);
+      }
+      if (otherAction === OtherActions.HYPERSPACE) {
+        this.willHyperspace.push(playerId);
+      }
     });
+    this.history.push([...this.turnInputs]);
     this.turnInputs = [];
+  }
+
+  private postCombatPhase() {
+    setTimeout(() => {
+      if (this.willHyperspace.length) {
+        this.willHyperspace.forEach((playerId) => this.useHyperspace(playerId));
+        setTimeout(() => {
+          this.startTurn();
+        }, 200);
+      } else {
+        this.startTurn();
+      }
+    }, 1000);
   }
 
   private collectInput(power: number, angle: number) {
     this.currentPower = power;
     this.currentAngle = angle;
-
-    console.log(power, angle);
 
     this.updateVector(this.currentAngle, this.currentPower);
   }
@@ -158,6 +255,18 @@ export default class GameManager {
   private removeGraphic(): void {
     this.circle?.destroy();
     this.line?.destroy();
+  }
+
+  private removeActiveProjectile(eid: number) {
+    removeEntity(this.world, eid);
+    if (this.activeProjectiles.includes(eid)) {
+      this.projectilesCleaned = this.projectilesCleaned + 1;
+    }
+    if (this.activeProjectiles.length === this.projectilesCleaned) {
+      setTimeout(() => {
+        this.postCombatPhase();
+      }, 1000);
+    }
   }
 
   private updateVector(angleDeg: number, power: number): void {

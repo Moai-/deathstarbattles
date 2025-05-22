@@ -11,11 +11,19 @@ import GameManager from '../game';
 export class GameScene extends Phaser.Scene {
   private objectManager = new GameObjectManager(this);
   private world = createGameWorld();
-  private gameManager = new GameManager(this, this.world);
+  private gameManager = new GameManager(this, this.world, this.objectManager);
   private movementSystem = createMovementSystem();
-  private cleanupSystem = createCleanupSystem(-200, 2000, -200, 1100);
+  private cleanupSystem = createCleanupSystem(
+    -200,
+    2000,
+    -200,
+    1100,
+    this.gameManager.onCleanup.bind(this.gameManager),
+  );
   private gravitySystem = createGravitySystem();
-  private collisionSystem = createCollisionSystem();
+  private collisionSystem = createCollisionSystem(
+    this.gameManager.onCollision.bind(this.gameManager),
+  );
   private renderSystem = createRenderSystem(this, this.objectManager);
 
   constructor() {
