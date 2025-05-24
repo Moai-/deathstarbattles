@@ -9,15 +9,23 @@ const slow = 1 / 400;
 
 export const createMovementSystem = () => {
   return defineSystem((world) => {
-    const dt = (world as GameWorld).delta;
+    const w = world as GameWorld;
+    const dt = w.delta;
     const entities = movingQuery(world);
+    if (entities.length) {
+      w.movements = w.movements || {};
+    }
     for (const eid of entities) {
+      w.movements![eid] = w.movements![eid] || { id: eid, movementTrace: [] };
       const vx = Velocity.x[eid];
       const vy = Velocity.y[eid];
       const dx = vx * dt * slow;
       const dy = vy * dt * slow;
-      Position.x[eid] += dx;
-      Position.y[eid] += dy;
+      const newX = Position.x[eid] + dx;
+      const newY = Position.y[eid] + dy;
+      Position.x[eid] = newX;
+      Position.y[eid] = newY;
+      w.movements![eid].movementTrace.push({ x: newX, y: newY });
     }
     return world;
   });

@@ -1,4 +1,5 @@
 import { GameWorld } from 'shared/src/ecs/world';
+import generateTurn from 'shared/src/ai/generateTurn';
 import { GameObjectManager } from '../render/objectManager';
 import { FiringIndicator } from './firingIndicator';
 import { PlayerInputHandler } from './playerInput';
@@ -11,7 +12,14 @@ import playerCols from './playerCols';
 import { ProjectileManager } from './projectileManager';
 import { getRadius, setPosition } from '../util';
 import { CollisionHandler } from './collisionHandler';
-import { GameObject, TurnInput, OtherActions } from './types';
+import {
+  GameObject,
+  TurnInput,
+  OtherActions,
+  PlayerInfo,
+  GameState,
+  PlayerTypes,
+} from 'shared/src/types';
 
 export default class GameManager {
   // globals
@@ -27,7 +35,7 @@ export default class GameManager {
 
   // game state
   private activePlayer = -1;
-  private players: Array<number> = [];
+  private players: Array<PlayerInfo> = [];
   private allObjects: Array<GameObject> = [];
   private history: Array<Array<TurnInput>> = [];
   private turnInputs: Array<TurnInput> = [];
@@ -49,7 +57,7 @@ export default class GameManager {
       this.projectileManager.removeProjectile(eid),
     );
     this.collisionHandler.setTargetDestroyedCallback((eid) => {
-      this.players = this.players.filter((pid) => pid !== eid);
+      this.getPlayerInfo(eid)!.isAlive = false;
     });
     this.inputHandler = new PlayerInputHandler(
       'angle',
@@ -79,33 +87,79 @@ export default class GameManager {
   }
 
   startGame() {
-    const { playerIds, objectPlacements } = runGameSetup(
-      this.scene,
-      this.world,
-      {
-        playerCount: 2,
-        playerColors: playerCols,
-        minAsteroids: 3,
-        maxAsteroids: 10,
-      },
-    );
+    const { players, objectPlacements } = runGameSetup(this.scene, this.world, {
+      players: [{ type: 0 }, { type: 1 }, { type: 2 }],
+      playerColors: playerCols,
+      minAsteroids: 6,
+      maxAsteroids: 18,
+    });
 
-    this.players = playerIds;
+    this.players = players;
     this.allObjects = objectPlacements;
     this.startTurn();
+  }
+
+  private startTurn() {
+    if (this.activePlayer < 0) {
+      this.activePlayer = 0;
+    }
+    if (this.getLivingPlayers().length < 2) {
+      console.log('player %s wins', this.players[0].id);
+      return;
+    }
+    const playerInfo = this.getPlayerInfo(this.activePlayer);
+    if (playerInfo) {
+      if (!playerInfo.isAlive) {
+        return this.endTurn();
+      }
+      if (playerInfo.type !== PlayerTypes.HUMAN) {
+        return this.endTurn();
+      }
+    }
+
+    this.indicator.create();
+    this.syncAnglePower();
+    this.objectManager.hideAllchildren();
+
+    if (this.history.length) {
+      const lastTurn = this.history[this.history.length - 1];
+      const thisPlayerInput = lastTurn.find(
+        (inputs) => inputs.playerId === this.activePlayer,
+      );
+      if (thisPlayerInput) {
+        const { angle, power } = thisPlayerInput;
+        this.syncAnglePower(angle, power);
+        if (thisPlayerInput.otherAction !== OtherActions.HYPERSPACE) {
+          const parent = this.projectileManager.getByPlayerId(
+            this.activePlayer,
+          );
+          if (parent) {
+            this.objectManager.showChildren(parent.ownId);
+          }
+        }
+      }
+    }
   }
 
   private firePhase() {
     this.objectManager.removeAllChildren();
     this.projectileManager.reset();
+    this.world.movements = null;
+    let didFire = false;
     this.turnInputs.forEach(({ playerId, angle, power, otherAction }) => {
       if (!otherAction) {
         this.projectileManager.fireFrom(playerId, angle, power);
+        didFire = true;
       }
       if (otherAction === OtherActions.HYPERSPACE) {
         this.willHyperspace.push(playerId);
       }
     });
+    this.history.push([...this.turnInputs]);
+    this.turnInputs = [];
+    if (!didFire) {
+      this.postCombatPhase();
+    }
   }
 
   private postCombatPhase() {
@@ -123,48 +177,27 @@ export default class GameManager {
     }, 1000);
   }
 
-  private startTurn() {
-    if (this.activePlayer < 0) {
-      this.activePlayer = 0;
-    }
-    this.indicator.create();
-    this.objectManager.hideAllchildren();
-
-    if (this.players.length < 2) {
-      console.log('player %s wins', this.players[0]);
-      return;
-    }
-    if (this.history.length) {
-      const lastTurn = this.history[this.history.length - 1];
-      const thisPlayerInput = lastTurn.find(
-        (inputs) => inputs.playerId === this.activePlayer,
-      );
-      if (thisPlayerInput) {
-        const { angle, power } = thisPlayerInput;
-        this.syncAnglePower(angle, power);
-        if (thisPlayerInput.otherAction !== OtherActions.HYPERSPACE) {
-          const parent = this.projectileManager.getByPlayerId(
-            this.activePlayer,
-          );
-          if (parent) {
-            this.objectManager.showChildren(parent.ownId);
-          }
-        }
+  private endTurn() {
+    const playerInfo = this.getPlayerInfo(this.activePlayer);
+    if (playerInfo && playerInfo.isAlive) {
+      if (playerInfo.type === PlayerTypes.HUMAN) {
+        this.indicator.remove();
+        this.turnInputs.push({
+          playerId: this.activePlayer,
+          angle: this.inputHandler.getCurrentAngle(),
+          power: this.inputHandler.getCurrentPower(),
+          otherAction: this.inputHandler.getCurrentOtherAction(),
+        });
+        this.inputHandler.resetHyperspace();
       } else {
-        this.syncAnglePower();
+        const thisPlayerInput = generateTurn(
+          this.world,
+          playerInfo,
+          this.getGameState(),
+        );
+        this.turnInputs.push(thisPlayerInput);
       }
     }
-  }
-
-  private endTurn() {
-    this.indicator.remove();
-    this.turnInputs.push({
-      playerId: this.activePlayer,
-      angle: this.inputHandler.getCurrentAngle(),
-      power: this.inputHandler.getCurrentPower(),
-      otherAction: this.inputHandler.getCurrentOtherAction(),
-    });
-    this.inputHandler.resetHyperspace();
 
     if (this.activePlayer + 1 === this.players.length) {
       this.activePlayer = -1;
@@ -177,11 +210,10 @@ export default class GameManager {
 
   private useHyperspace(eid: number) {
     const { width, height } = this.scene.scale;
-    const myRadius = getRadius(eid);
     const [newPosition] = generateNonOverlappingPositions(
       width,
       height,
-      [myRadius],
+      [getRadius(eid)],
       objectClearance,
       this.allObjects,
     );
@@ -194,5 +226,20 @@ export default class GameManager {
   private syncAnglePower(angle: number = 0, power: number = 20) {
     this.inputHandler.setAnglePower(angle, power);
     this.indicator.updateVector(angle, power);
+  }
+
+  private getPlayerInfo(eid: number) {
+    return this.players.find(({ id }) => id === eid);
+  }
+
+  private getLivingPlayers() {
+    return this.players.filter(({ isAlive }) => isAlive);
+  }
+
+  private getGameState() {
+    return {
+      lastTurnShots: this.world.movements,
+      objectInfo: this.allObjects,
+    } as GameState;
   }
 }

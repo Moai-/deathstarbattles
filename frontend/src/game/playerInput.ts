@@ -1,4 +1,4 @@
-import { OtherActions } from './types';
+import { OtherActions } from 'shared/src/types';
 
 const HYPER_ON = 'Hyperspace [ENGAGED]';
 const HYPER_OFF = 'Hyperspace [OFFLINE]';

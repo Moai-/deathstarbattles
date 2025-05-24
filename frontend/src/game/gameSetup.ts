@@ -7,38 +7,43 @@ import {
   GameSetupConfig,
   GameSetupResult,
   GameObject,
-} from './types';
+  PlayerInfo,
+} from 'shared/src/types';
 
 export const playerClearance: ClearanceFunction = (a, b) => a + b + 80;
 export const objectClearance: ClearanceFunction = (a, b) => a + b + 30;
+
+const getPlayerRadius = (player: PlayerInfo) => getRadius(player.id);
 
 export function runGameSetup(
   scene: Phaser.Scene,
   world: GameWorld,
   config: GameSetupConfig,
 ): GameSetupResult {
-  const { playerCount, playerColors, minAsteroids, maxAsteroids } = config;
+  const { players, playerColors, minAsteroids, maxAsteroids } = config;
   const width = scene.scale.width;
   const height = scene.scale.height;
 
-  const players: number[] = [];
-  for (let i = 0; i < playerCount; i++) {
-    players.push(
-      createDeathStar(world, 0, 0, playerColors[i % playerColors.length]),
-    );
+  const parsedPlayers: Array<PlayerInfo> = [];
+  for (let i = 0; i < players.length; i++) {
+    parsedPlayers.push({
+      type: players[i].type,
+      id: createDeathStar(world, 0, 0, playerColors[i % playerColors.length]),
+      isAlive: true,
+    });
   }
 
   const playerPositions = generateNonOverlappingPositions(
     width,
     height,
-    players.map(getRadius),
+    parsedPlayers.map(getPlayerRadius),
     playerClearance,
   );
 
-  players.forEach((eid, i) => {
+  parsedPlayers.forEach(({ id }, i) => {
     const { x, y } = playerPositions[i];
-    setPosition(eid, x, y);
-    playerPositions[i].eid = eid;
+    setPosition(id, x, y);
+    playerPositions[i].eid = id;
   });
 
   const asteroidCount = Phaser.Math.Between(minAsteroids, maxAsteroids);
@@ -65,7 +70,7 @@ export function runGameSetup(
   const allObjects: GameObject[] = [...playerPositions, ...asteroidPositions];
 
   return {
-    playerIds: players,
+    players: parsedPlayers,
     asteroidIds: asteroids,
     objectPlacements: allObjects,
   };

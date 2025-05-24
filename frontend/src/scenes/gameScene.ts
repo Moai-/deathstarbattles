@@ -15,7 +15,7 @@ export class GameScene extends Phaser.Scene {
   private movementSystem = createMovementSystem();
   private cleanupSystem = createCleanupSystem(
     -200,
-    2000,
+    1500,
     -200,
     1100,
     this.gameManager.onCleanup.bind(this.gameManager),

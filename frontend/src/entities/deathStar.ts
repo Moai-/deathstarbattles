@@ -65,7 +65,7 @@ export const fireProjectile = (
   Renderable.type[eid] = RenderableTypes.DEATHBEAM;
   Renderable.col[eid] = Renderable.col[parentEid];
   LeavesTrail.col[eid] = Renderable.col[parentEid];
-  HasLifetime.createdAt[eid] = Math.floor(world.time); // or Date.now(), but `performance.now()` is more precise
+  HasLifetime.createdAt[eid] = Math.floor(world.time);
 
   return eid;
 };
