@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { createGameWorld } from 'shared/src/ecs/world';
+import { HIDDEN_BOUNDARY } from 'shared/src/consts';
 import { createMovementSystem } from 'shared/src/ecs/systems/movement';
 import { createGravitySystem } from 'shared/src/ecs/systems/gravity';
 import { createCleanupSystem } from 'shared/src/ecs/systems/cleanup';
@@ -8,16 +9,19 @@ import { createRenderSystem } from '../render/renderSystem';
 import { GameObjectManager } from '../render/objectManager';
 import GameManager from '../game';
 
+const width = 1300;
+const height = 900;
+
 export class GameScene extends Phaser.Scene {
   private objectManager = new GameObjectManager(this);
   private world = createGameWorld();
   private gameManager = new GameManager(this, this.world, this.objectManager);
   private movementSystem = createMovementSystem();
   private cleanupSystem = createCleanupSystem(
-    -200,
-    1500,
-    -200,
-    1100,
+    0 - HIDDEN_BOUNDARY,
+    width + HIDDEN_BOUNDARY,
+    0 - HIDDEN_BOUNDARY,
+    height + HIDDEN_BOUNDARY,
     this.gameManager.onCleanup.bind(this.gameManager),
   );
   private gravitySystem = createGravitySystem();

@@ -1,10 +1,13 @@
+import { AnyPoint } from 'shared/src/types';
 import { Renderable } from './components/renderable';
 import renderMap from './objects';
 import { RenderableTypes } from './types';
+import renderBoundaryIndicator from './objects/boundaryIndicator';
 
 export class GameObjectManager {
   private objects = new Map<number, Phaser.GameObjects.GameObject>();
   private children = new Map<number, Array<Phaser.GameObjects.GameObject>>();
+  private boundaryIndicators = new Map<number, Phaser.GameObjects.Triangle>();
 
   constructor(private scene: Phaser.Scene) {}
 
@@ -78,6 +81,32 @@ export class GameObjectManager {
     if (obj && 'x' in obj && 'y' in obj) {
       obj.x = x;
       obj.y = y;
+    }
+  }
+
+  upsertBoundaryIndicator(
+    eid: number,
+    { x, y }: AnyPoint,
+    angle: number,
+    distance: number,
+  ) {
+    let indicator = this.boundaryIndicators.get(eid);
+    if (!indicator) {
+      indicator = renderBoundaryIndicator(this.scene, eid);
+      indicator.setVisible(true);
+
+      this.boundaryIndicators.set(eid, indicator);
+    }
+    indicator.setRotation(angle - Math.PI / 2);
+    indicator.setPosition(x, y);
+    indicator.setScale(1, 1 + distance / 200);
+  }
+
+  removeBoundaryIndicator(eid: number) {
+    const indicator = this.boundaryIndicators.get(eid);
+    if (indicator) {
+      indicator.destroy();
+      this.boundaryIndicators.delete(eid);
     }
   }
 

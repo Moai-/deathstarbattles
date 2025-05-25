@@ -2,7 +2,7 @@ import { fireProjectile } from '../entities/deathStar';
 import { removeEntity } from 'bitecs';
 import { GameWorld } from 'shared/src/ecs/world';
 
-type CleanupCallback = () => void;
+type CleanupCallback = (eid?: number) => void;
 
 type ProjectileReference = {
   ownId: number;
@@ -14,6 +14,7 @@ export class ProjectileManager {
   private activeProjectiles: Array<ProjectileReference> = [];
   private cleanedCount = 0;
   private onAllCleaned: CleanupCallback = () => {};
+  private onCleaned: CleanupCallback = () => {};
 
   constructor(world: GameWorld) {
     this.world = world;
@@ -27,6 +28,7 @@ export class ProjectileManager {
 
   removeProjectile(eid: number): void {
     removeEntity(this.world, eid);
+    this.onCleaned(eid);
 
     const thisRef = this.getByEid(eid);
     if (thisRef) {
@@ -34,12 +36,16 @@ export class ProjectileManager {
     }
 
     if (this.cleanedCount === this.activeProjectiles.length) {
-      setTimeout(() => this.onAllCleaned(), 1000); // optional delay for effect
+      this.onAllCleaned();
     }
   }
 
   setCleanupCallback(cb: CleanupCallback): void {
     this.onAllCleaned = cb;
+  }
+
+  setSingleCleanupCallback(cb: CleanupCallback): void {
+    this.onCleaned = cb;
   }
 
   reset(): void {

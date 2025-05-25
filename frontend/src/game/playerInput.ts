@@ -41,11 +41,11 @@ export class PlayerInputHandler {
   }
 
   private initListeners() {
-    this.angleInput.onchange = (e) => {
+    this.angleInput.oninput = (e) => {
       this.angle = parseInt((e.target as HTMLInputElement).value, 10);
       this.emitAnglePower();
     };
-    this.powerInput.onchange = (e) => {
+    this.powerInput.oninput = (e) => {
       this.power = parseInt((e.target as HTMLInputElement).value, 10);
       this.emitAnglePower();
     };

@@ -52,10 +52,14 @@ export default class GameManager {
     this.indicator = new FiringIndicator(scene, () => this.activePlayer);
     this.projectileManager = new ProjectileManager(world);
     this.projectileManager.setCleanupCallback(() => this.postCombatPhase());
-    this.collisionHandler = new CollisionHandler(world);
-    this.collisionHandler.setProjectileDestroyedCallback((eid) =>
-      this.projectileManager.removeProjectile(eid),
+    this.projectileManager.setSingleCleanupCallback((eid) =>
+      this.objectManager.removeBoundaryIndicator(eid!),
     );
+    this.collisionHandler = new CollisionHandler(world);
+    this.collisionHandler.setProjectileDestroyedCallback((eid) => {
+      this.projectileManager.removeProjectile(eid);
+      this.objectManager.removeBoundaryIndicator(eid);
+    });
     this.collisionHandler.setTargetDestroyedCallback((eid) => {
       this.getPlayerInfo(eid)!.isAlive = false;
     });
@@ -103,8 +107,9 @@ export default class GameManager {
     if (this.activePlayer < 0) {
       this.activePlayer = 0;
     }
-    if (this.getLivingPlayers().length < 2) {
-      console.log('player %s wins', this.players[0].id);
+    const living = this.getLivingPlayers();
+    if (living.length < 2) {
+      console.log('player %s wins', living[0].id);
       return;
     }
     const playerInfo = this.getPlayerInfo(this.activePlayer);
@@ -174,7 +179,7 @@ export default class GameManager {
       } else {
         this.startTurn();
       }
-    }, 1000);
+    }, 1500);
   }
 
   private endTurn() {
