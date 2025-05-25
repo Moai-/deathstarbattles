@@ -3,11 +3,7 @@ import generateTurn from 'shared/src/ai/generateTurn';
 import { GameObjectManager } from '../render/objectManager';
 import { FiringIndicator } from './firingIndicator';
 import { PlayerInputHandler } from './playerInput';
-import {
-  generateNonOverlappingPositions,
-  objectClearance,
-  runGameSetup,
-} from './gameSetup';
+import { objectClearance, runGameSetup } from './gameSetup';
 import playerCols from './playerCols';
 import { ProjectileManager } from './projectileManager';
 import { getRadius, setPosition } from '../util';
@@ -20,6 +16,7 @@ import {
   GameState,
   PlayerTypes,
 } from 'shared/src/types';
+import { generateNonOverlappingPositions } from './util';
 
 export default class GameManager {
   // globals
@@ -94,8 +91,8 @@ export default class GameManager {
     const { players, objectPlacements } = runGameSetup(this.scene, this.world, {
       players: [{ type: 0 }, { type: 1 }, { type: 2 }],
       playerColors: playerCols,
-      minAsteroids: 6,
-      maxAsteroids: 18,
+      minAsteroids: 1,
+      maxAsteroids: 2,
     });
 
     this.players = players;

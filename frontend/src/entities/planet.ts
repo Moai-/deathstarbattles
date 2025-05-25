@@ -5,8 +5,8 @@ import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { Renderable } from '../render/components/renderable';
 import { RenderableTypes } from '../render/types';
 
-export const MIN_ASTEROID_RAD = 15;
-export const MAX_ASTEROID_RAD = 35;
+export const MIN_PLANET_RAD = 30;
+export const MAX_PLANET_RAD = 70;
 
 export const createAsteroid = (
   world: IWorld,
@@ -22,14 +22,14 @@ export const createAsteroid = (
 
   Position.x[eid] = x;
   Position.y[eid] = y;
-  Renderable.type[eid] = RenderableTypes.ASTEROID;
+  Renderable.type[eid] = RenderableTypes.PLANET;
   Collision.radius[eid] = radius;
-  HasGravity.strength[eid] = radius * 25;
+  HasGravity.strength[eid] = radius * 30;
 
   return eid;
 };
 
-export const createRandomAsteroid = (world: IWorld) => {
-  const radius = Phaser.Math.Between(MIN_ASTEROID_RAD, MAX_ASTEROID_RAD);
+export const createRandomPlanet = (world: IWorld) => {
+  const radius = Phaser.Math.Between(MIN_PLANET_RAD, MAX_PLANET_RAD);
   return createAsteroid(world, 0, 0, radius);
 };

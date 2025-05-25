@@ -7,6 +7,9 @@ export enum RenderableTypes {
   DEATHBEAM,
   ASTEROID,
   BLACK_HOLE,
+  PLANET,
+  STAR,
+  JOVIAN,
 }
 
 export type RenderObject = (
