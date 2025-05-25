@@ -6,7 +6,7 @@ import { AffectedByGravity } from 'shared/src/ecs/components/affectedByGravity';
 import { Projectile } from 'shared/src/ecs/components/projectile';
 import { HasLifetime } from 'shared/src/ecs/components/hasLifetime';
 import { Destructible } from 'shared/src/ecs/components/destructible';
-import { LeavesTrail } from '../render/components/leavesTrail';
+import { LeavesTrail, TrailType } from '../render/components/leavesTrail';
 import { Renderable } from '../render/components/renderable';
 import { RenderableTypes } from '../render/types';
 import { colToUi32 } from '../util/col';
@@ -53,6 +53,7 @@ export const fireProjectile = (
   addComponent(world, HasLifetime, eid);
 
   const angleRad = Phaser.Math.DegToRad(angle);
+  const fasterSpeed = speed * 2;
 
   Projectile.parent[eid] = parentEid;
   Collision.radius[eid] = DEFAULT_DEATHBEAM_RADIUS;
@@ -60,11 +61,12 @@ export const fireProjectile = (
   const offset = Collision.radius[parentEid] + DEFAULT_DEATHBEAM_RADIUS;
   Position.x[eid] = Position.x[parentEid] + Math.cos(angleRad) * offset;
   Position.y[eid] = Position.y[parentEid] + Math.sin(angleRad) * offset;
-  Velocity.x[eid] = Math.cos(angleRad) * speed;
-  Velocity.y[eid] = Math.sin(angleRad) * speed;
+  Velocity.x[eid] = Math.cos(angleRad) * fasterSpeed;
+  Velocity.y[eid] = Math.sin(angleRad) * fasterSpeed;
   Renderable.type[eid] = RenderableTypes.DEATHBEAM;
   Renderable.col[eid] = Renderable.col[parentEid];
   LeavesTrail.col[eid] = Renderable.col[parentEid];
+  LeavesTrail.type[eid] = TrailType.BEADS_ON_A_STRING;
   HasLifetime.createdAt[eid] = Math.floor(world.time);
 
   return eid;

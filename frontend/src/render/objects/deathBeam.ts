@@ -12,6 +12,7 @@ const renderDeathBeam: RenderObject = (scene, eid) => {
     y,
     Collision.radius[eid],
     ui32ToCol(Renderable.col[eid]),
+    1,
   );
 };
 

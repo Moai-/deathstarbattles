@@ -2,11 +2,16 @@ import { defineQuery, enterQuery, defineSystem, exitQuery } from 'bitecs';
 import { Position } from 'shared/src/ecs/components/position';
 import { Renderable } from './components/renderable';
 import { GameObjectManager } from './objectManager';
-import { LeavesTrail } from './components/leavesTrail';
+import {
+  LeavesTrail,
+  MAX_STRING_DIST_SQ,
+  TrailType,
+} from './components/leavesTrail';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { Projectile } from 'shared/src/ecs/components/projectile';
 import { getPosition, ui32ToCol } from '../util';
 import { AnyPoint } from 'shared/src/types';
+import { getSquaredDistance } from 'shared/src/ai/utils';
 
 const renderQuery = defineQuery([Position, Renderable]);
 const renderQueryEnter = enterQuery(renderQuery);
@@ -46,10 +51,63 @@ export const createRenderSystem = (
     for (const eid of updatedTrails) {
       const x = Position.x[eid];
       const y = Position.y[eid];
-      const radius = Collision.radius[eid];
-      const col = ui32ToCol(LeavesTrail.col[eid]);
-      const circle = scene.add.circle(x, y, radius, col, 1);
-      objectManager.createChild(eid, circle);
+      const trailType = LeavesTrail.type[eid];
+      if (
+        trailType === TrailType.BEADS ||
+        trailType === TrailType.BEADS_ON_A_STRING ||
+        trailType === TrailType.MANY_BEADS
+      ) {
+        const radius = Collision.radius[eid];
+        const col = ui32ToCol(LeavesTrail.col[eid]);
+        const circle = scene.add.circle(x, y, radius, col, 1);
+        if (trailType === TrailType.BEADS_ON_A_STRING) {
+          const lastChild = objectManager.getLastChild(eid);
+          if (lastChild) {
+            const bead = lastChild as Phaser.GameObjects.Arc;
+            const sqDist = getSquaredDistance(circle, bead);
+            const line = scene.add.graphics();
+            const sizeRatio = sqDist / MAX_STRING_DIST_SQ;
+            const max = radius * 2;
+            const size = (radius * 2) / sizeRatio;
+            circle.radius = Math.min(radius, radius / sizeRatio);
+            line.lineStyle(Math.min(max, size), col);
+            line.lineBetween(bead.x, bead.y, x, y);
+            objectManager.createChild(eid, line);
+          }
+        }
+        if (trailType === TrailType.MANY_BEADS) {
+          const lastChild = objectManager.getLastChild(eid);
+          if (lastChild) {
+            const bead = lastChild as Phaser.GameObjects.Arc;
+            const dx = x - bead.x;
+            const dy = y - bead.y;
+            const stepX = dx / 4; // 2 extra circles => divide by 3
+            const stepY = dy / 4;
+            objectManager.createChild(
+              eid,
+              scene.add.circle(x + stepX, y + stepY, radius, col, 1),
+            );
+            objectManager.createChild(
+              eid,
+              scene.add.circle(x + stepX * 2, y + stepY * 2, radius, col, 1),
+            );
+            objectManager.createChild(
+              eid,
+              scene.add.circle(x + stepX * 3, y + stepY * 3, radius, col, 1),
+            );
+            // const midX = (bead.x + x) / 2;
+            // const midY = (bead.y + y) / 2;
+            // const nextBead = scene.add.circle(midX, midY, radius, col, 0.4);
+            // objectManager.createChild(eid, nextBead);
+          }
+        }
+        objectManager.createChild(eid, circle);
+        // const children = objectManager.getChildren(eid);
+        // const len = children.length;
+        // for (let i = 0; i < len - 5; i++) {
+        //   (children[i] as Phaser.GameObjects.Graphics).alpha = 0.4;
+        // }
+      }
     }
 
     const updatedProjectiles = projectileQuery(world);

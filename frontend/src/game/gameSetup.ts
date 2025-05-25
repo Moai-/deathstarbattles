@@ -9,6 +9,7 @@ import {
   GameObject,
   PlayerInfo,
 } from 'shared/src/types';
+import { createBlackHole } from '../entities/blackHole';
 
 export const playerClearance: ClearanceFunction = (a, b) => a + b + 80;
 export const objectClearance: ClearanceFunction = (a, b) => a + b + 30;
@@ -52,6 +53,8 @@ export function runGameSetup(
   for (let i = 0; i < asteroidCount; i++) {
     asteroids.push(createRandomAsteroid(world));
   }
+
+  asteroids.push(createBlackHole(world, 0, 0));
 
   const asteroidPositions = generateNonOverlappingPositions(
     width,

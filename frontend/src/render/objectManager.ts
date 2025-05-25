@@ -22,6 +22,15 @@ export class GameObjectManager {
     this.children.get(eid)?.push(child);
   }
 
+  getLastChild(eid: number) {
+    if (this.children.has(eid)) {
+      const children = this.children.get(eid);
+      if (children && children.length) {
+        return children[children.length - 1];
+      }
+    }
+  }
+
   get(eid: number) {
     return this.objects.get(eid);
   }
@@ -32,6 +41,13 @@ export class GameObjectManager {
       obj.destroy();
       this.objects.delete(eid);
     }
+  }
+
+  getChildren(eid: number): Array<Phaser.GameObjects.GameObject> {
+    if (!this.children.has(eid)) {
+      return [];
+    }
+    return this.children.get(eid) || [];
   }
 
   hideChildren(eid: number) {
