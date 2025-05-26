@@ -7,7 +7,7 @@ import { createCleanupSystem } from 'shared/src/ecs/systems/cleanup';
 import { createCollisionSystem } from 'shared/src/ecs/systems/collision';
 import { createRenderSystem } from '../render/renderSystem';
 import { GameObjectManager } from '../render/objectManager';
-import GameManager from '../game';
+import GameManager from './gameManager';
 
 const width = 1300;
 const height = 900;
@@ -39,7 +39,6 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
-    this.gameManager.create();
     this.gameManager.startGame();
   }
 

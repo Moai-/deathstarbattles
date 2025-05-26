@@ -1,4 +1,4 @@
-import { getPosition } from '../util';
+import { getPosition } from 'src/util';
 
 export class FiringIndicator {
   private scene: Phaser.Scene;
@@ -6,6 +6,9 @@ export class FiringIndicator {
   private circle?: Phaser.GameObjects.Arc;
   private line?: Phaser.GameObjects.Line;
   private getTargetId: () => number;
+  private onAnglePowerUpdate: (angle: number, power: number) => void = () => {};
+  private isDragging = false;
+  private didBind = false;
 
   constructor(
     scene: Phaser.Scene,
@@ -17,25 +20,38 @@ export class FiringIndicator {
     this.getTargetId = getTargetId;
   }
 
-  create(): void {
+  setAnglePowerListener(cb: (angle: number, power: number) => void) {
+    this.onAnglePowerUpdate = cb;
+  }
+
+  create() {
     const { x, y } = getPosition(this.getTargetId());
     this.circle = this.scene.add
       .circle(x, y, this.radius, 0xffffff, 0)
-      .setStrokeStyle(1, 0xffffff);
+      .setStrokeStyle(1, 0xffffff)
+      .setDepth(6);
     this.line = this.scene.add.line(0, 0, 0, 0, 0, 0, 0xffffff).setOrigin(0, 0);
-    this.line.setDepth(1);
+    this.line.setDepth(6);
+
+    if (!this.didBind) {
+      this.scene.input.on('pointerdown', this.handlePointerDown, this);
+      this.scene.input.on('pointermove', this.handlePointerMove, this);
+      this.scene.input.on('pointerup', this.handlePointerUp, this);
+      this.scene.input.on('pointerupoutside', this.handlePointerUp, this);
+      this.didBind = true;
+    }
   }
 
-  remove(): void {
+  remove() {
     this.circle?.destroy();
     this.line?.destroy();
     this.circle = undefined;
     this.line = undefined;
   }
 
-  updateVector(angleDeg: number, power: number): void {
+  updateVector(angleDeg: number, power: number) {
     if (!this.line) return;
-
+    this.onAnglePowerUpdate(angleDeg, power);
     const clampedPower = Phaser.Math.Clamp(power, 20, 100);
     const length = Phaser.Math.Linear(
       this.radius * 0.25,
@@ -51,23 +67,34 @@ export class FiringIndicator {
     this.line.setTo(x, y, x + dx, y + dy);
   }
 
-  handlePointerClick(
-    pointer: Phaser.Input.Pointer,
-    onInput: (angle: number, power: number) => void,
-  ): void {
-    const { x, y } = getPosition(this.getTargetId());
-    const click = new Phaser.Math.Vector2(pointer.x, pointer.y);
-    const dist = Phaser.Math.Distance.Between(x, y, click.x, click.y);
+  private handlePointerDown(p: Phaser.Input.Pointer) {
+    this.isDragging = true;
+    this.updateAnglePower(p);
+  }
 
+  private handlePointerMove(p: Phaser.Input.Pointer) {
+    if (this.isDragging) {
+      this.updateAnglePower(p);
+    }
+  }
+
+  private handlePointerUp() {
+    this.isDragging = false;
+  }
+
+  private updateAnglePower(pointer: Phaser.Input.Pointer) {
+    const loc = new Phaser.Math.Vector2(pointer.x, pointer.y);
+    const { x, y } = getPosition(this.getTargetId());
+    const dist = Phaser.Math.Distance.Between(x, y, loc.x, loc.y);
     if (dist <= this.radius + 10) {
-      const dir = click.clone().subtract({ x, y });
+      const dir = loc.clone().subtract({ x, y });
       const angle = Phaser.Math.RadToDeg(Math.atan2(dir.y, dir.x));
       const power = Phaser.Math.Clamp(
         Phaser.Math.Linear(20, 100, dist / this.radius),
         20,
         100,
       );
-      onInput(angle, power);
+      this.updateVector(angle, power);
     }
   }
 }

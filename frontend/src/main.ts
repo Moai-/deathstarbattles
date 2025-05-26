@@ -1,12 +1,9 @@
-import Phaser from 'phaser';
-import { GameScene } from './scenes/gameScene';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './ui';
 
-const config: Phaser.Types.Core.GameConfig = {
-  type: Phaser.WEBGL,
-  width: 1300,
-  height: 900,
-  scene: [GameScene],
-  physics: { default: 'arcade' },
-};
-
-new Phaser.Game(config);
+const rootElement = document.getElementById('react-root');
+if (rootElement) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(React.createElement(App));
+}

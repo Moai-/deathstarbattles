@@ -14,7 +14,7 @@ import { generateNonOverlappingPositions } from './util';
 import { createRandomPlanet } from '../entities/planet';
 import { createRandomStar } from '../entities/star';
 // import { createRandomJovian } from '../entities/jovian';
-import { generateBackgroundStars } from '../background/stars';
+import { generateBackgroundStars } from '../render/background/stars';
 // import { createRandomSupergiant } from '../entities/supergiant';
 
 export const playerClearance: ClearanceFunction = (a, b) => a + b + 80;

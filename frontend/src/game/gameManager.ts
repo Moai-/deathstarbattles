@@ -60,22 +60,9 @@ export default class GameManager {
     this.collisionHandler.setTargetDestroyedCallback((eid) => {
       this.getPlayerInfo(eid)!.isAlive = false;
     });
-    this.inputHandler = new PlayerInputHandler(
-      'angle',
-      'power',
-      'endtn',
-      'hyper',
-      (angle, power) => this.indicator.updateVector(angle, power),
-      () => this.endTurn(),
-      () => {},
-    );
-  }
-
-  create() {
-    this.scene.input.on('pointerdown', (p: Phaser.Input.Pointer) =>
-      this.indicator.handlePointerClick(p, (angle, power) => {
-        this.inputHandler.setAnglePower(angle, power);
-      }),
+    this.inputHandler = new PlayerInputHandler(() => this.endTurn());
+    this.indicator.setAnglePowerListener((angle, power) =>
+      this.inputHandler.setAnglePower(angle, power),
     );
   }
 

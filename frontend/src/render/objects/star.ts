@@ -14,9 +14,9 @@ const renderStar: RenderObject = (scene, eid) => {
   const baseCol = ui32ToCol(Renderable.col[eid]);
   const cols = generateStarCols(baseCol, 6);
   container.add(drawCorona(scene, { x: 0, y: 0 }, radius, cols[5]));
-  container.add(scene.add.circle(0, 0, radius, cols[1]).setDepth(1));
-  container.add(scene.add.circle(0, 0, radius * 0.97, cols[0]).setDepth(1));
-  container.add(scene.add.circle(0, 0, radius * 0.95, baseCol)).setDepth(1);
+  container.add(scene.add.circle(0, 0, radius, cols[1]).setDepth(2));
+  container.add(scene.add.circle(0, 0, radius * 0.97, cols[0]).setDepth(2));
+  container.add(scene.add.circle(0, 0, radius * 0.95, baseCol)).setDepth(2);
   return container;
 };
 

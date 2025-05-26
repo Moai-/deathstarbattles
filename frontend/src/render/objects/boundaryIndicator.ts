@@ -14,6 +14,7 @@ const renderBoundaryIndicator = (scene: Phaser.Scene, parentEid: number) => {
     ui32ToCol(Renderable.col[parentEid]),
     1,
   );
+  graphics.setDepth(5);
   return graphics;
 };
 
