@@ -35,7 +35,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.text('gravityShaderFragment', 'src/shaders/gravity.frag');
+    //this.load.text('gravityShaderFragment', 'src/shaders/gravity.frag');
   }
 
   create() {
