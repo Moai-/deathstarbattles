@@ -71,18 +71,18 @@ export function runGameSetup(
   // 2. Generate and place objects from largest to smallest
   let levelObjects: Array<GameObject> = [];
 
-  const starsInsteadOfSupergiant = Phaser.Math.Between(1, 10) > 3;
-  if (starsInsteadOfSupergiant) {
-    const twoStars = Phaser.Math.Between(0, 1);
-    if (twoStars) {
-      levelObjects = generateAndPlace(createRandomStar, 2);
-    } else {
-      levelObjects = generateAndPlace(createRandomStar, 1);
-    }
+  //const starsInsteadOfSupergiant = Phaser.Math.Between(1, 10) > 3;
+  //if (starsInsteadOfSupergiant) {
+  const twoStars = Phaser.Math.Between(0, 1);
+  if (twoStars) {
+    levelObjects = generateAndPlace(createRandomStar, 2);
   } else {
-    console.log('Generating supergiant');
-    levelObjects = generateAndPlace(createRandomSupergiant, 1);
+    levelObjects = generateAndPlace(createRandomStar, 1);
   }
+  //} else {
+  //  console.log('Generating supergiant');
+  //  levelObjects = generateAndPlace(createRandomSupergiant, 1);
+  //}
 
   const planetCount = Phaser.Math.Between(1, 3);
   const planets = generateAndPlace(
