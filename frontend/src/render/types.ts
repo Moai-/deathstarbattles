@@ -15,4 +15,4 @@ export enum RenderableTypes {
 export type RenderObject = (
   scene: Scene,
   eid: number,
-) => Phaser.GameObjects.GameObject;
+) => Phaser.GameObjects.Container;

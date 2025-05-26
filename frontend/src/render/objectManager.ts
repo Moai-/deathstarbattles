@@ -5,7 +5,7 @@ import { RenderableTypes } from './types';
 import renderBoundaryIndicator from './objects/boundaryIndicator';
 
 export class GameObjectManager {
-  private objects = new Map<number, Phaser.GameObjects.GameObject>();
+  private objects = new Map<number, Phaser.GameObjects.Container>();
   private children = new Map<number, Array<Phaser.GameObjects.GameObject>>();
   private boundaryIndicators = new Map<number, Phaser.GameObjects.Triangle>();
 

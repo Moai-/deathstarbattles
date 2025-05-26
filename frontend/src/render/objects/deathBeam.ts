@@ -7,13 +7,16 @@ import { Collision } from 'shared/src/ecs/components/collision';
 const renderDeathBeam: RenderObject = (scene, eid) => {
   const x = Position.x[eid];
   const y = Position.y[eid];
-  return scene.add.circle(
-    x,
-    y,
+  const beamHead = scene.add.circle(
+    0,
+    0,
     Collision.radius[eid],
     ui32ToCol(Renderable.col[eid]),
     1,
   );
+  const container = scene.add.container(x, y);
+  container.add(beamHead);
+  return container;
 };
 
 export default renderDeathBeam;

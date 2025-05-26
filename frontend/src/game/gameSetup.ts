@@ -1,5 +1,5 @@
 import { createDeathStar } from '../entities/deathStar';
-import { createRandomAsteroid } from '../entities/asteroid';
+// import { createRandomAsteroid } from '../entities/asteroid';
 import { getRadius, setPosition } from '../util';
 import { GameWorld } from 'shared/src/ecs/world';
 import {
@@ -10,14 +10,11 @@ import {
   PlayerInfo,
 } from 'shared/src/types';
 // import { createBlackHole } from '../entities/blackHole';
-import {
-  generateNonOverlappingPositions,
-  generateSupergiantStarPosition,
-} from './util';
+import { generateNonOverlappingPositions } from './util';
 // import { createRandomPlanet } from '../entities/planet';
 // import { createRandomStar } from '../entities/star';
-// import { createRandomJovian } from '../entities/jovian';
-import { createRandomSupergiant } from '../entities/supergiant';
+import { createRandomJovian } from '../entities/jovian';
+// import { createRandomSupergiant } from '../entities/supergiant';
 
 export const playerClearance: ClearanceFunction = (a, b) => a + b + 80;
 export const objectClearance: ClearanceFunction = (a, b) => a + b + 30;
@@ -42,30 +39,11 @@ export function runGameSetup(
     });
   }
 
-  const supergiant = createRandomSupergiant(world);
-  const superRadius = getRadius(supergiant);
-  const supergiantPos = generateSupergiantStarPosition(
-    scene.scale.width,
-    scene.scale.height,
-    superRadius,
-  );
-
-  setPosition(supergiant, supergiantPos);
-
-  const supergiantObject: GameObject = {
-    ...supergiantPos,
-    radius: superRadius,
-    eid: supergiant,
-  };
-
-  console.log('resulting supergiant object', supergiantObject);
-
   const playerPositions = generateNonOverlappingPositions(
     width,
     height,
     parsedPlayers.map(getPlayerRadius),
     playerClearance,
-    [supergiantObject],
   );
 
   parsedPlayers.forEach(({ id }, i) => {
@@ -78,7 +56,7 @@ export function runGameSetup(
   const asteroids: number[] = [];
 
   for (let i = 0; i < asteroidCount; i++) {
-    asteroids.push(createRandomAsteroid(world));
+    asteroids.push(createRandomJovian(world));
   }
 
   // asteroids.push(createBlackHole(world, 0, 0));
@@ -88,7 +66,7 @@ export function runGameSetup(
     height,
     asteroids.map(getRadius),
     objectClearance,
-    [...playerPositions, supergiantObject],
+    [...playerPositions],
   );
 
   asteroids.forEach((eid, i) => {
@@ -97,11 +75,7 @@ export function runGameSetup(
     asteroidPositions[i].eid = eid;
   });
 
-  const allObjects: GameObject[] = [
-    ...playerPositions,
-    ...asteroidPositions,
-    supergiantObject,
-  ];
+  const allObjects: GameObject[] = [...playerPositions, ...asteroidPositions];
 
   return {
     players: parsedPlayers,
