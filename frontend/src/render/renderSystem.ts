@@ -60,18 +60,23 @@ export const createRenderSystem = (
         const radius = Collision.radius[eid];
         const col = ui32ToCol(LeavesTrail.col[eid]);
         const circle = scene.add.circle(x, y, radius, col, 1);
+        circle.setDepth(3);
         if (trailType === TrailType.BEADS_ON_A_STRING) {
-          const lastChild = objectManager.getLastChild(eid);
-          if (lastChild) {
-            const bead = lastChild as Phaser.GameObjects.Arc;
+          const lastChild = objectManager.getLastChild(
+            eid,
+          ) as Phaser.GameObjects.Arc;
+          const bead = lastChild || objectManager.get(Projectile.parent[eid]);
+          // const bead = lastChild as Phaser.GameObjects.Arc;
+          if (bead) {
             const sqDist = getSquaredDistance(circle, bead);
             const line = scene.add.graphics();
             const sizeRatio = sqDist / MAX_STRING_DIST_SQ;
             const max = radius * 2;
-            const size = (radius * 2) / sizeRatio;
+            const size = lastChild ? (radius * 2) / sizeRatio : max;
             circle.radius = Math.min(radius, radius / sizeRatio);
             line.lineStyle(Math.min(max, size), col);
             line.lineBetween(bead.x, bead.y, x, y);
+            line.setDepth(3);
             objectManager.createChild(eid, line);
           }
         }

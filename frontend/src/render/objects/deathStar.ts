@@ -21,6 +21,7 @@ const renderDeathStar: RenderObject = (scene, eid) => {
     offset: { x: thirdRad, y: -thirdRad * 1.1 },
     radiusX: thirdRad,
   });
+  container.setDepth(4);
   return container;
 };
 

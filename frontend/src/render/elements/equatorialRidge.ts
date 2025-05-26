@@ -4,7 +4,7 @@ export const addEquatorialRidge = (
   radius: number,
   options = {
     color: 0x000000,
-    thickness: 3,
+    thickness: 2,
     scaleY: 0.2, // Vertical flattening
     alpha: 0.4,
     angle: Math.PI / 5.3, // Light direction

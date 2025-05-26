@@ -1,5 +1,5 @@
 import { createDeathStar } from '../entities/deathStar';
-// import { createRandomAsteroid } from '../entities/asteroid';
+import { createRandomAsteroid } from '../entities/asteroid';
 import { getRadius, setPosition } from '../util';
 import { GameWorld } from 'shared/src/ecs/world';
 import {
@@ -9,12 +9,13 @@ import {
   GameObject,
   PlayerInfo,
 } from 'shared/src/types';
-// import { createBlackHole } from '../entities/blackHole';
+import { createRandomBlackHole } from '../entities/blackHole';
 import { generateNonOverlappingPositions } from './util';
-// import { createRandomPlanet } from '../entities/planet';
-// import { createRandomStar } from '../entities/star';
-import { createRandomJovian } from '../entities/jovian';
-// import { createRandomSupergiant } from '../entities/supergiant';
+import { createRandomPlanet } from '../entities/planet';
+import { createRandomStar } from '../entities/star';
+// import { createRandomJovian } from '../entities/jovian';
+import { generateBackgroundStars } from '../background/stars';
+import { createRandomSupergiant } from '../entities/supergiant';
 
 export const playerClearance: ClearanceFunction = (a, b) => a + b + 80;
 export const objectClearance: ClearanceFunction = (a, b) => a + b + 30;
@@ -26,10 +27,38 @@ export function runGameSetup(
   world: GameWorld,
   config: GameSetupConfig,
 ): GameSetupResult {
-  const { players, playerColors, minAsteroids, maxAsteroids } = config;
+  const { players, playerColors } = config;
   const width = scene.scale.width;
   const height = scene.scale.height;
 
+  generateBackgroundStars(scene);
+
+  const generateAndPlace = (
+    generator: (world: GameWorld) => number,
+    amount: number,
+    existing: Array<GameObject> = [],
+  ) => {
+    const generated: Array<number> = [];
+    for (let i = 0; i < amount; i++) {
+      generated.push(generator(world));
+    }
+    const radii = generated.map(getRadius);
+    const positioned = generateNonOverlappingPositions(
+      width,
+      height,
+      radii,
+      objectClearance,
+      existing,
+    );
+    positioned.forEach((pos, i) => {
+      const eid = generated[i];
+      setPosition(eid, pos);
+      pos.eid = eid;
+    });
+    return positioned;
+  };
+
+  // 1. Generate players
   const parsedPlayers: Array<PlayerInfo> = [];
   for (let i = 0; i < players.length; i++) {
     parsedPlayers.push({
@@ -39,11 +68,49 @@ export function runGameSetup(
     });
   }
 
+  // 2. Generate and place objects from largest to smallest
+  let levelObjects: Array<GameObject> = [];
+
+  const starsInsteadOfSupergiant = Phaser.Math.Between(1, 10) > 3;
+  if (starsInsteadOfSupergiant) {
+    const twoStars = Phaser.Math.Between(0, 1);
+    if (twoStars) {
+      levelObjects = generateAndPlace(createRandomStar, 2);
+    } else {
+      levelObjects = generateAndPlace(createRandomStar, 1);
+    }
+  } else {
+    console.log('Generating supergiant');
+    levelObjects = generateAndPlace(createRandomSupergiant, 1);
+  }
+
+  const planetCount = Phaser.Math.Between(1, 3);
+  const planets = generateAndPlace(
+    createRandomPlanet,
+    planetCount,
+    levelObjects,
+  );
+  levelObjects = [...levelObjects, ...planets];
+
+  const asteroidCount = Phaser.Math.Between(1, 5);
+  const asteroids = generateAndPlace(
+    createRandomAsteroid,
+    asteroidCount,
+    levelObjects,
+  );
+  levelObjects = [...levelObjects, ...asteroids];
+
+  const blackHole = generateAndPlace(createRandomBlackHole, 1, levelObjects);
+  levelObjects = [...levelObjects, ...blackHole];
+
+  // 3. Place players
+
   const playerPositions = generateNonOverlappingPositions(
     width,
     height,
     parsedPlayers.map(getPlayerRadius),
     playerClearance,
+    levelObjects,
   );
 
   parsedPlayers.forEach(({ id }, i) => {
@@ -52,34 +119,10 @@ export function runGameSetup(
     playerPositions[i].eid = id;
   });
 
-  const asteroidCount = Phaser.Math.Between(minAsteroids, maxAsteroids);
-  const asteroids: number[] = [];
-
-  for (let i = 0; i < asteroidCount; i++) {
-    asteroids.push(createRandomJovian(world));
-  }
-
-  // asteroids.push(createBlackHole(world, 0, 0));
-
-  const asteroidPositions = generateNonOverlappingPositions(
-    width,
-    height,
-    asteroids.map(getRadius),
-    objectClearance,
-    [...playerPositions],
-  );
-
-  asteroids.forEach((eid, i) => {
-    const { x, y } = asteroidPositions[i];
-    setPosition(eid, x, y);
-    asteroidPositions[i].eid = eid;
-  });
-
-  const allObjects: GameObject[] = [...playerPositions, ...asteroidPositions];
+  levelObjects = [...levelObjects, ...playerPositions];
 
   return {
     players: parsedPlayers,
-    asteroidIds: asteroids,
-    objectPlacements: allObjects,
+    objectPlacements: levelObjects,
   };
 }

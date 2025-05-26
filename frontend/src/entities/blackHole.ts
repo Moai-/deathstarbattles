@@ -23,3 +23,7 @@ export const createBlackHole = (world: IWorld, x: number, y: number) => {
 
   return eid;
 };
+
+export const createRandomBlackHole = (world: IWorld) => {
+  return createBlackHole(world, 0, 0);
+};

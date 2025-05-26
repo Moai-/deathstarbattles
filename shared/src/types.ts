@@ -45,7 +45,6 @@ export type GameSetupConfig = {
 
 export type GameSetupResult = {
   players: Array<PlayerInfo>;
-  asteroidIds: Array<number>;
   objectPlacements: Array<GameObject>;
 };
 

@@ -16,6 +16,7 @@ const renderDeathBeam: RenderObject = (scene, eid) => {
   );
   const container = scene.add.container(x, y);
   container.add(beamHead);
+  container.setDepth(3);
   return container;
 };
 
