@@ -15,7 +15,7 @@ import { createRandomPlanet } from '../entities/planet';
 import { createRandomStar } from '../entities/star';
 // import { createRandomJovian } from '../entities/jovian';
 import { generateBackgroundStars } from '../background/stars';
-import { createRandomSupergiant } from '../entities/supergiant';
+// import { createRandomSupergiant } from '../entities/supergiant';
 
 export const playerClearance: ClearanceFunction = (a, b) => a + b + 80;
 export const objectClearance: ClearanceFunction = (a, b) => a + b + 30;

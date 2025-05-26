@@ -2,7 +2,6 @@ import { Scene } from 'phaser';
 
 export enum RenderableTypes {
   NONE,
-  BOUNDARY_INDICATOR,
   DEATHSTAR,
   DEATHBEAM,
   ASTEROID,

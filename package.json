@@ -6,8 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "cd frontend && vite",
-    "build": "tsc -b shared frontend",
-    "start": "vite preview --config frontend/vite.config.ts"
+    "build": "cd frontend && vite build",
+    "start": "vite preview --config frontend/vite.config.ts",
+    "deploy": "gh-pages -d dist"
   },
   "author": "Moai-",
   "license": "ISC",
@@ -23,6 +24,7 @@
     "eslint": "^9.27.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.4.0",
+    "gh-pages": "^6.3.0",
     "prettier": "^3.5.3"
   }
 }
