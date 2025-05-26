@@ -6,7 +6,7 @@ export const addShadow = (
     color: 0x000000,
     alpha: 0.4,
     angle: Math.PI * 2, // Angle of light (top-left)
-    offsetFactor: 0.6, // Controls depth of crescent
+    offsetFactor: 0.53, // Controls depth of crescent
     cutoutScale: 1, // Smaller radius for cutout
   },
 ) => {
@@ -31,7 +31,7 @@ export const addShadow = (
   // Inner arc (cutout) - partial arc in reverse
   // graphics.save();
   graphics.translateCanvas(-cutoutX * 0.3, 0);
-  graphics.setScale(0.85, 1);
+  graphics.setScale(0.88, 1);
   // graphics.fillStyle(color, alpha);
   // graphics.fillEllipse(cutoutX, cutoutY, radius, radius);
   graphics.arc(cutoutX, cutoutY, cutoutRadius, endAngle, startAngle, true);
