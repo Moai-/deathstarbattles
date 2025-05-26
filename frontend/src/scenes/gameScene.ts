@@ -12,11 +12,9 @@ import GameManager from '../game';
 const width = 1300;
 const height = 900;
 
-const world = createGameWorld();
-
 export class GameScene extends Phaser.Scene {
   private objectManager = new GameObjectManager(this);
-  private world = world;
+  private world = createGameWorld();
   private gameManager = new GameManager(this, this.world, this.objectManager);
   private movementSystem = createMovementSystem();
   private cleanupSystem = createCleanupSystem(

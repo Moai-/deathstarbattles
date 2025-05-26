@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       shared: path.resolve(__dirname, '../shared'),
+      bitecs: path.resolve(__dirname, 'node_modules/bitecs'),
     },
   },
   server: {
@@ -15,6 +16,7 @@ export default defineConfig({
   build: {
     outDir: '../dist',
     emptyOutDir: true,
+    minify: false,
     sourcemap: true,
   },
 });
