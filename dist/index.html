@@ -3,12 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <title>Death Star Battles</title>
-  <script type="module" crossorigin src="/deathstarbattles/assets/index-BjWaIaOM.js"></script>
+  <style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    overflow: hidden;
+  }
+  
+  #game-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  #phaser-root, #react-root {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  #phaser-root {
+    z-index: 0;
+  }
+
+  #react-root {
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  #react-root * {
+    pointer-events: auto;
+  }
+</style>
+  <script type="module" crossorigin src="/assets/index-9pao1caM.js"></script>
 </head>
 <body>
-  <input id="angle" type="range" min="-180" max="180" />
-  <input id="power" type="range" min="20" max="100" />
-  <button id="endtn">End turn</button>
-  <button id="hyper">Hyperspace [OFFLINE]</button>
+  <div id="game-container">
+    <div id="phaser-root"></div>
+    <div id="react-root"></div>
+  </div>
 </body>
 </html>
