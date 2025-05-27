@@ -1,13 +1,23 @@
-import { createGame } from 'src/game';
-import { gameBus, GameEvents } from 'src/util';
+import Splash from './splash';
+import ControlPanel from './controls';
+import { useState } from 'react';
+import { useStartBackground } from '../hooks/useStartBackground';
+import { GameState } from '../types';
+import { useGameLifecycle } from '../hooks/useGameLifecycle';
 
 const App: React.FC = () => {
-  const endTurn = () => gameBus.emit(GameEvents.END_TURN);
+  const [gameState, setGameState] = useState<GameState>(GameState.MAIN_MENU);
+
+  useStartBackground(gameState === GameState.MAIN_MENU);
+  useGameLifecycle(gameState);
+
   return (
-    <div>
-      <button onClick={createGame}>Make game</button>
-      <button onClick={endTurn}>End turn</button>
-    </div>
+    <>
+      {gameState === GameState.MAIN_MENU && (
+        <Splash onStart={() => setGameState(GameState.INGAME)} />
+      )}
+      {gameState === GameState.INGAME && <ControlPanel />}
+    </>
   );
 };
 

@@ -6,7 +6,7 @@ import { PlayerInputHandler } from './playerInput';
 import { objectClearance, runGameSetup } from './gameSetup';
 import playerCols from './playerCols';
 import { ProjectileManager } from './projectileManager';
-import { getRadius, setPosition } from '../util';
+import { gameBus, GameEvents, getRadius, setPosition } from '../util';
 import { CollisionHandler } from './collisionHandler';
 import {
   GameObject,
@@ -17,6 +17,18 @@ import {
   PlayerTypes,
 } from 'shared/src/types';
 import { generateNonOverlappingPositions } from './util';
+// import { Renderable } from 'src/render/components/renderable';
+
+const allBots = [
+  { type: 2 },
+  { type: 2 },
+  { type: 2 },
+  { type: 2 },
+  { type: 2 },
+  { type: 2 },
+  { type: 2 },
+  { type: 2 },
+];
 
 export default class GameManager {
   // globals
@@ -74,9 +86,13 @@ export default class GameManager {
     this.projectileManager.removeProjectile(eid);
   }
 
-  startGame() {
+  startGame(justBots = true) {
+    this.activePlayer = -1;
+    this.turnInputs = [];
     const { players, objectPlacements } = runGameSetup(this.scene, this.world, {
-      players: [{ type: 0 }, { type: 1 }, { type: 2 }],
+      players: justBots
+        ? allBots
+        : [{ type: 0 }, { type: 1 }, { type: 2 }, { type: 1 }],
       playerColors: playerCols,
       minAsteroids: 1,
       maxAsteroids: 2,
@@ -89,11 +105,14 @@ export default class GameManager {
 
   private startTurn() {
     if (this.activePlayer < 0) {
-      this.activePlayer = 0;
+      this.activePlayer = this.players[0].id;
     }
     const living = this.getLivingPlayers();
     if (living.length < 2) {
-      console.log('player %s wins', living[0].id);
+      gameBus.emit(
+        GameEvents.GAME_END,
+        living.map((player) => player.id),
+      );
       return;
     }
     const playerInfo = this.getPlayerInfo(this.activePlayer);
@@ -188,7 +207,9 @@ export default class GameManager {
       }
     }
 
-    if (this.activePlayer + 1 === this.players.length) {
+    const len = this.players.length;
+
+    if (this.activePlayer === this.players[len - 1].id) {
       this.activePlayer = -1;
       this.firePhase();
     } else {
@@ -198,6 +219,7 @@ export default class GameManager {
   }
 
   private useHyperspace(eid: number) {
+    // console.log('teleporting player %s (%s)', eid, Renderable.col[eid]);
     const { width, height } = this.scene.scale;
     const [newPosition] = generateNonOverlappingPositions(
       width,
@@ -208,8 +230,11 @@ export default class GameManager {
     );
     const { x, y } = newPosition;
     setPosition(eid, x, y);
-    this.allObjects[eid].x = x;
-    this.allObjects[eid].y = y;
+    const thisObject = this.allObjects.find((obj) => obj.eid === eid);
+    if (thisObject) {
+      thisObject.x = x;
+      thisObject.y = y;
+    }
   }
 
   private syncAnglePower(angle: number = 0, power: number = 20) {

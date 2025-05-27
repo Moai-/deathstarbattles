@@ -47,6 +47,11 @@ export function generateNonOverlappingPositions(
 ): GameObject[] {
   const placed: GameObject[] = [];
 
+  // console.log(
+  //   'check against existing',
+  //   existing.map((ex) => ex.radius).join(', '),
+  // );
+
   for (const radius of radii) {
     let attempt = 0;
     let found = false;
@@ -56,16 +61,35 @@ export function generateNonOverlappingPositions(
       const y = Phaser.Math.Between(radius, height - radius);
 
       const candidate = { x, y, radius, eid: -1 };
+      // console.log('Checking candidate %s, %s (radius %s)...', x, y, radius);
 
       const tooClose = [...existing, ...placed].some((other) => {
         const dx = x - other.x;
         const dy = y - other.y;
         const distSq = dx * dx + dy * dy;
         const minDist = clearanceFn(radius, other.radius);
-        return distSq < minDist * minDist;
+        const minDistSq = minDist * minDist;
+        const isTooClose = distSq < minDistSq;
+        // console.log(
+        //   '...against %s (%s, %s, rad %s). Min dist %s, where %s < %s == %s',
+        //   other.eid,
+        //   other.x,
+        //   other.y,
+        //   other.radius,
+        //   minDist,
+        //   distSq,
+        //   minDistSq,
+        //   isTooClose,
+        // );
+        return isTooClose;
       });
 
       if (!tooClose) {
+        // console.log(
+        //   'candidate location %s,%s successfully picked',
+        //   candidate.x,
+        //   candidate.y,
+        // );
         placed.push(candidate);
         found = true;
       }

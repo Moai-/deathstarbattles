@@ -1,4 +1,4 @@
-import { getPosition } from 'src/util';
+import { gameBus, GameEvents, getPosition } from 'src/util';
 
 export class FiringIndicator {
   private scene: Phaser.Scene;
@@ -39,6 +39,9 @@ export class FiringIndicator {
       this.scene.input.on('pointerup', this.handlePointerUp, this);
       this.scene.input.on('pointerupoutside', this.handlePointerUp, this);
       this.didBind = true;
+      gameBus.on(GameEvents.ANGLE_POWER_UI, ({ angle, power }) => {
+        this.updateVector(angle, power);
+      });
     }
   }
 

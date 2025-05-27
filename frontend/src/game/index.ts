@@ -1,12 +1,21 @@
 import Phaser from 'phaser';
 import { GameScene } from './gameScene';
+import { BASE_HEIGHT, BASE_WIDTH } from 'shared/src/consts';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.WEBGL,
-  width: 1300,
-  height: 900,
+  backgroundColor: '#000000',
+  width: BASE_WIDTH,
+  height: BASE_HEIGHT,
   parent: 'phaser-root',
+  scale: {
+    mode: Phaser.Scale.ScaleModes.HEIGHT_CONTROLS_WIDTH,
+    width: BASE_WIDTH,
+    height: BASE_HEIGHT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+  },
   scene: [GameScene],
+  roundPixels: true,
   physics: { default: 'arcade' },
 };
 
@@ -18,9 +27,17 @@ export const createGame = () => {
 
 export const destroyGame = () => {
   if (game) {
+    getMainScene()?.destroy();
     game.destroy(true);
     game = null;
   }
 };
 
 export const getGame = () => game;
+
+export const getMainScene = () => {
+  if (game) {
+    return game.scene.getScene('game')! as GameScene;
+  }
+  return null;
+};

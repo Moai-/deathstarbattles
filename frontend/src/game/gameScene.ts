@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { createGameWorld } from 'shared/src/ecs/world';
-import { HIDDEN_BOUNDARY } from 'shared/src/consts';
+import { BASE_HEIGHT, BASE_WIDTH, HIDDEN_BOUNDARY } from 'shared/src/consts';
 import { createMovementSystem } from 'shared/src/ecs/systems/movement';
 import { createGravitySystem } from 'shared/src/ecs/systems/gravity';
 import { createCleanupSystem } from 'shared/src/ecs/systems/cleanup';
@@ -8,9 +8,12 @@ import { createCollisionSystem } from 'shared/src/ecs/systems/collision';
 import { createRenderSystem } from '../render/renderSystem';
 import { GameObjectManager } from '../render/objectManager';
 import GameManager from './gameManager';
+import { flushRemovedEntities, resetWorld } from 'bitecs';
+import { gameBus, GameEvents } from 'src/util';
 
-const width = 1300;
-const height = 900;
+const bMin = 0 - HIDDEN_BOUNDARY;
+const bxMax = BASE_WIDTH + HIDDEN_BOUNDARY;
+const byMax = BASE_HEIGHT + HIDDEN_BOUNDARY;
 
 export class GameScene extends Phaser.Scene {
   private objectManager = new GameObjectManager(this);
@@ -18,10 +21,10 @@ export class GameScene extends Phaser.Scene {
   private gameManager = new GameManager(this, this.world, this.objectManager);
   private movementSystem = createMovementSystem();
   private cleanupSystem = createCleanupSystem(
-    0 - HIDDEN_BOUNDARY,
-    width + HIDDEN_BOUNDARY,
-    0 - HIDDEN_BOUNDARY,
-    height + HIDDEN_BOUNDARY,
+    bMin,
+    bxMax,
+    bMin,
+    byMax,
     this.gameManager.onCleanup.bind(this.gameManager),
   );
   private gravitySystem = createGravitySystem();
@@ -30,8 +33,11 @@ export class GameScene extends Phaser.Scene {
   );
   private renderSystem = createRenderSystem(this, this.objectManager);
 
+  private unique = makeId();
+
   constructor() {
     super('game');
+    console.log('game %s created', this.unique);
   }
 
   preload() {
@@ -39,7 +45,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
-    this.gameManager.startGame();
+    gameBus.on(GameEvents.START_GAME, (config) => {
+      console.log('starting game', this.unique);
+      this.gameManager.startGame(config.justBots);
+    });
+    gameBus.emit(GameEvents.SCENE_LOADED);
   }
 
   update(time: number, deltaMs: number) {
@@ -51,4 +61,26 @@ export class GameScene extends Phaser.Scene {
     this.cleanupSystem(this.world);
     this.renderSystem(this.world);
   }
+
+  destroy() {
+    flushRemovedEntities(this.world);
+    resetWorld(this.world);
+    gameBus.off(GameEvents.START_GAME);
+    gameBus.off(GameEvents.ANGLE_POWER_GAME);
+    gameBus.off(GameEvents.ANGLE_POWER_UI);
+    gameBus.off(GameEvents.END_TURN);
+    gameBus.off(GameEvents.OTHER_ACTION);
+  }
+}
+
+// https://stackoverflow.com/questions/1349404/generate-a-string-of-random-characters
+function makeId(length = 5) {
+  let result = '';
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
 }

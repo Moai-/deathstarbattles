@@ -1,7 +1,8 @@
+export const STAR_TEXTURE = 'backgroundStars';
+
 export const generateBackgroundStars = (
   scene: Phaser.Scene,
-  starCount: number = 1000,
-  textureKey: string = 'backgroundStars',
+  starCount: number = 2000,
 ) => {
   const width = scene.scale.width;
   const height = scene.scale.height;
@@ -51,9 +52,8 @@ export const generateBackgroundStars = (
   graphics.destroy(); // Clean up the temporary Graphics object
 
   // Save the texture under a key
-  renderTexture.saveTexture(textureKey);
+  renderTexture.saveTexture(STAR_TEXTURE);
 
-  const bg = scene.add.image(0, 0, textureKey).setOrigin(0, 0);
+  const bg = scene.add.image(0, 0, STAR_TEXTURE).setOrigin(0, 0);
   bg.setDisplaySize(scene.scale.width, scene.scale.height);
-  return textureKey; // Return the key for easy reuse
 };

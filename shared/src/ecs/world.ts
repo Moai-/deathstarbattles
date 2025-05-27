@@ -1,4 +1,4 @@
-import { createWorld, IWorld } from 'bitecs';
+import { createWorld, enableManualEntityRecycling, IWorld } from 'bitecs';
 import { ObjectMovements } from '../types';
 
 export interface GameWorld extends IWorld {
@@ -9,6 +9,7 @@ export interface GameWorld extends IWorld {
 
 export const createGameWorld = () => {
   const world = createWorld() as GameWorld;
+  enableManualEntityRecycling(world);
   world.time = 0;
   world.delta = 0;
   return world;
