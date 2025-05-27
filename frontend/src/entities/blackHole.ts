@@ -5,7 +5,7 @@ import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { Renderable } from '../render/components/renderable';
 import { RenderableTypes } from '../render/types';
 
-export const BLACK_HOLE_RAD = 2;
+export const BLACK_HOLE_RAD = 4;
 
 export const createBlackHole = (world: IWorld, x: number, y: number) => {
   const eid = addEntity(world);

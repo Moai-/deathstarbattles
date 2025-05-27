@@ -8,7 +8,7 @@ import { createCollisionSystem } from 'shared/src/ecs/systems/collision';
 import { createRenderSystem } from '../render/renderSystem';
 import { GameObjectManager } from '../render/objectManager';
 import GameManager from './gameManager';
-import { flushRemovedEntities, resetWorld } from 'bitecs';
+import { resetWorld } from 'bitecs';
 import { gameBus, GameEvents } from 'src/util';
 
 const bMin = 0 - HIDDEN_BOUNDARY;
@@ -63,7 +63,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   destroy() {
-    flushRemovedEntities(this.world);
+    // flushRemovedEntities(this.world);
     resetWorld(this.world);
     gameBus.off(GameEvents.START_GAME);
     gameBus.off(GameEvents.ANGLE_POWER_GAME);
