@@ -1,5 +1,7 @@
 # Death Star Battles
 
+![preview](./preview.png)
+
 A modern JavaScript/PhaserJS port of the 2001 game **Death Star Battles**, originally created by Ian Bollard. Take control of your own space station, adjust the angle and power of your shots, and fire at your opponents. Use the gravitational pull of nearby stars and planets to your advantage, and when things get too close for comfort, activate hyperspace to jump to a random location. The last surviving station wins.
 
 ## Features
