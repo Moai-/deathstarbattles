@@ -5,8 +5,8 @@ import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { Renderable } from '../render/components/renderable';
 import { RenderableTypes } from '../render/types';
 
-export const MIN_STAR_RAD = 180;
-export const MAX_STAR_RAD = 300;
+const MIN_STAR_RAD = 180;
+const MAX_STAR_RAD = 300;
 
 export const createStar = (
   world: IWorld,

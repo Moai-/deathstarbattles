@@ -10,6 +10,7 @@ import { GameObjectManager } from '../render/objectManager';
 import GameManager from './gameManager';
 import { resetWorld } from 'bitecs';
 import { gameBus, GameEvents } from 'src/util';
+import { makeId } from './util';
 
 const bMin = 0 - HIDDEN_BOUNDARY;
 const bxMax = BASE_WIDTH + HIDDEN_BOUNDARY;
@@ -71,16 +72,4 @@ export class GameScene extends Phaser.Scene {
     gameBus.off(GameEvents.END_TURN);
     gameBus.off(GameEvents.OTHER_ACTION_UI);
   }
-}
-
-// https://stackoverflow.com/questions/1349404/generate-a-string-of-random-characters
-function makeId(length = 5) {
-  let result = '';
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
 }

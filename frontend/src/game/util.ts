@@ -110,10 +110,11 @@ export const generateSupergiantStarPosition = (
   height: number,
   starRadius: number,
 ) => {
-  // Distance from the edge of the screen (randomly selected side)
-  const edgeBuffer = 50; // A small margin to ensure part of the star is visible
+  // Determine how much of the star's radius to extend into the screen
+  const visibleFraction = Math.random() * 0.2 + 0.05; // Between 5% to 25% of the star visible
+  const visibleDistance = starRadius * visibleFraction;
 
-  // Define possible positions: off-screen to the top, bottom, left, or right
+  // Define possible positions: off-screen in any direction
   const sides = ['left', 'right', 'top', 'bottom'];
   const side = sides[Math.floor(Math.random() * sides.length)];
 
@@ -122,27 +123,34 @@ export const generateSupergiantStarPosition = (
 
   switch (side) {
     case 'left':
-      // x is between -starRadius and -edgeBuffer
-      x = -starRadius + Math.random() * (starRadius - edgeBuffer);
-      // y can be anywhere from slightly above to slightly below the screen height
-      y = -starRadius + Math.random() * (height + 2 * starRadius);
+      x = -starRadius + visibleDistance; // Place far left with some star visible
+      y = Math.random() * height; // Anywhere along vertical screen
       break;
     case 'right':
-      // x is between width + edgeBuffer and width + starRadius
-      x = width + edgeBuffer + Math.random() * (starRadius - edgeBuffer);
-      y = -starRadius + Math.random() * (height + 2 * starRadius);
+      x = width + starRadius - visibleDistance; // Place far right
+      y = Math.random() * height;
       break;
     case 'top':
-      x = -starRadius + Math.random() * (width + 2 * starRadius);
-      // y is between -starRadius and -edgeBuffer
-      y = -starRadius + Math.random() * (starRadius - edgeBuffer);
+      x = Math.random() * width;
+      y = -starRadius + visibleDistance; // Place far top
       break;
     case 'bottom':
-      x = -starRadius + Math.random() * (width + 2 * starRadius);
-      // y is between height + edgeBuffer and height + starRadius
-      y = height + edgeBuffer + Math.random() * (starRadius - edgeBuffer);
+      x = Math.random() * width;
+      y = height + starRadius - visibleDistance; // Place far bottom
       break;
   }
 
   return { x, y };
 };
+
+// https://stackoverflow.com/questions/1349404/generate-a-string-of-random-characters
+export function makeId(length = 5) {
+  let result = '';
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}

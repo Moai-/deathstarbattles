@@ -8,8 +8,8 @@ import {
 import { Renderable } from '../render/components/renderable';
 import { RenderableTypes } from '../render/types';
 
-export const MIN_STAR_RAD = 1000;
-export const MAX_STAR_RAD = 3000;
+export const MIN_SUPERGIANT_RAD = 1000;
+export const MAX_SUPERGIANT_RAD = 3000;
 
 export const createSupergiant = (
   world: IWorld,
@@ -26,7 +26,7 @@ export const createSupergiant = (
   Position.x[eid] = x;
   Position.y[eid] = y;
   Collision.radius[eid] = radius;
-  HasGravity.strength[eid] = radius / 10;
+  HasGravity.strength[eid] = radius / 8;
   HasGravity.falloffType[eid] = GravityFalloffType.LINEAR;
   Renderable.type[eid] = RenderableTypes.STAR;
   Renderable.col[eid] = generateRandomSupergiantCol();
@@ -35,7 +35,7 @@ export const createSupergiant = (
 };
 
 export const createRandomSupergiant = (world: IWorld) => {
-  const radius = Phaser.Math.Between(MIN_STAR_RAD, MAX_STAR_RAD);
+  const radius = Phaser.Math.Between(MIN_SUPERGIANT_RAD, MAX_SUPERGIANT_RAD);
   return createSupergiant(world, 0, 0, radius);
 };
 

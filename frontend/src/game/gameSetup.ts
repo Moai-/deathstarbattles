@@ -10,12 +10,15 @@ import {
   PlayerInfo,
 } from 'shared/src/types';
 import { createRandomBlackHole } from '../entities/blackHole';
-import { generateNonOverlappingPositions } from './util';
+import {
+  generateNonOverlappingPositions,
+  generateSupergiantStarPosition,
+} from './util';
 import { createRandomPlanet } from '../entities/planet';
 import { createRandomStar } from '../entities/star';
 // import { createRandomJovian } from '../entities/jovian';
 import { generateBackgroundStars } from '../render/background/stars';
-// import { createRandomSupergiant } from '../entities/supergiant';
+import { createRandomSupergiant } from '../entities/supergiant';
 
 export const playerClearance: ClearanceFunction = (a, b) => a + b + 80;
 export const objectClearance: ClearanceFunction = (a, b) => a + b + 30;
@@ -71,18 +74,26 @@ export function runGameSetup(
   // 2. Generate and place objects from largest to smallest
   let levelObjects: Array<GameObject> = [];
 
-  //const starsInsteadOfSupergiant = Phaser.Math.Between(1, 10) > 3;
-  //if (starsInsteadOfSupergiant) {
-  const twoStars = Phaser.Math.Between(0, 1);
-  if (twoStars) {
-    levelObjects = generateAndPlace(createRandomStar, 2);
+  const starsInsteadOfSupergiant = Phaser.Math.Between(1, 10) > 3;
+  if (starsInsteadOfSupergiant) {
+    const twoStars = Phaser.Math.Between(0, 1);
+    if (twoStars) {
+      levelObjects = generateAndPlace(createRandomStar, 2);
+    } else {
+      levelObjects = generateAndPlace(createRandomStar, 1);
+    }
   } else {
-    levelObjects = generateAndPlace(createRandomStar, 1);
+    const star = createRandomSupergiant(world);
+    const radius = getRadius(star);
+    const { x, y } = generateSupergiantStarPosition(
+      scene.scale.width,
+      scene.scale.height,
+      radius,
+    );
+    setPosition(star, x, y);
+    const obj: GameObject = { eid: star, radius, x, y };
+    levelObjects = [obj];
   }
-  //} else {
-  //  console.log('Generating supergiant');
-  //  levelObjects = generateAndPlace(createRandomSupergiant, 1);
-  //}
 
   const planetCount = Phaser.Math.Between(1, 3);
   const planets = generateAndPlace(
@@ -100,8 +111,10 @@ export function runGameSetup(
   );
   levelObjects = [...levelObjects, ...asteroids];
 
-  const blackHole = generateAndPlace(createRandomBlackHole, 1, levelObjects);
-  levelObjects = [...levelObjects, ...blackHole];
+  if (starsInsteadOfSupergiant) {
+    const blackHole = generateAndPlace(createRandomBlackHole, 1, levelObjects);
+    levelObjects = [...levelObjects, ...blackHole];
+  }
 
   // 3. Place players
 
