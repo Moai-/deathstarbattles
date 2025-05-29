@@ -11,6 +11,7 @@ export enum GameEvents {
   SCENE_LOADED = 'sceneloaded',
   START_GAME = 'startgame',
   GAME_END = 'gameend',
+  GAME_REMOVED = 'gameremoved',
 }
 
 type WinnerData = { col: number; playerId: number };
@@ -24,6 +25,7 @@ type EventData = {
   [GameEvents.GAME_END]: Array<WinnerData>; // List of winners in case if there's multiple
   [GameEvents.START_GAME]: GameConfig;
   [GameEvents.SCENE_LOADED]: void;
+  [GameEvents.GAME_REMOVED]: void;
 };
 
 export const gameBus = mitt<EventData>();

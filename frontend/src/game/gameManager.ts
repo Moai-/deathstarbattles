@@ -6,7 +6,13 @@ import { PlayerInputHandler } from './playerInput';
 import { objectClearance, runGameSetup } from './gameSetup';
 import playerCols from './playerCols';
 import { ProjectileManager } from './projectileManager';
-import { gameBus, GameEvents, getRadius, setPosition } from '../util';
+import {
+  gameBus,
+  GameEvents,
+  getPosition,
+  getRadius,
+  setPosition,
+} from '../util';
 import { CollisionHandler } from './collisionHandler';
 import {
   GameObject,
@@ -18,6 +24,7 @@ import {
 } from 'shared/src/types';
 import { generateNonOverlappingPositions } from './util';
 import { Renderable } from 'src/render/components/renderable';
+import Hyperspace from 'src/render/animations/hyperspace';
 // import { Renderable } from 'src/render/components/renderable';
 
 const allBots = [
@@ -176,17 +183,13 @@ export default class GameManager {
 
   private postCombatPhase() {
     this.turnInputs = [];
+    if (this.willHyperspace.length) {
+      this.willHyperspace.forEach((playerId) => this.useHyperspace(playerId));
+      this.willHyperspace = [];
+    }
     setTimeout(() => {
-      if (this.willHyperspace.length) {
-        this.willHyperspace.forEach((playerId) => this.useHyperspace(playerId));
-        setTimeout(() => {
-          this.willHyperspace = [];
-          this.startTurn();
-        }, 200);
-      } else {
-        this.startTurn();
-      }
-    }, 1500);
+      this.startTurn();
+    }, 2000);
   }
 
   private endTurn() {
@@ -225,20 +228,31 @@ export default class GameManager {
   private useHyperspace(eid: number) {
     // console.log('teleporting player %s (%s)', eid, Renderable.col[eid]);
     const { width, height } = this.scene.scale;
+    const radius = getRadius(eid);
     const [newPosition] = generateNonOverlappingPositions(
       width,
       height,
-      [getRadius(eid)],
+      [radius],
       objectClearance,
       this.allObjects,
     );
     const { x, y } = newPosition;
-    setPosition(eid, x, y);
-    const thisObject = this.allObjects.find((obj) => obj.eid === eid);
-    if (thisObject) {
-      thisObject.x = x;
-      thisObject.y = y;
-    }
+    const oldPos = getPosition(eid);
+    new Hyperspace(this.scene, oldPos, radius, true).play(
+      () => {
+        setPosition(eid, -20, -20);
+      },
+      () => {
+        new Hyperspace(this.scene, newPosition, radius, false).play(() => {
+          setPosition(eid, newPosition);
+          const thisObject = this.allObjects.find((obj) => obj.eid === eid);
+          if (thisObject) {
+            thisObject.x = x;
+            thisObject.y = y;
+          }
+        });
+      },
+    );
   }
 
   private syncAnglePower(angle: number = 0, power: number = 20) {

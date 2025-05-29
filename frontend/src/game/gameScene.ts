@@ -71,5 +71,6 @@ export class GameScene extends Phaser.Scene {
     gameBus.off(GameEvents.ANGLE_POWER_UI);
     gameBus.off(GameEvents.END_TURN);
     gameBus.off(GameEvents.OTHER_ACTION_UI);
+    gameBus.emit(GameEvents.GAME_REMOVED);
   }
 }

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { destroyGame } from 'src/game';
 import { gameBus, GameEvents } from 'src/util';
-import { startGameWithConfig } from '../functions/startGame';
+import { startGameWithConfig } from '../functions/gameManagement';
 
 export const useStartBackground = (isActive: boolean) => {
   useEffect(() => {

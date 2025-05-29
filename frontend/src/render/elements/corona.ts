@@ -26,6 +26,8 @@ const drawCorona = (
 
   const graphics = scene.add.graphics();
 
+  let alpha = 1;
+
   for (let layer = layers - 1; layer >= 0; layer--) {
     const color = darkenCol(colors[layer], 0.5);
     const radius = baseRadius * (1.05 + 0.07 * layer);
@@ -54,6 +56,8 @@ const drawCorona = (
 
     graphics.closePath();
     graphics.fillPath();
+    graphics.setAlpha(alpha);
+    alpha = alpha - 0.1;
   }
 
   renderTexture.draw(graphics);

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// Disable explicit any because of possible vendor specific fullscreen implementations
 
 export const toggleFullscreen = () => {
   const container = document.getElementById('game-container');

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { GameState } from '../types';
-import { startGameWithConfig } from '../functions/startGame';
+import { startGameWithConfig } from '../functions/gameManagement';
 import { gameBus, GameEvents } from 'src/util';
 import { destroyGame } from 'src/game';
 
