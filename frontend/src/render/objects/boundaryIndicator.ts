@@ -1,5 +1,6 @@
 import { ui32ToCol } from '../../util';
 import { Renderable } from '../components/renderable';
+import { Depths } from '../types';
 
 const renderBoundaryIndicator = (scene: Phaser.Scene, parentEid: number) => {
   const graphics = scene.add.triangle(
@@ -14,7 +15,7 @@ const renderBoundaryIndicator = (scene: Phaser.Scene, parentEid: number) => {
     ui32ToCol(Renderable.col[parentEid]),
     1,
   );
-  graphics.setDepth(5);
+  graphics.setDepth(Depths.INTERFACE);
   return graphics;
 };
 

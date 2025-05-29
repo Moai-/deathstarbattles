@@ -12,6 +12,7 @@ import { Projectile } from 'shared/src/ecs/components/projectile';
 import { getPosition, ui32ToCol } from '../util';
 import { AnyPoint } from 'shared/src/types';
 import { getSquaredDistance } from 'shared/src/ai/utils';
+import { Depths } from './types';
 
 const renderQuery = defineQuery([Position, Renderable]);
 const renderQueryEnter = enterQuery(renderQuery);
@@ -60,7 +61,7 @@ export const createRenderSystem = (
         const radius = Collision.radius[eid];
         const col = ui32ToCol(LeavesTrail.col[eid]);
         const circle = scene.add.circle(x, y, radius, col, 1);
-        circle.setDepth(3);
+        circle.setDepth(Depths.PROJECTILES);
         if (trailType === TrailType.BEADS_ON_A_STRING) {
           const lastChild = objectManager.getLastChild(
             eid,
@@ -76,7 +77,7 @@ export const createRenderSystem = (
             circle.radius = Math.min(radius, radius / sizeRatio);
             line.lineStyle(Math.min(max, size), col);
             line.lineBetween(bead.x, bead.y, x, y);
-            line.setDepth(3);
+            line.setDepth(Depths.PROJECTILES);
             objectManager.createChild(eid, line);
           }
         }

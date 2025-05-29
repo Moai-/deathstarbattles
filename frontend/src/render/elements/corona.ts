@@ -1,5 +1,6 @@
 import { AnyPoint } from 'shared/src/types';
 import generateStarCols, { darkenCol } from './starCols';
+import { Depths } from '../types';
 
 const drawCorona = (
   scene: Phaser.Scene,
@@ -43,7 +44,7 @@ const drawCorona = (
     graphics.closePath();
     graphics.fillPath();
   }
-  graphics.setDepth(0);
+  graphics.setDepth(Depths.BOTTOM);
   return graphics;
 };
 

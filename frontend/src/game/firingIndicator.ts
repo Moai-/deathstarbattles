@@ -1,12 +1,23 @@
-import { gameBus, GameEvents, getPosition } from 'src/util';
+import { OtherActions } from 'shared/src/types';
+import { Renderable } from 'src/render/components/renderable';
+import { Depths } from 'src/render/types';
+import {
+  gameBus,
+  GameEvents,
+  getPosition,
+  getRadius,
+  ui32ToCol,
+} from 'src/util';
 
 export class FiringIndicator {
   private scene: Phaser.Scene;
   private radius: number;
   private circle?: Phaser.GameObjects.Arc;
   private line?: Phaser.GameObjects.Line;
+  private square?: Phaser.GameObjects.Rectangle;
   private getTargetId: () => number;
   private onAnglePowerUpdate: (angle: number, power: number) => void = () => {};
+  private isUsingHyperspace = false;
   private isDragging = false;
   private didBind = false;
 
@@ -24,14 +35,44 @@ export class FiringIndicator {
     this.onAnglePowerUpdate = cb;
   }
 
+  toggleHyperspace(toggle: boolean) {
+    this.isUsingHyperspace = toggle;
+    if (this.isUsingHyperspace) {
+      this.circle?.setVisible(false);
+      this.line?.setVisible(false);
+      this.drawHyperspaceSquare();
+    } else {
+      this.circle?.setVisible(true);
+      this.line?.setVisible(true);
+      this.clearHyperspaceSquare();
+    }
+  }
+
+  drawHyperspaceSquare() {
+    const eid = this.getTargetId();
+    const { x, y } = getPosition(eid);
+    const radius = getRadius(eid);
+    const col = ui32ToCol(Renderable.col[eid]);
+    const s = radius * 2 * 1.5;
+    this.square = this.scene.add
+      .rectangle(x, y, s, s, 0, 0)
+      .setDepth(Depths.INTERFACE)
+      .setStrokeStyle(1, col);
+  }
+
+  clearHyperspaceSquare() {
+    this.square?.destroy();
+    this.square = undefined;
+  }
+
   create() {
     const { x, y } = getPosition(this.getTargetId());
     this.circle = this.scene.add
       .circle(x, y, this.radius, 0xffffff, 0)
       .setStrokeStyle(1, 0xffffff)
-      .setDepth(6);
+      .setDepth(Depths.INTERFACE);
     this.line = this.scene.add.line(0, 0, 0, 0, 0, 0, 0xffffff).setOrigin(0, 0);
-    this.line.setDepth(6);
+    this.line.setDepth(Depths.INTERFACE);
 
     if (!this.didBind) {
       this.scene.input.on('pointerdown', this.handlePointerDown, this);
@@ -42,6 +83,13 @@ export class FiringIndicator {
       gameBus.on(GameEvents.ANGLE_POWER_UI, ({ angle, power }) => {
         this.updateVector(angle, power);
       });
+      gameBus.on(GameEvents.OTHER_ACTION_UI, (action) => {
+        if (action === OtherActions.HYPERSPACE) {
+          this.toggleHyperspace(true);
+        } else if (!action) {
+          this.toggleHyperspace(false);
+        }
+      });
     }
   }
 
@@ -50,6 +98,7 @@ export class FiringIndicator {
     this.line?.destroy();
     this.circle = undefined;
     this.line = undefined;
+    this.clearHyperspaceSquare();
   }
 
   updateVector(angleDeg: number, power: number) {
@@ -86,6 +135,10 @@ export class FiringIndicator {
   }
 
   private updateAnglePower(pointer: Phaser.Input.Pointer) {
+    if (this.isUsingHyperspace) {
+      console.log('using hyperspace so quit early');
+      return;
+    }
     const loc = new Phaser.Math.Vector2(pointer.x, pointer.y);
     const { x, y } = getPosition(this.getTargetId());
     const dist = Phaser.Math.Distance.Between(x, y, loc.x, loc.y);

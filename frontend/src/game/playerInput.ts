@@ -23,7 +23,7 @@ export class PlayerInputHandler {
     });
     gameBus.on(GameEvents.END_TURN, () => this.onEndTurn());
     gameBus.on(
-      GameEvents.OTHER_ACTION,
+      GameEvents.OTHER_ACTION_UI,
       (otherAction) => (this.currentOtherAction = otherAction),
     );
   }
@@ -43,6 +43,8 @@ export class PlayerInputHandler {
 
   public resetHyperspace() {
     this.currentOtherAction = null;
+    gameBus.emit(GameEvents.OTHER_ACTION_GAME, OtherActions.NONE);
+    gameBus.emit(GameEvents.OTHER_ACTION_UI, OtherActions.NONE);
   }
 
   public getCurrentAngle() {

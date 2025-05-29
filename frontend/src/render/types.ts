@@ -11,6 +11,15 @@ export enum RenderableTypes {
   JOVIAN,
 }
 
+export enum Depths {
+  BOTTOM,
+  PLANETS,
+  STARS,
+  PROJECTILES,
+  STATIONS,
+  INTERFACE,
+}
+
 export type RenderObject = (
   scene: Scene,
   eid: number,

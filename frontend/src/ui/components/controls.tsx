@@ -21,14 +21,23 @@ const ControlPanel: React.FC = () => {
   const [angle, setAngle] = useState(90);
   const [power, setPower] = useState(50);
   const [collapsed, setCollapsed] = useState(false);
+  const [isHyperspaceOn, setIsHyperspaceOn] = useState(false);
 
   useEffect(() => {
     gameBus.on(GameEvents.ANGLE_POWER_GAME, ({ angle, power }) => {
       setAngle(Math.trunc(angle));
       setPower(Math.trunc(power));
     });
+    gameBus.on(GameEvents.OTHER_ACTION_GAME, (otherAction) => {
+      if (otherAction === OtherActions.HYPERSPACE) {
+        setIsHyperspaceOn(true);
+      } else if (!otherAction) {
+        setIsHyperspaceOn(false);
+      }
+    });
     return () => {
       gameBus.off(GameEvents.ANGLE_POWER_GAME);
+      gameBus.off(GameEvents.OTHER_ACTION_GAME);
     };
   }, []);
 
@@ -53,8 +62,15 @@ const ControlPanel: React.FC = () => {
   };
 
   const endTurn = () => gameBus.emit(GameEvents.END_TURN);
-  const toggleHyperspace = () =>
-    gameBus.emit(GameEvents.OTHER_ACTION, OtherActions.HYPERSPACE);
+  const toggleHyperspace = () => {
+    if (isHyperspaceOn) {
+      setIsHyperspaceOn(false);
+      gameBus.emit(GameEvents.OTHER_ACTION_UI, OtherActions.NONE);
+    } else {
+      setIsHyperspaceOn(true);
+      gameBus.emit(GameEvents.OTHER_ACTION_UI, OtherActions.HYPERSPACE);
+    }
+  };
 
   return (
     <ControlPanelContainer collapsed={collapsed}>
@@ -76,7 +92,10 @@ const ControlPanel: React.FC = () => {
       {/* Sliders Row */}
       <ControlRow>
         <SliderContainer>
-          <FineButton onClick={() => adjustValue(setAngle, -1, -180, 180)}>
+          <FineButton
+            onClick={() => adjustValue(setAngle, -1, -180, 180)}
+            disabled={isHyperspaceOn}
+          >
             -
           </FineButton>
           <StyledSlider
@@ -84,14 +103,21 @@ const ControlPanel: React.FC = () => {
             max={180}
             value={Math.floor(angle)}
             onChange={(e) => emitAngle(Number(e.target.value))}
+            disabled={isHyperspaceOn}
           />
-          <FineButton onClick={() => adjustValue(setAngle, 1, -180, 180)}>
+          <FineButton
+            onClick={() => adjustValue(setAngle, 1, -180, 180)}
+            disabled={isHyperspaceOn}
+          >
             +
           </FineButton>
           <ValueLabel>Angle: {angle}°</ValueLabel>
         </SliderContainer>
         <SliderContainer>
-          <FineButton onClick={() => adjustValue(setPower, -1, 20, 100)}>
+          <FineButton
+            onClick={() => adjustValue(setPower, -1, 20, 100)}
+            disabled={isHyperspaceOn}
+          >
             -
           </FineButton>
           <StyledSlider
@@ -99,8 +125,12 @@ const ControlPanel: React.FC = () => {
             max={100}
             value={Math.floor(power)}
             onChange={(e) => emitPower(Number(e.target.value))}
+            disabled={isHyperspaceOn}
           />
-          <FineButton onClick={() => adjustValue(setPower, 1, 20, 100)}>
+          <FineButton
+            onClick={() => adjustValue(setPower, 1, 20, 100)}
+            disabled={isHyperspaceOn}
+          >
             +
           </FineButton>
           <ValueLabel>Power: {power}%</ValueLabel>
@@ -110,7 +140,9 @@ const ControlPanel: React.FC = () => {
       {/* Action Buttons */}
       <ActionButtonGroup>
         <NeonButton onClick={endTurn}>End Turn</NeonButton>
-        <NeonButton onClick={toggleHyperspace}>Hyperspace</NeonButton>
+        <NeonButton onClick={toggleHyperspace}>
+          Hyperspace{isHyperspaceOn ? ' [On] ' : ' [Off]'}
+        </NeonButton>
       </ActionButtonGroup>
     </ControlPanelContainer>
   );

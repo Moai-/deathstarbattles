@@ -1,5 +1,5 @@
 import { Position } from 'shared/src/ecs/components/position';
-import { RenderObject } from '../types';
+import { Depths, RenderObject } from '../types';
 import { ui32ToCol } from '../../util/col';
 import { Renderable } from '../components/renderable';
 import { Collision } from 'shared/src/ecs/components/collision';
@@ -21,7 +21,7 @@ const renderDeathStar: RenderObject = (scene, eid) => {
     offset: { x: thirdRad, y: -thirdRad * 1.1 },
     radiusX: thirdRad,
   });
-  container.setDepth(4);
+  container.setDepth(Depths.STATIONS);
   return container;
 };
 
