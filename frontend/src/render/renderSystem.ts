@@ -19,6 +19,7 @@ const renderQueryEnter = enterQuery(renderQuery);
 const renderQueryExit = exitQuery(renderQuery);
 
 const trailQuery = defineQuery([Position, LeavesTrail]);
+const exitTrailQuery = exitQuery(trailQuery);
 
 const projectileQuery = defineQuery([Projectile]);
 
@@ -121,6 +122,20 @@ export const createRenderSystem = (
         // for (let i = 0; i < len - 5; i++) {
         //   (children[i] as Phaser.GameObjects.Graphics).alpha = 0.4;
         // }
+      }
+    }
+
+    const exitedTrails = exitTrailQuery(world);
+
+    for (const eid of exitedTrails) {
+      const children = objectManager.getChildren(eid);
+      for (let i = children.length - 1; i > 0; i--) {
+        const c = children[i] as Phaser.GameObjects.Graphics;
+        if (c.alpha === 0.7) {
+          break;
+        } else {
+          c.setAlpha(0.7);
+        }
       }
     }
 
