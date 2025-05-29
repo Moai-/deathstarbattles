@@ -1,6 +1,6 @@
 {
   "name": "death-star-battles",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Re-implementation of the classic Death Star Battles Java game by Ian Bollard",
   "main": "index.js",
   "scripts": {
