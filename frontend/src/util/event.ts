@@ -13,13 +13,15 @@ export enum GameEvents {
   GAME_END = 'gameend',
 }
 
+type WinnerData = { col: number; playerId: number };
+
 type EventData = {
   [GameEvents.END_TURN]: void;
   [GameEvents.ANGLE_POWER_UI]: { angle: number; power: number };
   [GameEvents.ANGLE_POWER_GAME]: { angle: number; power: number };
   [GameEvents.OTHER_ACTION_UI]: OtherActions;
   [GameEvents.OTHER_ACTION_GAME]: OtherActions;
-  [GameEvents.GAME_END]: Array<number>; // List of winners in case if there's multiple
+  [GameEvents.GAME_END]: Array<WinnerData>; // List of winners in case if there's multiple
   [GameEvents.START_GAME]: GameConfig;
   [GameEvents.SCENE_LOADED]: void;
 };

@@ -13,8 +13,8 @@ export enum RenderableTypes {
 
 export enum Depths {
   BOTTOM,
-  PLANETS,
   STARS,
+  PLANETS,
   PROJECTILES,
   STATIONS,
   INTERFACE,

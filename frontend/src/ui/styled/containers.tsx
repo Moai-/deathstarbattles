@@ -74,3 +74,12 @@ export const TopRightButton = styled.div`
   top: 10px;
   right: 10px;
 `;
+
+export const WinnerScreen = styled.div`
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  position: absolute;
+  size: 14px;
+`;

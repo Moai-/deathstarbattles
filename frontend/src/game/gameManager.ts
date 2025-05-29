@@ -17,6 +17,7 @@ import {
   PlayerTypes,
 } from 'shared/src/types';
 import { generateNonOverlappingPositions } from './util';
+import { Renderable } from 'src/render/components/renderable';
 // import { Renderable } from 'src/render/components/renderable';
 
 const allBots = [
@@ -111,7 +112,10 @@ export default class GameManager {
     if (living.length < 2) {
       gameBus.emit(
         GameEvents.GAME_END,
-        living.map((player) => player.id),
+        living.map((player) => ({
+          playerId: player.id,
+          col: Renderable.col[player.id],
+        })),
       );
       return;
     }
