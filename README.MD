@@ -21,8 +21,8 @@ A modern JavaScript/PhaserJS port of the 2001 game **Death Star Battles**, origi
 ## Installation
 
 ```sh
-git clone https://github.com/yourusername/death-star-battles.git
-cd death-star-battles
+git clone https://github.com/Moai-/deathstarbattles.git
+cd deathstarbattles
 yarn
 ```
 
