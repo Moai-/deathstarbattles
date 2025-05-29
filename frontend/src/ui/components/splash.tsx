@@ -24,6 +24,15 @@ const Splash: React.FC<{ onStart: () => void }> = ({ onStart }) => {
         © 2001 Ian Bolland // © 2025 Sergei Gmyria // v.0.5.0
       </Subtitle>
       <SubBlock>{instructions}</SubBlock>
+      <SubBlock>
+        <a href="https://github.com/Moai-/deathstarbattles" target="_blank">
+          Github Repo
+        </a>{' '}
+        |{' '}
+        <a href="deathstarbattles.co.uk" target="_blank">
+          Original Website
+        </a>
+      </SubBlock>
       <NeonButton onClick={onStart}>Start Game</NeonButton>
     </OverlayContainer>
   );
