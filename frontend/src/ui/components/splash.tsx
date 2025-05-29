@@ -29,7 +29,7 @@ const Splash: React.FC<{ onStart: () => void }> = ({ onStart }) => {
           Github Repo
         </a>{' '}
         |{' '}
-        <a href="deathstarbattles.co.uk" target="_blank">
+        <a href="https://deathstarbattles.co.uk" target="_blank">
           Original Website
         </a>
       </SubBlock>
