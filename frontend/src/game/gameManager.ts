@@ -120,7 +120,7 @@ export default class GameManager {
       gameBus.emit(
         GameEvents.GAME_END,
         living.map((player) => ({
-          playerId: player.id,
+          playerId: this.players.findIndex((p) => p.id === player.id),
           col: Renderable.col[player.id],
         })),
       );
@@ -227,6 +227,10 @@ export default class GameManager {
 
   private useHyperspace(eid: number) {
     // console.log('teleporting player %s (%s)', eid, Renderable.col[eid]);
+    const playerInfo = this.getPlayerInfo(eid);
+    if (!playerInfo || !playerInfo?.isAlive) {
+      return;
+    }
     const { width, height } = this.scene.scale;
     const radius = getRadius(eid);
     const [newPosition] = generateNonOverlappingPositions(

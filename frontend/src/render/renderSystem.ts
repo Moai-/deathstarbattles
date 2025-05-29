@@ -60,7 +60,7 @@ export const createRenderSystem = (
       ) {
         const radius = Collision.radius[eid];
         const col = ui32ToCol(LeavesTrail.col[eid]);
-        const circle = scene.add.circle(x, y, radius, col, 1);
+        const circle = scene.add.circle(x, y, radius, col, 1).setVisible(false);
         circle.setDepth(Depths.PROJECTILES);
         if (trailType === TrailType.BEADS_ON_A_STRING) {
           const lastChild = objectManager.getLastChild(
@@ -79,6 +79,14 @@ export const createRenderSystem = (
             line.lineBetween(bead.x, bead.y, x, y);
             line.setDepth(Depths.PROJECTILES);
             objectManager.createChild(eid, line);
+            const children = objectManager.getChildren(eid);
+            for (let i = 0; i < children.length; i++) {
+              if (i >= children.length - 5) {
+                (children[i] as Phaser.GameObjects.Graphics).setAlpha(1);
+              } else {
+                (children[i] as Phaser.GameObjects.Graphics).setAlpha(0.7);
+              }
+            }
           }
         }
         if (trailType === TrailType.MANY_BEADS) {
