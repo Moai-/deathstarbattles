@@ -42,7 +42,7 @@ This project is licensed under the [ISC License](LICENSE).
 
 ## Credits
 
-- Original concept and Java version by **Ian Bollard** from [the old Death Star Battles website](https://deathstarbattles.co.uk).
+- Original concept and Java version by **Ian Bollard** from [the old Death Star Battles website](http://deathstarbattles.co.uk).
 - Ported and modernized using React, TypeScript, and Phaser.
 
 ## Contribution

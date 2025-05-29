@@ -10,6 +10,7 @@ import {
 import { TopRightButton } from '../styled/containers';
 import instructions from '../content/instructions';
 import { SubBlock } from '../styled/text';
+import pkg from '../../../../package.json';
 
 const Splash: React.FC<{ onStart: () => void }> = ({ onStart }) => {
   return (
@@ -21,15 +22,15 @@ const Splash: React.FC<{ onStart: () => void }> = ({ onStart }) => {
       </TopRightButton>
       <Title>Death Star Battles</Title>
       <Subtitle>
-        © 2001 Ian Bolland // © 2025 Sergei Gmyria // v.0.5.0
+        © 2001 Ian Bolland // © 2025 Sergei Gmyria // v.{pkg.version}
       </Subtitle>
       <SubBlock>{instructions}</SubBlock>
       <SubBlock>
         <a href="https://github.com/Moai-/deathstarbattles" target="_blank">
           Github Repo
-        </a>{' '}
-        |{' '}
-        <a href="https://deathstarbattles.co.uk" target="_blank">
+        </a>
+        {' | '}
+        <a href="http://deathstarbattles.co.uk" target="_blank">
           Original Website
         </a>
       </SubBlock>
