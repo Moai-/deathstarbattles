@@ -2,16 +2,23 @@ import { hasComponent, removeEntity } from 'bitecs';
 import { Destructible } from 'shared/src/ecs/components/destructible';
 import { Projectile } from 'shared/src/ecs/components/projectile';
 import { GameWorld } from 'shared/src/ecs/world';
+import Explosion, {
+  laserCols,
+  stationCols,
+} from 'src/render/animations/explosion';
+import { getPosition, getRadius } from 'src/util';
 
 type CollisionCallback = (eid: number) => void;
 
 export class CollisionHandler {
   private world: GameWorld;
+  private scene: Phaser.Scene;
   private onProjectileDestroyed: CollisionCallback = () => {};
   private onTargetDestroyed: CollisionCallback = () => {};
 
-  constructor(world: GameWorld) {
+  constructor(world: GameWorld, scene: Phaser.Scene) {
     this.world = world;
+    this.scene = scene;
   }
 
   handleCollision(eid1: number, eid2: number): void {
@@ -33,12 +40,18 @@ export class CollisionHandler {
   }
 
   private destroyProjectile(eid: number) {
+    const pos = getPosition(eid);
+    const radius = getRadius(eid);
+    new Explosion(this.scene, pos, radius * 4, laserCols).play(500);
     removeEntity(this.world, eid);
     this.onProjectileDestroyed(eid);
   }
 
   private handleTarget(eid: number) {
     if (hasComponent(this.world, Destructible, eid)) {
+      const pos = getPosition(eid);
+      const radius = getRadius(eid);
+      new Explosion(this.scene, pos, radius * 2, stationCols).play(1000);
       removeEntity(this.world, eid);
       this.onTargetDestroyed(eid);
     }

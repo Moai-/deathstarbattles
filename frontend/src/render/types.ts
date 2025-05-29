@@ -17,6 +17,7 @@ export enum Depths {
   PLANETS,
   PROJECTILES,
   STATIONS,
+  GFX,
   INTERFACE,
 }
 

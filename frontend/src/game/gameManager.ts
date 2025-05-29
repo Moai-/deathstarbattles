@@ -65,7 +65,7 @@ export default class GameManager {
     this.projectileManager.setSingleCleanupCallback((eid) =>
       this.objectManager.removeBoundaryIndicator(eid!),
     );
-    this.collisionHandler = new CollisionHandler(world);
+    this.collisionHandler = new CollisionHandler(world, this.scene);
     this.collisionHandler.setProjectileDestroyedCallback((eid) => {
       this.projectileManager.removeProjectile(eid);
       this.objectManager.removeBoundaryIndicator(eid);
