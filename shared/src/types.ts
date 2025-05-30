@@ -14,6 +14,13 @@ export enum PlayerTypes {
   BOT_INSANE,
 }
 
+export type PlayerSetup = {
+  id: number;
+  type: number;
+  color: number;
+  difficulty: number;
+};
+
 export interface AnyPoint {
   x: number;
   y: number;

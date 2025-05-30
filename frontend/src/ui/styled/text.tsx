@@ -28,3 +28,13 @@ export const ValueLabel = styled.span`
   font-size: 12px;
   margin-left: 5px;
 `;
+
+export const SetupHeader = styled(Title)`
+  font-size: 32px;
+  margin-bottom: 10px;
+`;
+
+export const SectionTitle = styled(Subtitle)`
+  text-align: left;
+  margin-bottom: 10px;
+`;

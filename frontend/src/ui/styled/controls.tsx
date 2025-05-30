@@ -81,3 +81,9 @@ export const StyledSlider = styled.input.attrs({ type: 'range' })`
     transition: background 0.3s;
   }
 `;
+
+export const AddPlayerButton = styled(FineButton)`
+  margin-top: 10px;
+`;
+
+export const RemovePlayerButton = styled(MiniButton)``;

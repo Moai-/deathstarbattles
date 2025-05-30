@@ -34,7 +34,7 @@ const Splash: React.FC<{ onStart: () => void }> = ({ onStart }) => {
           Original Website
         </a>
       </SubBlock>
-      <NeonButton onClick={onStart}>Start Game</NeonButton>
+      <NeonButton onClick={onStart}>New game</NeonButton>
     </OverlayContainer>
   );
 };

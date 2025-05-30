@@ -83,3 +83,78 @@ export const WinnerScreen = styled.div`
   position: absolute;
   size: 14px;
 `;
+
+export const SetupScreenContainer = styled(OverlayContainer)`
+  width: 800px;
+  height: 912px;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: white;
+`;
+
+export const SetupContent = styled.div`
+  padding-top: 60px;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  flex: 1;
+  width: 100%;
+`;
+
+export const PlayerSetupSection = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+`;
+
+export const ScenarioSetupSection = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+`;
+
+export const StationsPerPlayerRow = styled(ControlRow)`
+  margin-bottom: 10px;
+`;
+
+export const PlayersTable = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+`;
+
+export const PlayerRow = styled.div`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+`;
+
+export const SimpleSetup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+export const AdvancedSetup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+`;
+
+export const InfoBox = styled.div`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 200px;
+  height: 150px;
+  background-color: rgba(50, 50, 50, 0.9);
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  overflow-y: auto;
+`;
