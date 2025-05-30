@@ -9,14 +9,12 @@ A modern JavaScript/PhaserJS port of the 2001 game **Death Star Battles**, origi
 - Turn-based gameplay inspired by the original **Death Star Battles**.
 - Interactive controls to adjust firing angle and power.
 - Gravity effects from stars and planets.
-- Hyperspace function to escape tight situations.
-- Built with modern web technologies: **React**, **TypeScript**, and **Phaser**.
 
 ## Tech Stack
 
 - **Phaser**: 2D game engine for rendering and physics.
 - **React**: For managing UI components and controls.
-- **TypeScript**: For type safety and maintainable code.
+- **TypeScript**: For type safety and more maintainable code.
 
 ## Installation
 
@@ -47,4 +45,4 @@ This project is licensed under the [ISC License](LICENSE).
 
 ## Contribution
 
-Currently, there are no specific contribution guidelines. Fork & riff as you see fit.
+Fork & riff as you see fit.
