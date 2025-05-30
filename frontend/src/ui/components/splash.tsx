@@ -11,8 +11,10 @@ import { TopRightButton } from '../styled/containers';
 import instructions from '../content/instructions';
 import { SubBlock } from '../styled/text';
 import pkg from '../../../../package.json';
+import { GameState, useGameState } from './context';
 
-const Splash: React.FC<{ onStart: () => void }> = ({ onStart }) => {
+const Splash: React.FC = () => {
+  const { setGameState } = useGameState();
   return (
     <OverlayContainer>
       <TopRightButton>
@@ -34,7 +36,9 @@ const Splash: React.FC<{ onStart: () => void }> = ({ onStart }) => {
           Original Website
         </a>
       </SubBlock>
-      <NeonButton onClick={onStart}>New game</NeonButton>
+      <NeonButton onClick={() => setGameState(GameState.CONFIG_GAME)}>
+        New game
+      </NeonButton>
     </OverlayContainer>
   );
 };

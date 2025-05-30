@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
 import { GameState } from '../types';
-import { startGameWithConfig } from '../functions/gameManagement';
 import { gameBus, GameEvents } from 'src/util';
 import { destroyGame } from 'src/game';
+import { useGameState } from '../components/context';
 
-export const useGameLifecycle = (
-  state: GameState,
-  setGameState: (g: GameState) => void,
-) => {
+export const useGameLifecycle = () => {
+  const { gameState, setGameState } = useGameState();
   const [winnerInfo, setWinnerInfo] = useState<{
     playerId: number;
     col: number;
@@ -15,7 +13,7 @@ export const useGameLifecycle = (
 
   useEffect(() => {
     gameBus.on(GameEvents.GAME_END, (winnerData) => {
-      if (state === GameState.INGAME) {
+      if (gameState === GameState.INGAME) {
         const winner = winnerData[0];
         setWinnerInfo(winner);
         setGameState(GameState.SCORESCREEN);
@@ -23,12 +21,6 @@ export const useGameLifecycle = (
       }
     });
   });
-
-  useEffect(() => {
-    if (state === GameState.INGAME) {
-      startGameWithConfig({ justBots: false });
-    }
-  }, [state]);
 
   return {
     winnerInfo,
