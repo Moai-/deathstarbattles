@@ -1,9 +1,13 @@
 import React, { createContext, useContext, useState } from 'react';
 import { scenarioItems } from 'src/ui/content/scenarioSetup';
-import { ScenarioItem } from 'src/ui/types';
+import { ObjectAmounts, ScenarioItem } from 'src/ui/types';
 
 interface ScenarioContextProps {
   items: ScenarioItem[];
+  amount: ObjectAmounts;
+  scenario: number;
+  setAmount: (amt: ObjectAmounts) => void;
+  setScenario: (scn: number) => void;
   addItem: () => void;
   removeItem: (id: number) => void;
   updateItem: (id: number, field: string, value: number) => void;
@@ -17,6 +21,8 @@ export const ScenarioProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [items, setItems] = useState<ScenarioItem[]>([]);
+  const [amount, setAmount] = useState<ObjectAmounts>(ObjectAmounts.RAN_8);
+  const [scenario, setScenario] = useState(0);
 
   const addItem = () => {
     // Find first available item type not already in use
@@ -24,7 +30,6 @@ export const ScenarioProvider: React.FC<{ children: React.ReactNode }> = ({
       (item) => !items.some((i) => i.type === item.key),
     );
     if (!available) {
-      alert('All item types are used!');
       return;
     }
     const nextId =
@@ -46,7 +51,16 @@ export const ScenarioProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <ScenarioContext.Provider
-      value={{ items, addItem, removeItem, updateItem }}
+      value={{
+        amount,
+        setAmount,
+        items,
+        addItem,
+        removeItem,
+        updateItem,
+        scenario,
+        setScenario,
+      }}
     >
       {children}
     </ScenarioContext.Provider>

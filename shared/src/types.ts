@@ -14,10 +14,19 @@ export enum PlayerTypes {
   BOT_INSANE,
 }
 
+export enum ObjectTypes {
+  ASTEROID,
+  PLANET,
+  JOVIAN,
+  STAR,
+  SUPERGIANT,
+  BLACK_HOLE,
+}
+
 export type PlayerSetup = {
   id: number;
   type: number;
-  color: number;
+  col: number;
   difficulty: number;
 };
 
@@ -41,13 +50,6 @@ export type PlayerInfo = {
   isAlive: boolean;
   type: PlayerTypes;
   id: number;
-};
-
-export type GameSetupConfig = {
-  players: Array<Pick<PlayerInfo, 'type'>>;
-  playerColors: Array<number>;
-  minAsteroids: number;
-  maxAsteroids: number;
 };
 
 export type GameSetupResult = {

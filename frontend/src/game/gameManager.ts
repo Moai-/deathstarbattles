@@ -3,8 +3,7 @@ import generateTurn from 'shared/src/ai/generateTurn';
 import { GameObjectManager } from '../render/objectManager';
 import { FiringIndicator } from './firingIndicator';
 import { PlayerInputHandler } from './playerInput';
-import { objectClearance, runGameSetup } from './gameSetup';
-import playerCols from './playerCols';
+import { runGameSetup } from './gameSetup';
 import { ProjectileManager } from './projectileManager';
 import {
   gameBus,
@@ -25,18 +24,8 @@ import {
 import { generateNonOverlappingPositions } from './util';
 import { Renderable } from 'src/render/components/renderable';
 import Hyperspace from 'src/render/animations/hyperspace';
-// import { Renderable } from 'src/render/components/renderable';
-
-const allBots = [
-  { type: 2 },
-  { type: 2 },
-  { type: 2 },
-  { type: 2 },
-  { type: 2 },
-  { type: 2 },
-  { type: 2 },
-  { type: 2 },
-];
+import { GameConfig } from 'src/ui/types';
+import { objectClearance } from './gameSetup/placeEntities';
 
 export default class GameManager {
   // globals
@@ -94,17 +83,14 @@ export default class GameManager {
     this.projectileManager.removeProjectile(eid);
   }
 
-  startGame(justBots = true) {
+  startGame(conf: GameConfig) {
     this.activePlayer = -1;
     this.turnInputs = [];
-    const { players, objectPlacements } = runGameSetup(this.scene, this.world, {
-      players: justBots
-        ? allBots
-        : [{ type: 0 }, { type: 1 }, { type: 2 }, { type: 1 }],
-      playerColors: playerCols,
-      minAsteroids: 1,
-      maxAsteroids: 2,
-    });
+    const { players, objectPlacements } = runGameSetup(
+      this.scene,
+      this.world,
+      conf,
+    );
 
     this.players = players;
     this.allObjects = objectPlacements;

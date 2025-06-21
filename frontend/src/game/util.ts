@@ -96,6 +96,7 @@ export function generateNonOverlappingPositions(
     }
 
     if (!found) {
+      console.log(existing);
       throw new Error(
         `Failed to place object with radius ${radius} after 1000 attempts.`,
       );

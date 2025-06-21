@@ -48,7 +48,7 @@ export class GameScene extends Phaser.Scene {
   create() {
     gameBus.on(GameEvents.START_GAME, (config) => {
       console.log('starting game', this.unique);
-      this.gameManager.startGame(config.justBots);
+      this.gameManager.startGame(config);
     });
     gameBus.emit(GameEvents.SCENE_LOADED);
   }

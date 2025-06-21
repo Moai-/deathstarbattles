@@ -1,4 +1,4 @@
-import { PlayerSetup } from 'shared/src/types';
+import { ObjectTypes, PlayerSetup } from 'shared/src/types';
 
 export enum GameState {
   MAIN_MENU,
@@ -9,12 +9,27 @@ export enum GameState {
 
 export interface ScenarioItem {
   id: number;
-  type: number; // 'asteroid', 'planet', etc.
+  type: ObjectTypes; // 'asteroid', 'planet', etc.
   amount: number;
 }
 
+export interface ScenarioItemRule {
+  type: ObjectTypes;
+  min?: number;
+  max?: number;
+  p?: number;
+}
+
 export type GameConfig = {
-  justBots: boolean;
+  justBots?: boolean;
   players?: Array<PlayerSetup>;
   items?: Array<ScenarioItem>;
+  itemRules?: Array<ScenarioItemRule>;
+  maxItems?: number;
 };
+
+export enum ObjectAmounts {
+  RAN_8,
+  RAN_16,
+  RAN_24,
+}

@@ -46,20 +46,20 @@ const formatOptionLabel = (option: ColorOption) => (
   </div>
 );
 
-const buildColorOptions = (
+const buildColOptions = (
   colorMap: { [color: number]: number },
   playerId: number,
 ) =>
-  playerCols.map((color, idx) => ({
-    value: color,
+  playerCols.map((col, idx) => ({
+    value: col,
     label: colNames[idx],
-    color: toHTMLHex(color),
-    isDisabled: colorMap[color] !== undefined && colorMap[color] !== playerId,
+    color: toHTMLHex(col),
+    isDisabled: colorMap[col] !== undefined && colorMap[col] !== playerId,
   }));
 
 export const PlayerRow: React.FC<{ player: PlayerSetup }> = ({ player }) => {
-  const { colorMap, updatePlayer, removePlayer } = useSetup();
-  const options = buildColorOptions(colorMap, player.id);
+  const { colMap, updatePlayer, removePlayer } = useSetup();
+  const options = buildColOptions(colMap, player.id);
 
   return (
     <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
@@ -76,11 +76,11 @@ export const PlayerRow: React.FC<{ player: PlayerSetup }> = ({ player }) => {
       <Select<ColorOption, false>
         value={
           options.find(
-            (o) => o.value === player.color,
+            (o) => o.value === player.col,
           ) as SingleValue<ColorOption>
         }
         onChange={(selected) =>
-          selected && updatePlayer(player.id, 'color', selected.value)
+          selected && updatePlayer(player.id, 'col', selected.value)
         }
         options={options}
         isOptionDisabled={(opt) => opt.isDisabled ?? false}

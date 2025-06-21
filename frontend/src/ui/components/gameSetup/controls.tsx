@@ -3,10 +3,11 @@ import { useSetup } from './context';
 import { useScenario } from './scenarioContext';
 import { startGameWithConfig } from 'src/ui/functions/gameManagement';
 import { GameState, useGameState } from '../context';
+import { scenarioTypes } from 'src/ui/content/scenarioSetup';
 
 export const SetupControls: React.FC = () => {
   const { players } = useSetup();
-  const { items } = useScenario();
+  const { items, scenario } = useScenario();
   const { setGameState } = useGameState();
   const startGame = () => {
     setGameState(GameState.INGAME);
@@ -14,6 +15,7 @@ export const SetupControls: React.FC = () => {
       justBots: false,
       players,
       items,
+      itemRules: scenarioTypes[scenario].items,
     });
   };
   return (

@@ -4,7 +4,7 @@ import { PlayerSetup } from 'shared/src/types';
 
 interface SetupContextProps {
   players: PlayerSetup[];
-  colorMap: { [color: number]: number };
+  colMap: { [color: number]: number };
   addPlayer: () => void;
   removePlayer: (id: number) => void;
   updatePlayer: (id: number, field: string, value: number) => void;
@@ -16,36 +16,36 @@ export const SetupProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [players, setPlayers] = useState<PlayerSetup[]>([
-    { id: 1, type: 0, color: playerCols[0], difficulty: 1 },
+    { id: 1, type: 0, col: playerCols[0], difficulty: 1 },
   ]);
-  const [colorMap, setColorMap] = useState({ [playerCols[0]]: 1 });
+  const [colMap, setColMap] = useState({ [playerCols[0]]: 1 });
 
   const findFirstAvailableColor = () => {
-    for (const color of playerCols) {
-      if (!colorMap[color]) return color;
+    for (const col of playerCols) {
+      if (!colMap[col]) return col;
     }
     return null;
   };
 
   const addPlayer = () => {
     if (players.length >= 12) return;
-    const color = findFirstAvailableColor();
-    if (!color) {
+    const col = findFirstAvailableColor();
+    if (!col) {
       alert('All colors are used!');
       return;
     }
     const nextId = Math.max(...players.map((p) => p.id)) + 1;
-    setPlayers([...players, { id: nextId, type: 1, color, difficulty: 1 }]);
-    setColorMap((prev) => ({ ...prev, [color]: nextId }));
+    setPlayers([...players, { id: nextId, type: 1, col, difficulty: 1 }]);
+    setColMap((prev) => ({ ...prev, [col]: nextId }));
   };
 
   const removePlayer = (id: number) => {
     const player = players.find((p) => p.id === id);
     if (!player) return;
     setPlayers(players.filter((p) => p.id !== id));
-    setColorMap((prev) => {
+    setColMap((prev) => {
       const updated = { ...prev };
-      delete updated[player.color];
+      delete updated[player.col];
       return updated;
     });
   };
@@ -55,10 +55,10 @@ export const SetupProvider: React.FC<{ children: React.ReactNode }> = ({
       players.map((p) => {
         if (p.id !== id) return p;
         if (field === 'color') {
-          if (colorMap[value] && colorMap[value] !== id) return p;
-          setColorMap((prev) => {
+          if (colMap[value] && colMap[value] !== id) return p;
+          setColMap((prev) => {
             const updated = { ...prev };
-            delete updated[p.color];
+            delete updated[p.col];
             updated[value] = id;
             return updated;
           });
@@ -71,7 +71,7 @@ export const SetupProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <SetupContext.Provider
-      value={{ players, colorMap, addPlayer, removePlayer, updatePlayer }}
+      value={{ players, colMap, addPlayer, removePlayer, updatePlayer }}
     >
       {children}
     </SetupContext.Provider>
