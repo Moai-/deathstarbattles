@@ -15,6 +15,7 @@ A modern JavaScript/PhaserJS port of the 2001 game **Death Star Battles**, origi
 - **Phaser**: 2D game engine for rendering and physics.
 - **React**: For managing UI components and controls.
 - **TypeScript**: For type safety and more maintainable code.
+- **Vite**: Development tooling.
 
 ## Installation
 

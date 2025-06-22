@@ -3,7 +3,7 @@ import ControlPanel from './controls';
 import { useStartBackground } from '../hooks/useStartBackground';
 import { GameState } from '../types';
 import WinrarScreen from './winrar';
-import { SetupScreen } from './gameSetup';
+import { SetupScreen } from './basicSetup';
 import { GameStateProvider, useGameState } from './context';
 
 const App: React.FC = () => {

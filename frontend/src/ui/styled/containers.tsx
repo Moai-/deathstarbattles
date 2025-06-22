@@ -115,7 +115,7 @@ export const ScenarioSetupSection = styled.div`
   flex-direction: column;
 `;
 
-export const StationsPerPlayerRow = styled(ControlRow)`
+export const PlayerSetupRow = styled(ControlRow)`
   margin-bottom: 10px;
 `;
 

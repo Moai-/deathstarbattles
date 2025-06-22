@@ -22,6 +22,14 @@ const ControlPanel: React.FC = () => {
   const [power, setPower] = useState(50);
   const [collapsed, setCollapsed] = useState(false);
   const [isHyperspaceOn, setIsHyperspaceOn] = useState(false);
+  const [shouldUpdateGame, setShouldUpdateGame] = useState(false);
+
+  useEffect(() => {
+    if (shouldUpdateGame) {
+      setShouldUpdateGame(false);
+      gameBus.emit(GameEvents.ANGLE_POWER_UI, { angle, power });
+    }
+  }, [shouldUpdateGame]);
 
   useEffect(() => {
     gameBus.on(GameEvents.ANGLE_POWER_GAME, ({ angle, power }) => {
@@ -48,7 +56,7 @@ const ControlPanel: React.FC = () => {
     max: number,
   ) => {
     setter((prev) => Math.min(max, Math.max(min, prev + delta)));
-    gameBus.emit(GameEvents.ANGLE_POWER_UI, { angle, power });
+    setShouldUpdateGame(true);
   };
 
   const emitAngle = (angle: number) => {

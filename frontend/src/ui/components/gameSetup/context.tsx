@@ -2,12 +2,20 @@ import React, { createContext, useContext, useState } from 'react';
 import playerCols from 'src/game/playerCols';
 import { PlayerSetup } from 'shared/src/types';
 
+type BotConf = {
+  numBots?: number;
+  botDiff?: number;
+};
+
 interface SetupContextProps {
   players: PlayerSetup[];
   colMap: { [color: number]: number };
   addPlayer: () => void;
   removePlayer: (id: number) => void;
   updatePlayer: (id: number, field: string, value: number) => void;
+  setBots: (conf: BotConf) => void;
+  numBots: number;
+  botDiff: number;
 }
 
 const SetupContext = createContext<SetupContextProps | undefined>(undefined);
@@ -19,6 +27,9 @@ export const SetupProvider: React.FC<{ children: React.ReactNode }> = ({
     { id: 1, type: 0, col: playerCols[0], difficulty: 1 },
   ]);
   const [colMap, setColMap] = useState({ [playerCols[0]]: 1 });
+
+  const [botDiff, setBotDiff] = useState(0);
+  const [numBots, setNumBots] = useState(1);
 
   const findFirstAvailableColor = () => {
     for (const col of playerCols) {
@@ -69,9 +80,27 @@ export const SetupProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   };
 
+  const setBots = (conf: BotConf) => {
+    if (conf.botDiff !== undefined) {
+      setBotDiff(conf.botDiff);
+    }
+    if (conf.numBots !== undefined) {
+      setNumBots(conf.numBots);
+    }
+  };
+
   return (
     <SetupContext.Provider
-      value={{ players, colMap, addPlayer, removePlayer, updatePlayer }}
+      value={{
+        players,
+        colMap,
+        addPlayer,
+        removePlayer,
+        updatePlayer,
+        setBots,
+        numBots,
+        botDiff,
+      }}
     >
       {children}
     </SetupContext.Provider>
