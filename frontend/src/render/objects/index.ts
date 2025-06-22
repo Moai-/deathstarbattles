@@ -11,6 +11,7 @@ import renderSupergiant from './supergiant';
 import renderWhiteDwarf from './whiteDwarf';
 import renderWormhole from './wormhole';
 import renderBigWormhole from './bigWormhole';
+import renderWhiteHole from './whiteHole';
 
 const renderMap: Record<RenderableTypes, RenderObject> = {
   [RenderableTypes.NONE]: renderBlackHole,
@@ -25,6 +26,7 @@ const renderMap: Record<RenderableTypes, RenderObject> = {
   [RenderableTypes.WHITE_DWARF]: renderWhiteDwarf,
   [RenderableTypes.WORMHOLE]: renderWormhole,
   [RenderableTypes.BIG_WORMHOLE]: renderBigWormhole,
+  [RenderableTypes.WHITE_HOLE]: renderWhiteHole,
 };
 
 export default renderMap;

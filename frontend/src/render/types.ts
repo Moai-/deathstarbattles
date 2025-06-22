@@ -13,6 +13,7 @@ export enum RenderableTypes {
   JOVIAN,
   WORMHOLE,
   BIG_WORMHOLE,
+  WHITE_HOLE,
 }
 
 export enum Depths {
