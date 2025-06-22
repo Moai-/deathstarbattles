@@ -1,17 +1,16 @@
-import { addComponent, addEntity } from 'bitecs';
+import { addComponent, addEntity, IWorld } from 'bitecs';
 import { Position } from 'shared/src/ecs/components/position';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { Renderable } from '../render/components/renderable';
 import { RenderableTypes } from '../render/types';
-import { GameWorld } from 'shared/src/ecs/world';
 import { Wormhole } from 'shared/src/ecs/components/wormhole';
 
 const MIN_STAR_RAD = 30;
 const MAX_STAR_RAD = 80;
 
 export const createWormhole = (
-  world: GameWorld,
+  world: IWorld,
   x: number,
   y: number,
   radius: number,
@@ -39,7 +38,7 @@ export const createWormhole = (
   return eid;
 };
 
-export const createRandomWormhole = (world: GameWorld) => {
+export const createRandomWormhole = (world: IWorld) => {
   const radius = Phaser.Math.Between(MIN_STAR_RAD, MAX_STAR_RAD);
   return createWormhole(world, 0, 0, radius);
 };
@@ -59,8 +58,6 @@ const mulberry32 = (seed: number) => {
 export const generateWormholeColWithBias = (bias: Bias, seed: number) => {
   const base = 20;
   const bright = 220;
-
-  console.log('generate with bias', bias);
 
   // Use seeded randomness
   const rng = mulberry32(seed);

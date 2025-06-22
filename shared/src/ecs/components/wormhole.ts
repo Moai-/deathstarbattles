@@ -2,5 +2,11 @@ import { defineComponent, Types } from 'bitecs';
 
 export const Wormhole = defineComponent({
   teleportTarget: Types.eid,
-  noExit: Types.ui8,
+  exitType: Types.ui8,
 });
+
+export enum ExitTypes {
+  PAIRED,
+  RANDOM,
+  PAIRED_GIANT,
+}

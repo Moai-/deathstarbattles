@@ -1,7 +1,7 @@
 import { hasComponent, removeEntity } from 'bitecs';
 import { Destructible } from 'shared/src/ecs/components/destructible';
 import { Projectile } from 'shared/src/ecs/components/projectile';
-import { Wormhole } from 'shared/src/ecs/components/wormhole';
+import { ExitTypes, Wormhole } from 'shared/src/ecs/components/wormhole';
 import { GameWorld } from 'shared/src/ecs/world';
 import Explosion, {
   laserCols,
@@ -74,9 +74,9 @@ export class CollisionHandler {
   }
 
   private handleWormhole(projEid: number, holeEid: number) {
-    const noExit = Wormhole.noExit[holeEid];
+    const exitType = Wormhole.exitType[holeEid];
 
-    if (noExit === 1) {
+    if (exitType === ExitTypes.RANDOM) {
       const { width, height } = this.scene.scale;
 
       const [newPos] = generateNonOverlappingPositions(
@@ -95,28 +95,41 @@ export class CollisionHandler {
     const holePos = getPosition(holeEid);
     const partnerPos = getPosition(partnerEid);
     const partnerRadius = getRadius(partnerEid);
-
     const projPos = getPosition(projEid);
 
-    // Vector from wormhole center to projectile
+    if (exitType === ExitTypes.PAIRED_GIANT) {
+      // Compute entry angle relative to the source wormhole
+      const dx = projPos.x - holePos.x;
+      const dy = projPos.y - holePos.y;
+
+      const entryAngle = Math.atan2(dy, dx); // radians
+      const exitAngle = entryAngle + Math.PI; // flip 180°
+
+      const offset = 1.5; // push beyond radius to avoid re-triggering
+      const exitX =
+        partnerPos.x + Math.cos(exitAngle) * (partnerRadius + offset);
+      const exitY =
+        partnerPos.y + Math.sin(exitAngle) * (partnerRadius + offset);
+
+      setPosition(projEid, exitX, exitY);
+      return;
+    }
+
+    // Default PAIRED logic
     const dx = projPos.x - holePos.x;
     const dy = projPos.y - holePos.y;
 
-    // Flip the vector (180 degrees)
     const outDx = -dx;
     const outDy = -dy;
 
-    // Normalize it
     const mag = Math.hypot(outDx, outDy);
     const nx = outDx / mag;
     const ny = outDy / mag;
 
-    // Offset a small distance past the radius to avoid re-triggering
     const offset = 1.5;
     const exitX = partnerPos.x + nx * (partnerRadius + offset);
     const exitY = partnerPos.y + ny * (partnerRadius + offset);
 
-    // Move projectile to exit location
     setPosition(projEid, exitX, exitY);
   }
 

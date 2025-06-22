@@ -10,6 +10,7 @@ import renderJovian from './jovian';
 import renderSupergiant from './supergiant';
 import renderWhiteDwarf from './whiteDwarf';
 import renderWormhole from './wormhole';
+import renderBigWormhole from './bigWormhole';
 
 const renderMap: Record<RenderableTypes, RenderObject> = {
   [RenderableTypes.NONE]: renderBlackHole,
@@ -23,6 +24,7 @@ const renderMap: Record<RenderableTypes, RenderObject> = {
   [RenderableTypes.JOVIAN]: renderJovian,
   [RenderableTypes.WHITE_DWARF]: renderWhiteDwarf,
   [RenderableTypes.WORMHOLE]: renderWormhole,
+  [RenderableTypes.BIG_WORMHOLE]: renderBigWormhole,
 };
 
 export default renderMap;

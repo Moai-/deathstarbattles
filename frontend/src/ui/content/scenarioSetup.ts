@@ -11,6 +11,7 @@ export const scenarioItems = [
   { key: ObjectTypes.RED_GIANT, label: 'Red giant', maxAmount: 2 },
   { key: ObjectTypes.WHITE_DWARF, label: 'White dwarf', maxAmount: 15 },
   { key: ObjectTypes.WORMHOLE, label: 'Wormhole', maxAmount: 20 },
+  { key: ObjectTypes.BIG_WORMHOLE, label: 'Big wormhole', maxAmount: 2 },
 ];
 
 type GenParams = Partial<ScenarioItemRule>;
@@ -36,6 +37,7 @@ const blackHole = generateObject(ObjectTypes.BLACK_HOLE);
 const redGiant = generateObject(ObjectTypes.RED_GIANT);
 const whiteDwarf = generateObject(ObjectTypes.WHITE_DWARF);
 const wormhole = generateObject(ObjectTypes.WORMHOLE);
+const bigWormhole = generateObject(ObjectTypes.BIG_WORMHOLE);
 
 const rare = { p: 0.05 };
 
@@ -58,9 +60,9 @@ export const scenarioTypes: Array<{
   { name: 'Mixture', items: [star(), planet(), asteroid()] },
   { name: 'White Dwarf', items: [whiteDwarf({n: 1})] },
   { name: 'White Dwarfs', items: [whiteDwarf({min: 3})] },
-  { name: 'Wormhole', items: [wormhole({n: 2})] },
-  { name: 'Wormholes', items: [] },
-  { name: 'Big Wormhole', items: [] },
+  { name: 'Wormhole', items: [wormhole({min: 2, max: 3}), planet(rare), asteroid()] },
+  { name: 'Wormholes', items: [wormhole({min: 2, max: 20})] },
+  { name: 'Big Wormhole', items: [bigWormhole({min: 1, max: 2}), asteroid()] },
   { name: 'Black Hole', items: [] },
   { name: 'Black holes', items: [] },
   { name: 'White Hole', items: [] },

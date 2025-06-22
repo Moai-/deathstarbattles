@@ -12,6 +12,7 @@ export enum RenderableTypes {
   WHITE_DWARF,
   JOVIAN,
   WORMHOLE,
+  BIG_WORMHOLE,
 }
 
 export enum Depths {

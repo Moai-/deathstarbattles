@@ -1,7 +1,8 @@
 import { Collision } from 'shared/src/ecs/components/collision';
 import { Position } from 'shared/src/ecs/components/position';
-import { Wormhole } from 'shared/src/ecs/components/wormhole';
+import { ExitTypes, Wormhole } from 'shared/src/ecs/components/wormhole';
 import { Renderable } from 'src/render/components/renderable';
+import { RenderableTypes } from 'src/render/types';
 
 interface AnyPoint {
   x: number;
@@ -29,14 +30,18 @@ const getRadius = (eid: number) => Collision.radius[eid];
 const getType = (eid: number) => Renderable.type[eid];
 
 const pairWormholes = (eid1: number, eid2: number) => {
-  Wormhole.noExit[eid1] = 0;
-  Wormhole.noExit[eid2] = 0;
+  const pairType =
+    getType(eid1) === RenderableTypes.BIG_WORMHOLE
+      ? ExitTypes.PAIRED_GIANT
+      : ExitTypes.PAIRED;
+  Wormhole.exitType[eid1] = pairType;
+  Wormhole.exitType[eid2] = pairType;
   Wormhole.teleportTarget[eid1] = eid2;
   Wormhole.teleportTarget[eid2] = eid1;
 };
 
 const scrambleWormhole = (eid: number) => {
-  Wormhole.noExit[eid] = 1;
+  Wormhole.exitType[eid] = ExitTypes.RANDOM;
   Wormhole.teleportTarget[eid] = 0;
 };
 

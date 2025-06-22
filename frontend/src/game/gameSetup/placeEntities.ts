@@ -45,7 +45,11 @@ export const placeEntities: (
   let lastSupergiantSide = '';
 
   for (const obj of levelObjects) {
-    if (getType(obj.eid) === RenderableTypes.SUPERGIANT) {
+    const type = getType(obj.eid);
+    if (
+      type === RenderableTypes.SUPERGIANT ||
+      type === RenderableTypes.BIG_WORMHOLE
+    ) {
       if (lastSupergiantSide) {
         let actualSide = '';
         switch (lastSupergiantSide) {
@@ -109,7 +113,11 @@ export const placeEntities: (
 
   placed.forEach((obj) => {
     setPosition(obj.eid, obj);
-    if (getType(obj.eid) === RenderableTypes.WORMHOLE) {
+    const type = getType(obj.eid);
+    if (
+      type === RenderableTypes.WORMHOLE ||
+      type === RenderableTypes.BIG_WORMHOLE
+    ) {
       wormholes.push(obj.eid);
     }
   });
