@@ -42,6 +42,8 @@ This project is licensed under the [ISC License](LICENSE).
 ## Credits
 
 - Original concept and Java version by **Ian Bollard** from [the old Death Star Battles website](http://deathstarbattles.co.uk).
+- Music by Ivo de Vero
+- Sounds by Nick Rinchiuso
 - Ported and modernized using React, TypeScript, and Phaser.
 
 ## Contribution
