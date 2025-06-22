@@ -1,5 +1,5 @@
 import { Position } from 'shared/src/ecs/components/position';
-import { RenderObject } from '../types';
+import { Depths, RenderObject } from '../types';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { Renderable } from '../components/renderable';
 import { ui32ToCol } from '../../util/col';
@@ -13,6 +13,7 @@ const renderJovian: RenderObject = (scene, eid) => {
   const container = scene.add.container(x, y);
   container.add(circle);
   addShadow(scene, container, radius);
+  container.setDepth(Depths.PLANETS);
   return container;
 };
 

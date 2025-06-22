@@ -17,15 +17,19 @@ export function generateScenarioItems(
 
   // Step 1: Roll per rule
   for (let i = 0; i < rules.length; i++) {
-    const { type, min = 0, max, p = 1.0 } = rules[i];
+    const { type, min = 0, max, n, p = 1.0 } = rules[i];
     if (Math.random() > p) continue;
 
     const itemDef = scenarioItems.find((s) => s.key === type);
     if (!itemDef) continue;
 
-    const maxFromMap = itemDef.maxAmount;
-    const hardMax = Math.min(max ?? maxFromMap, maxFromMap);
-    const amount = Math.floor(Math.random() * (hardMax - min + 1)) + min;
+    let amount = n;
+
+    if (amount === undefined) {
+      const maxFromMap = itemDef.maxAmount;
+      const hardMax = Math.min(max ?? maxFromMap, maxFromMap);
+      amount = Math.floor(Math.random() * (hardMax - min + 1)) + min;
+    }
 
     initial.push({ id: i, type, amount, min });
   }

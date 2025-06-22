@@ -7,6 +7,9 @@ import renderBlackHole from './blackHole';
 import renderPlanet from './planet';
 import renderStar from './star';
 import renderJovian from './jovian';
+import renderSupergiant from './supergiant';
+import renderWhiteDwarf from './whiteDwarf';
+import renderWormhole from './wormhole';
 
 const renderMap: Record<RenderableTypes, RenderObject> = {
   [RenderableTypes.NONE]: renderBlackHole,
@@ -16,7 +19,10 @@ const renderMap: Record<RenderableTypes, RenderObject> = {
   [RenderableTypes.BLACK_HOLE]: renderBlackHole,
   [RenderableTypes.PLANET]: renderPlanet,
   [RenderableTypes.STAR]: renderStar,
+  [RenderableTypes.SUPERGIANT]: renderSupergiant,
   [RenderableTypes.JOVIAN]: renderJovian,
+  [RenderableTypes.WHITE_DWARF]: renderWhiteDwarf,
+  [RenderableTypes.WORMHOLE]: renderWormhole,
 };
 
 export default renderMap;

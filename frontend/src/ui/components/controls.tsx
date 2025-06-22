@@ -16,6 +16,8 @@ import {
 import { toggleFullscreen } from '../functions/toggleFullscreen';
 import { gameBus, GameEvents } from 'src/util';
 import { OtherActions } from 'shared/src/types';
+import { softDestroyGame } from '../functions/gameManagement';
+import { GameState, useGameState } from './context';
 
 const ControlPanel: React.FC = () => {
   const [angle, setAngle] = useState(90);
@@ -23,6 +25,7 @@ const ControlPanel: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [isHyperspaceOn, setIsHyperspaceOn] = useState(false);
   const [shouldUpdateGame, setShouldUpdateGame] = useState(false);
+  const { setGameState } = useGameState();
 
   useEffect(() => {
     if (shouldUpdateGame) {
@@ -80,6 +83,12 @@ const ControlPanel: React.FC = () => {
     }
   };
 
+  const backToMenu = () => {
+    softDestroyGame().then(() => {
+      setGameState(GameState.MAIN_MENU);
+    });
+  };
+
   return (
     <ControlPanelContainer collapsed={collapsed}>
       {/* Side Buttons */}
@@ -87,7 +96,7 @@ const ControlPanel: React.FC = () => {
         <MiniButton onClick={toggleFullscreen}>
           <FaExpand />
         </MiniButton>
-        <MiniButton>
+        <MiniButton onClick={backToMenu}>
           <FaSignOutAlt />
         </MiniButton>
       </SideButtonColumn>

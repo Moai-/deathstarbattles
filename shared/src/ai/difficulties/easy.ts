@@ -10,7 +10,7 @@ import {
 
 const generateEasyTurn: TurnGenerator = (world, playerInfo, gameState) => {
   const playerId = playerInfo.id;
-  const shouldHyperspace = getRandomBetween(1, 4) === 2;
+  const shouldHyperspace = getRandomBetween(1, 8) === 2;
   if (shouldHyperspace) {
     return {
       ...EMPTY_TURN,

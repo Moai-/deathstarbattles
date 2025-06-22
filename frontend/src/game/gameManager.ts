@@ -46,6 +46,7 @@ export default class GameManager {
   private history: Array<Array<TurnInput>> = [];
   private turnInputs: Array<TurnInput> = [];
   private willHyperspace: Array<number> = [];
+  private active = true;
 
   constructor(
     scene: Phaser.Scene,
@@ -61,7 +62,11 @@ export default class GameManager {
     this.projectileManager.setSingleCleanupCallback((eid) =>
       this.objectManager.removeBoundaryIndicator(eid!),
     );
-    this.collisionHandler = new CollisionHandler(world, this.scene);
+    this.collisionHandler = new CollisionHandler(
+      world,
+      this.scene,
+      this.allObjects,
+    );
     this.collisionHandler.setProjectileDestroyedCallback((eid) => {
       this.projectileManager.removeProjectile(eid);
       this.objectManager.removeBoundaryIndicator(eid);
@@ -174,7 +179,9 @@ export default class GameManager {
       this.willHyperspace = [];
     }
     setTimeout(() => {
-      this.startTurn();
+      if (this.active) {
+        this.startTurn();
+      }
     }, 2000);
   }
 
@@ -258,10 +265,14 @@ export default class GameManager {
     return this.players.filter(({ isAlive }) => isAlive);
   }
 
-  private getGameState() {
+  getGameState() {
     return {
       lastTurnShots: this.world.movements,
       objectInfo: this.allObjects,
     } as GameState;
+  }
+
+  destroy() {
+    this.active = false;
   }
 }

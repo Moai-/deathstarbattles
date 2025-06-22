@@ -1,6 +1,6 @@
 {
   "name": "death-star-battles",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Re-implementation of the classic Death Star Battles Java game by Ian Bollard",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "start": "vite preview --config frontend/vite.config.ts",
     "predeploy": "echo 'deathstarbattles.ca' > dist/CNAME",
     "deploy": "gh-pages -d dist",
-    "postinstall": "cd frontend && yarn"
+    "postinstall": "cd frontend && yarn && cd ../shared && yarn"
   },
   "author": "Moai-",
   "license": "ISC",

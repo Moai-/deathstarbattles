@@ -110,6 +110,7 @@ export const generateSupergiantStarPosition = (
   width: number,
   height: number,
   starRadius: number,
+  specifiedSide?: string,
 ) => {
   // Determine how much of the star's radius to extend into the screen
   const visibleFraction = Math.random() * 0.2 + 0.05; // Between 5% to 25% of the star visible
@@ -117,7 +118,7 @@ export const generateSupergiantStarPosition = (
 
   // Define possible positions: off-screen in any direction
   const sides = ['left', 'right', 'top', 'bottom'];
-  const side = sides[Math.floor(Math.random() * sides.length)];
+  const side = specifiedSide || sides[Math.floor(Math.random() * sides.length)];
 
   let x = 0,
     y = 0;
@@ -141,7 +142,7 @@ export const generateSupergiantStarPosition = (
       break;
   }
 
-  return { x, y };
+  return { x, y, side };
 };
 
 // https://stackoverflow.com/questions/1349404/generate-a-string-of-random-characters

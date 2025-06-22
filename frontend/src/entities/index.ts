@@ -6,6 +6,9 @@ import { createRandomJovian } from './jovian';
 import { createRandomPlanet } from './planet';
 import { createRandomStar } from './star';
 import { createRandomSupergiant } from './supergiant';
+import { createRandomRedGiant } from './redGiant';
+import { createRandomWhiteDwarf } from './whiteDwarf';
+import { createRandomWormhole } from './wormhole';
 
 export const createRandom: Record<ObjectTypes, (world: GameWorld) => number> = {
   [ObjectTypes.ASTEROID]: createRandomAsteroid,
@@ -14,4 +17,7 @@ export const createRandom: Record<ObjectTypes, (world: GameWorld) => number> = {
   [ObjectTypes.JOVIAN]: createRandomJovian,
   [ObjectTypes.PLANET]: createRandomPlanet,
   [ObjectTypes.SUPERGIANT]: createRandomSupergiant,
+  [ObjectTypes.RED_GIANT]: createRandomRedGiant,
+  [ObjectTypes.WHITE_DWARF]: createRandomWhiteDwarf,
+  [ObjectTypes.WORMHOLE]: createRandomWormhole,
 };

@@ -8,7 +8,10 @@ export enum RenderableTypes {
   BLACK_HOLE,
   PLANET,
   STAR,
+  SUPERGIANT,
+  WHITE_DWARF,
   JOVIAN,
+  WORMHOLE,
 }
 
 export enum Depths {

@@ -4,32 +4,26 @@ import { Collision } from 'shared/src/ecs/components/collision';
 import { Renderable } from '../components/renderable';
 import { ui32ToCol } from '../../util/col';
 import generateStarCols from '../elements/starCols';
-import drawCorona from '../elements/corona';
 import { nailToContainer } from 'src/util';
 
-const renderStar: RenderObject = (scene, eid) => {
+const renderWormhole: RenderObject = (scene, eid) => {
   const x = Position.x[eid];
   const y = Position.y[eid];
   const radius = Collision.radius[eid];
   const container = scene.add.container(x, y);
   const baseCol = ui32ToCol(Renderable.col[eid]);
-  const cols = generateStarCols(baseCol, 6);
-  const coronaSteps = 300;
-  const coronaLayers = 3;
-  const coronaRadius = radius;
-  const corona = drawCorona(
-    scene,
-    { x: 0, y: 0 },
-    coronaRadius,
-    cols[5],
-    coronaLayers,
-    coronaSteps,
-  );
-  container.add(scene.add.circle(0, 0, radius, cols[1]));
-  container.add(scene.add.circle(0, 0, radius * 0.97, cols[0]));
-  container.add(scene.add.circle(0, 0, radius * 0.95, baseCol));
+  const cols = generateStarCols(baseCol, 3);
+  const corona = scene.add.container(x, y);
+
+  corona.add(scene.add.circle(0, 0, radius * 1.4, cols[2]));
+  corona.add(scene.add.circle(0, 0, radius * 1.27, cols[1]));
+  corona.add(scene.add.circle(0, 0, radius * 1.19, cols[0]));
+  corona.add(scene.add.circle(0, 0, radius * 1.03, baseCol));
+  corona.setDepth(Depths.BOTTOM);
+
+  container.add(scene.add.circle(0, 0, radius, 0));
   container.setDepth(Depths.STARS);
   return nailToContainer(container, corona);
 };
 
-export default renderStar;
+export default renderWormhole;

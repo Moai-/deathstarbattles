@@ -66,6 +66,7 @@ export class GameScene extends Phaser.Scene {
   destroy() {
     // flushRemovedEntities(this.world);
     resetWorld(this.world);
+    this.gameManager.destroy();
     gameBus.off(GameEvents.START_GAME);
     gameBus.off(GameEvents.ANGLE_POWER_GAME);
     gameBus.off(GameEvents.ANGLE_POWER_UI);

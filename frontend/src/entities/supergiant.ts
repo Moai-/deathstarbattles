@@ -28,7 +28,7 @@ export const createSupergiant = (
   Collision.radius[eid] = radius;
   HasGravity.strength[eid] = radius / 8;
   HasGravity.falloffType[eid] = GravityFalloffType.LINEAR;
-  Renderable.type[eid] = RenderableTypes.STAR;
+  Renderable.type[eid] = RenderableTypes.SUPERGIANT;
   Renderable.col[eid] = generateRandomSupergiantCol();
 
   return eid;

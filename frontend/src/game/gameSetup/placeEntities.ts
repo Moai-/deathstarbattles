@@ -5,6 +5,8 @@ import {
   generateNonOverlappingPositions,
   generateSupergiantStarPosition,
 } from '../util';
+import { getType, pairWormholes, scrambleWormhole } from 'src/util/entity';
+import { RenderableTypes } from 'src/render/types';
 
 export const playerClearance: ClearanceFunction = (a, b) => a + b + 80;
 export const objectClearance: ClearanceFunction = (a, b) => a + b + 30;
@@ -25,11 +27,10 @@ export const placeEntities: (
   items: Array<number>,
   players: Array<number>,
 ) => Array<GameObject> = (width, height, items, players) => {
-  // Sort by radius
+  // Sort by adjusted radius
   const levelObjects: Array<GameObject> = items
     .map((item) => ({ x: 0, y: 0, radius: getAdjustedRadius(item), eid: item }))
     .sort((a, b) => b.radius - a.radius);
-  console.log('sorted', levelObjects);
 
   // Turn players into game objects too
   const playerObjects: Array<GameObject> = players.map((item) => ({
@@ -41,15 +42,47 @@ export const placeEntities: (
 
   const placed = [];
 
-  for (const obj of levelObjects) {
-    if (obj.radius > 800) {
-      const { x, y } = generateSupergiantStarPosition(
-        width,
-        height,
-        obj.radius,
-      );
+  let lastSupergiantSide = '';
 
-      placed.push({ ...obj, x, y });
+  for (const obj of levelObjects) {
+    if (getType(obj.eid) === RenderableTypes.SUPERGIANT) {
+      if (lastSupergiantSide) {
+        let actualSide = '';
+        switch (lastSupergiantSide) {
+          case 'left':
+            actualSide = 'right';
+            break;
+          case 'right':
+            actualSide = 'left';
+            break;
+          case 'top':
+            actualSide = 'bottom';
+            break;
+          case 'bottom':
+            actualSide = 'top';
+            break;
+          default:
+            actualSide = 'left';
+            break;
+        }
+        const { x, y } = generateSupergiantStarPosition(
+          width,
+          height,
+          obj.radius,
+          actualSide,
+        );
+        placed.push({ ...obj, x, y });
+      } else {
+        const { x, y, side } = generateSupergiantStarPosition(
+          width,
+          height,
+          obj.radius,
+        );
+
+        lastSupergiantSide = side;
+
+        placed.push({ ...obj, x, y });
+      }
     } else {
       const [{ x, y }] = generateNonOverlappingPositions(
         width,
@@ -72,9 +105,32 @@ export const placeEntities: (
     placed.push({ ...obj, x, y });
   }
 
+  const wormholes: Array<number> = [];
+
   placed.forEach((obj) => {
     setPosition(obj.eid, obj);
+    if (getType(obj.eid) === RenderableTypes.WORMHOLE) {
+      wormholes.push(obj.eid);
+    }
   });
+
+  for (let i = 0; i < wormholes.length; ) {
+    const remaining = wormholes.length - i;
+
+    if (remaining === 1) {
+      scrambleWormhole(wormholes[i]);
+      i += 1;
+    } else {
+      const roll = Math.random();
+      if (roll < 1 / 6) {
+        scrambleWormhole(wormholes[i]);
+        i += 1;
+      } else {
+        pairWormholes(wormholes[i], wormholes[i + 1]);
+        i += 2;
+      }
+    }
+  }
 
   return placed;
 };

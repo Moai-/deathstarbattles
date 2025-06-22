@@ -10,12 +10,14 @@ const drawCorona = (
   baseColor: number,
   layers = 3,
   steps = 300,
+  radiusOverride = 1,
 ) => {
   const colors = generateStarCols(baseColor, layers);
   const { x, y } = loc;
 
   const maxRadius =
-    baseRadius * (1.05 + 0.07 * (layers - 1)) + baseRadius * 0.05;
+    radiusOverride * baseRadius * (1.05 + 0.07 * (layers - 1)) +
+    baseRadius * 0.05;
   const size = maxRadius * 2;
   const renderTexture = scene.make
     .renderTexture({
@@ -30,7 +32,7 @@ const drawCorona = (
 
   for (let layer = layers - 1; layer >= 0; layer--) {
     const color = darkenCol(colors[layer], 0.5);
-    const radius = baseRadius * (1.05 + 0.07 * layer);
+    const radius = radiusOverride * baseRadius * (1.05 + 0.07 * layer);
     const spikeAmplitude = radius * 0.05;
 
     const offsets = [];

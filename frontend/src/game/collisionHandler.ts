@@ -1,32 +1,48 @@
 import { hasComponent, removeEntity } from 'bitecs';
 import { Destructible } from 'shared/src/ecs/components/destructible';
 import { Projectile } from 'shared/src/ecs/components/projectile';
+import { Wormhole } from 'shared/src/ecs/components/wormhole';
 import { GameWorld } from 'shared/src/ecs/world';
 import Explosion, {
   laserCols,
   stationCols,
 } from 'src/render/animations/explosion';
-import { getPosition, getRadius } from 'src/util';
+import { getPosition, getRadius, setPosition } from 'src/util';
+import { generateNonOverlappingPositions } from './util';
+import { GameObject } from 'shared/src/types';
 
 type CollisionCallback = (eid: number) => void;
 
 export class CollisionHandler {
   private world: GameWorld;
   private scene: Phaser.Scene;
+  private objects: Array<GameObject>;
   private onProjectileDestroyed: CollisionCallback = () => {};
   private onTargetDestroyed: CollisionCallback = () => {};
 
-  constructor(world: GameWorld, scene: Phaser.Scene) {
+  constructor(
+    world: GameWorld,
+    scene: Phaser.Scene,
+    objects: Array<GameObject>,
+  ) {
     this.world = world;
     this.scene = scene;
+    this.objects = objects;
   }
 
   handleCollision(eid1: number, eid2: number): void {
     const isProjectile1 = hasComponent(this.world, Projectile, eid1);
     const isProjectile2 = hasComponent(this.world, Projectile, eid2);
 
+    const isWormhole = hasComponent(this.world, Wormhole, eid2);
+
     if (isProjectile1 && isProjectile2) {
       // crossing projectiles don't blow themselves up... unless there's a config for this?
+      return;
+    }
+
+    if (isWormhole) {
+      this.handleWormhole(eid1, eid2);
       return;
     }
 
@@ -55,6 +71,53 @@ export class CollisionHandler {
       removeEntity(this.world, eid);
       this.onTargetDestroyed(eid);
     }
+  }
+
+  private handleWormhole(projEid: number, holeEid: number) {
+    const noExit = Wormhole.noExit[holeEid];
+
+    if (noExit === 1) {
+      const { width, height } = this.scene.scale;
+
+      const [newPos] = generateNonOverlappingPositions(
+        width,
+        height,
+        [getRadius(projEid)],
+        (a, b) => a + b + 5,
+        this.objects,
+      );
+      setPosition(projEid, newPos);
+      return;
+    }
+
+    const partnerEid = Wormhole.teleportTarget[holeEid];
+
+    const holePos = getPosition(holeEid);
+    const partnerPos = getPosition(partnerEid);
+    const partnerRadius = getRadius(partnerEid);
+
+    const projPos = getPosition(projEid);
+
+    // Vector from wormhole center to projectile
+    const dx = projPos.x - holePos.x;
+    const dy = projPos.y - holePos.y;
+
+    // Flip the vector (180 degrees)
+    const outDx = -dx;
+    const outDy = -dy;
+
+    // Normalize it
+    const mag = Math.hypot(outDx, outDy);
+    const nx = outDx / mag;
+    const ny = outDy / mag;
+
+    // Offset a small distance past the radius to avoid re-triggering
+    const offset = 1.5;
+    const exitX = partnerPos.x + nx * (partnerRadius + offset);
+    const exitY = partnerPos.y + ny * (partnerRadius + offset);
+
+    // Move projectile to exit location
+    setPosition(projEid, exitX, exitY);
   }
 
   setProjectileDestroyedCallback(cb: CollisionCallback): void {

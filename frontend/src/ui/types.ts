@@ -17,6 +17,7 @@ export interface ScenarioItemRule {
   type: ObjectTypes;
   min?: number;
   max?: number;
+  n?: number;
   p?: number;
 }
 

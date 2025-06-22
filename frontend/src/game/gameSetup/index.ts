@@ -139,7 +139,7 @@ export const runGameSetup = (
   // 1. If all bots, randomize
   if (config.justBots) {
     const bots = generateRandomBots(world);
-    const objects = generateScenarioItems(world, scenarioTypes[0].items, 16);
+    const objects = generateScenarioItems(world, scenarioTypes[0].items, 10);
     return {
       players: bots,
       objectPlacements: placeEntities(

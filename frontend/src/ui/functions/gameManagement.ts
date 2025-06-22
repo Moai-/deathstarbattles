@@ -21,3 +21,9 @@ export const startGameWithConfig = (config: GameConfig) => {
     gameBus.emit(GameEvents.START_GAME, config);
   });
 };
+
+export const softDestroyGame = () =>
+  new Promise((resolve) => {
+    gameBus.on(GameEvents.GAME_REMOVED, resolve);
+    destroyGame();
+  });

@@ -21,6 +21,9 @@ export enum ObjectTypes {
   STAR,
   SUPERGIANT,
   BLACK_HOLE,
+  RED_GIANT,
+  WHITE_DWARF,
+  WORMHOLE,
 }
 
 export type PlayerSetup = {

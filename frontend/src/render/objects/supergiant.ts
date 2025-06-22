@@ -7,16 +7,16 @@ import generateStarCols from '../elements/starCols';
 import drawCorona from '../elements/corona';
 import { nailToContainer } from 'src/util';
 
-const renderStar: RenderObject = (scene, eid) => {
+const renderSupergiant: RenderObject = (scene, eid) => {
   const x = Position.x[eid];
   const y = Position.y[eid];
   const radius = Collision.radius[eid];
   const container = scene.add.container(x, y);
   const baseCol = ui32ToCol(Renderable.col[eid]);
   const cols = generateStarCols(baseCol, 6);
-  const coronaSteps = 300;
-  const coronaLayers = 3;
-  const coronaRadius = radius;
+  const coronaSteps = 1000;
+  const coronaLayers = 5;
+  const coronaRadius = radius * 0.88;
   const corona = drawCorona(
     scene,
     { x: 0, y: 0 },
@@ -32,4 +32,4 @@ const renderStar: RenderObject = (scene, eid) => {
   return nailToContainer(container, corona);
 };
 
-export default renderStar;
+export default renderSupergiant;
