@@ -58,7 +58,7 @@ export class CollisionHandler {
   private destroyProjectile(eid: number) {
     const pos = getPosition(eid);
     const radius = getRadius(eid);
-    new Explosion(this.scene, pos, radius * 4, laserCols).play(500);
+    new Explosion(this.scene, pos, radius * 4, laserCols).play(700);
     removeEntity(this.world, eid);
     this.onProjectileDestroyed(eid);
   }
@@ -70,6 +70,13 @@ export class CollisionHandler {
       new Explosion(this.scene, pos, radius * 2, stationCols).play(1000);
       removeEntity(this.world, eid);
       this.onTargetDestroyed(eid);
+      this.scene.sound.play('stationHit', {
+        volume: 0.3,
+      });
+    } else {
+      this.scene.sound.play('genericHit', {
+        volume: 0.3,
+      });
     }
   }
 

@@ -169,6 +169,10 @@ export default class GameManager {
     this.turnInputs = [];
     if (!didFire) {
       this.postCombatPhase();
+    } else {
+      this.scene.sound.play('laserShot', {
+        volume: 0.3,
+      });
     }
   }
 
