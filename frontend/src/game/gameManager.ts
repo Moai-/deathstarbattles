@@ -48,6 +48,13 @@ export default class GameManager {
   private willHyperspace: Array<number> = [];
   private active = true;
 
+  // misc
+  private travelHum:
+    | Phaser.Sound.NoAudioSound
+    | Phaser.Sound.HTML5AudioSound
+    | Phaser.Sound.WebAudioSound
+    | null = null;
+
   constructor(
     scene: Phaser.Scene,
     world: GameWorld,
@@ -89,6 +96,10 @@ export default class GameManager {
   }
 
   startGame(conf: GameConfig) {
+    this.travelHum = this.scene.sound.add('travelHum', {
+      volume: 0.5,
+      loop: true,
+    });
     this.activePlayer = -1;
     this.turnInputs = [];
     const { players, objectPlacements } = runGameSetup(
@@ -173,11 +184,13 @@ export default class GameManager {
       this.scene.sound.play('laserShot', {
         volume: 0.3,
       });
+      this.travelHum?.play();
     }
   }
 
   private postCombatPhase() {
     this.turnInputs = [];
+    this.travelHum?.stop();
     if (this.willHyperspace.length) {
       this.willHyperspace.forEach((playerId) => this.useHyperspace(playerId));
       this.willHyperspace = [];

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GameScene } from './gameScene';
 import { BASE_HEIGHT, BASE_WIDTH } from 'shared/src/consts';
+import { MusicScene } from './musicScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.WEBGL,
@@ -14,7 +15,7 @@ const config: Phaser.Types.Core.GameConfig = {
     height: BASE_HEIGHT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [GameScene],
+  scene: [GameScene, MusicScene],
   roundPixels: true,
   physics: { default: 'arcade' },
 };

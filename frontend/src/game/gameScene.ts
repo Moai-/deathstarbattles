@@ -46,7 +46,7 @@ export class GameScene extends Phaser.Scene {
     this.load.audio('genericHit', '/assets/genhit.ogg');
     this.load.audio('stationHit', '/assets/stationhit.ogg');
     this.load.audio('laserShot', '/assets/lasershot.ogg');
-    this.load.audio('songLoop', '/assets/songloop.ogg');
+    this.load.audio('travelHum', '/assets/travelhum.ogg');
   }
 
   create() {
@@ -55,10 +55,6 @@ export class GameScene extends Phaser.Scene {
       this.gameManager.startGame(config);
     });
     gameBus.emit(GameEvents.SCENE_LOADED);
-    this.sound.play('songLoop', {
-      loop: true,
-      volume: 0.1,
-    });
   }
 
   update(time: number, deltaMs: number) {
