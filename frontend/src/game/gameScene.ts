@@ -11,6 +11,8 @@ import GameManager from './gameManager';
 import { resetWorld } from 'bitecs';
 import { gameBus, GameEvents } from 'src/util';
 import { makeId } from './util';
+import { clearBackground } from 'src/render/background';
+import { getSoundManager } from './resourceScene';
 
 const bMin = 0 - HIDDEN_BOUNDARY;
 const bxMax = BASE_WIDTH + HIDDEN_BOUNDARY;
@@ -37,23 +39,17 @@ export class GameScene extends Phaser.Scene {
   private unique = makeId();
 
   constructor() {
-    super('game');
+    super({ key: 'GameScene', active: false });
     console.log('game %s created', this.unique);
   }
 
-  preload() {
-    //this.load.text('gravityShaderFragment', 'src/shaders/gravity.frag');
-    this.load.audio('genericHit', '/assets/genhit.ogg');
-    this.load.audio('stationHit', '/assets/stationhit.ogg');
-    this.load.audio('laserShot', '/assets/lasershot.ogg');
-    this.load.audio('travelHum', '/assets/travelhum.ogg');
-  }
-
   create() {
+    console.log('gamescene create');
     gameBus.on(GameEvents.START_GAME, (config) => {
       console.log('starting game', this.unique);
       this.gameManager.startGame(config);
     });
+    this.gameManager.create();
     gameBus.emit(GameEvents.SCENE_LOADED);
   }
 
@@ -69,13 +65,13 @@ export class GameScene extends Phaser.Scene {
 
   destroy() {
     // flushRemovedEntities(this.world);
+    console.log('game scene destroy');
+    getSoundManager(this).stopAllSounds('effects');
     resetWorld(this.world);
     this.gameManager.destroy();
+    this.objectManager.destroy();
+    clearBackground(this);
     gameBus.off(GameEvents.START_GAME);
-    gameBus.off(GameEvents.ANGLE_POWER_GAME);
-    gameBus.off(GameEvents.ANGLE_POWER_UI);
-    gameBus.off(GameEvents.END_TURN);
-    gameBus.off(GameEvents.OTHER_ACTION_UI);
     gameBus.emit(GameEvents.GAME_REMOVED);
   }
 }

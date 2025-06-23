@@ -20,6 +20,13 @@ export class ProjectileManager {
     this.world = world;
   }
 
+  destroy() {
+    this.activeProjectiles.forEach(({ ownId }) => {
+      this.removeProjectile(ownId);
+    });
+    this.activeProjectiles = [];
+  }
+
   fireFrom(playerId: number, angle: number, power: number): number {
     const eid = fireProjectile(this.world, playerId, angle, power);
     this.activeProjectiles.push({ ownId: eid, playerId });

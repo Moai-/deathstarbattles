@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { GameState } from '../types';
-import { destroyGame } from 'src/game';
+import { stopMainScene } from 'src/game';
 import { gameBus, GameEvents } from 'src/util';
 
 type WinnerData = { playerId: number; col: number };
@@ -26,7 +26,7 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
         const winner = winnerData[0];
         setWinnerData(winner);
         setGameState(GameState.SCORESCREEN);
-        destroyGame();
+        stopMainScene();
       }
     });
   });

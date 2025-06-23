@@ -156,3 +156,5 @@ export function makeId(length = 5) {
   }
   return result;
 }
+
+export const noop = () => {};

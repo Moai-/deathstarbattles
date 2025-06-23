@@ -11,8 +11,35 @@ export class GameObjectManager {
 
   constructor(private scene: Phaser.Scene) {}
 
-  create(eid: number) {
+  createObject(eid: number) {
     this.objects.set(eid, this.renderEntity(eid));
+  }
+
+  getObject(eid: number) {
+    return this.objects.get(eid);
+  }
+
+  updateObjectPosition(eid: number, x: number, y: number) {
+    const obj = this.getObject(eid);
+    if (obj && 'x' in obj && 'y' in obj) {
+      obj.x = x;
+      obj.y = y;
+    }
+  }
+
+  removeObject(eid: number) {
+    const obj = this.objects.get(eid);
+    if (obj) {
+      obj.destroy();
+      this.objects.delete(eid);
+    }
+  }
+
+  removeAllObjects() {
+    this.objects.forEach((object) => {
+      object.destroy();
+    });
+    this.objects.clear();
   }
 
   createChild(eid: number, child: Phaser.GameObjects.GameObject) {
@@ -28,18 +55,6 @@ export class GameObjectManager {
       if (children && children.length) {
         return children[children.length - 1];
       }
-    }
-  }
-
-  get(eid: number) {
-    return this.objects.get(eid);
-  }
-
-  remove(eid: number) {
-    const obj = this.objects.get(eid);
-    if (obj) {
-      obj.destroy();
-      this.objects.delete(eid);
     }
   }
 
@@ -92,14 +107,6 @@ export class GameObjectManager {
     this.children.clear();
   }
 
-  updatePosition(eid: number, x: number, y: number) {
-    const obj = this.objects.get(eid);
-    if (obj && 'x' in obj && 'y' in obj) {
-      obj.x = x;
-      obj.y = y;
-    }
-  }
-
   upsertBoundaryIndicator(
     eid: number,
     { x, y }: AnyPoint,
@@ -124,6 +131,19 @@ export class GameObjectManager {
       indicator.destroy();
       this.boundaryIndicators.delete(eid);
     }
+  }
+
+  removeAllBoundaryIndicators() {
+    this.objects.forEach((_, eid) => {
+      this.removeBoundaryIndicator(eid);
+    });
+    this.boundaryIndicators.clear();
+  }
+
+  destroy() {
+    this.removeAllBoundaryIndicators();
+    this.removeAllChildren();
+    this.removeAllObjects();
   }
 
   // playEffect(eid: number, fx: 'explosion' | 'teleport') {

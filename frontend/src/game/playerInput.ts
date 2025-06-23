@@ -4,16 +4,17 @@ import { gameBus, GameEvents } from 'src/util';
 export class PlayerInputHandler {
   private angle: number = 0;
   private power: number = 20;
-  private hyperspaceActive: boolean = false;
   private currentOtherAction: OtherActions | null = null;
 
-  private onEndTurn: () => void;
+  private onEndTurn: () => void = () => {};
 
-  constructor(onEndTurn: () => void) {
-    this.onEndTurn = onEndTurn;
-
+  create() {
     this.initListeners();
     this.setAnglePower(0, 20);
+  }
+
+  setOnEndTurnCallback(onEndTurn: () => void) {
+    this.onEndTurn = onEndTurn;
   }
 
   private initListeners() {
@@ -57,5 +58,14 @@ export class PlayerInputHandler {
 
   public getCurrentOtherAction() {
     return this.currentOtherAction;
+  }
+
+  destroy() {
+    gameBus.off(GameEvents.END_TURN);
+    gameBus.off(GameEvents.OTHER_ACTION_UI);
+    gameBus.off(GameEvents.ANGLE_POWER_UI);
+    this.angle = 0;
+    this.power = 20;
+    this.currentOtherAction = null;
   }
 }

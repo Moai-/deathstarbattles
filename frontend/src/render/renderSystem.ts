@@ -31,13 +31,13 @@ export const createRenderSystem = (
     const enteredEntities = renderQueryEnter(world);
 
     for (const eid of enteredEntities) {
-      objectManager.create(eid);
+      objectManager.createObject(eid);
     }
 
     const exitedEntities = renderQueryExit(world);
 
     for (const eid of exitedEntities) {
-      objectManager.remove(eid);
+      objectManager.removeObject(eid);
     }
 
     const updatedEntities = renderQuery(world);
@@ -45,7 +45,7 @@ export const createRenderSystem = (
     for (const eid of updatedEntities) {
       const x = Position.x[eid];
       const y = Position.y[eid];
-      objectManager.updatePosition(eid, x, y);
+      objectManager.updateObjectPosition(eid, x, y);
     }
 
     const updatedTrails = trailQuery(world);
@@ -67,7 +67,8 @@ export const createRenderSystem = (
           const lastChild = objectManager.getLastChild(
             eid,
           ) as Phaser.GameObjects.Arc;
-          const bead = lastChild || objectManager.get(Projectile.parent[eid]);
+          const bead =
+            lastChild || objectManager.getObject(Projectile.parent[eid]);
           // const bead = lastChild as Phaser.GameObjects.Arc;
           if (bead) {
             const sqDist = getSquaredDistance(circle, bead);

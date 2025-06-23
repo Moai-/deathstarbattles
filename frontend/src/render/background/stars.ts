@@ -1,4 +1,4 @@
-export const STAR_TEXTURE = 'backgroundStars';
+import { BG_TEXTURE } from './constants';
 
 export const generateBackgroundStars = (
   scene: Phaser.Scene,
@@ -52,8 +52,8 @@ export const generateBackgroundStars = (
   graphics.destroy(); // Clean up the temporary Graphics object
 
   // Save the texture under a key
-  renderTexture.saveTexture(STAR_TEXTURE);
+  renderTexture.saveTexture(BG_TEXTURE);
 
-  const bg = scene.add.image(0, 0, STAR_TEXTURE).setOrigin(0, 0);
+  const bg = scene.add.image(0, 0, BG_TEXTURE).setOrigin(0, 0);
   bg.setDisplaySize(scene.scale.width, scene.scale.height);
 };

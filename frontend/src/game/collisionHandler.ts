@@ -10,6 +10,7 @@ import Explosion, {
 import { getPosition, getRadius, setPosition } from 'src/util';
 import { generateNonOverlappingPositions } from './util';
 import { GameObject } from 'shared/src/types';
+import { getSoundManager } from './resourceScene';
 
 type CollisionCallback = (eid: number) => void;
 
@@ -70,13 +71,9 @@ export class CollisionHandler {
       new Explosion(this.scene, pos, radius * 2, stationCols).play(1000);
       removeEntity(this.world, eid);
       this.onTargetDestroyed(eid);
-      this.scene.sound.play('stationHit', {
-        volume: 0.3,
-      });
+      getSoundManager(this.scene).playSound('stationHit');
     } else {
-      this.scene.sound.play('genericHit', {
-        volume: 0.3,
-      });
+      getSoundManager(this.scene).playSound('genericHit');
     }
   }
 

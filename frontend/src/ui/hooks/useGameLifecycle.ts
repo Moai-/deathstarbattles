@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { GameState } from '../types';
 import { gameBus, GameEvents } from 'src/util';
-import { destroyGame } from 'src/game';
+import { stopMainScene } from 'src/game';
 import { useGameState } from '../components/context';
 
 export const useGameLifecycle = () => {
@@ -17,7 +17,7 @@ export const useGameLifecycle = () => {
         const winner = winnerData[0];
         setWinnerInfo(winner);
         setGameState(GameState.SCORESCREEN);
-        destroyGame();
+        stopMainScene();
       }
     });
   });

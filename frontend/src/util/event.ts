@@ -8,6 +8,7 @@ export enum GameEvents {
   ANGLE_POWER_UI = 'apui',
   OTHER_ACTION_UI = 'otheractionui',
   OTHER_ACTION_GAME = 'otheractiongame',
+  SET_VOLUME = 'setvolume',
   SCENE_LOADED = 'sceneloaded',
   START_GAME = 'startgame',
   GAME_END = 'gameend',
@@ -15,6 +16,12 @@ export enum GameEvents {
 }
 
 type WinnerData = { col: number; playerId: number };
+
+type GameVolume = {
+  musicVolume?: number;
+  effectsVolume?: number;
+  mute?: boolean;
+};
 
 type EventData = {
   [GameEvents.END_TURN]: void;
@@ -26,6 +33,7 @@ type EventData = {
   [GameEvents.START_GAME]: GameConfig;
   [GameEvents.SCENE_LOADED]: void;
   [GameEvents.GAME_REMOVED]: void;
+  [GameEvents.SET_VOLUME]: GameVolume;
 };
 
 export const gameBus = mitt<EventData>();

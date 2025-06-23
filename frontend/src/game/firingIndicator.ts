@@ -15,20 +15,35 @@ export class FiringIndicator {
   private circle?: Phaser.GameObjects.Arc;
   private line?: Phaser.GameObjects.Line;
   private square?: Phaser.GameObjects.Rectangle;
-  private getTargetId: () => number;
+  private getTargetId: () => number = () => 0;
   private onAnglePowerUpdate: (angle: number, power: number) => void = () => {};
   private isUsingHyperspace = false;
   private isDragging = false;
-  private didBind = false;
 
-  constructor(
-    scene: Phaser.Scene,
-    getTargetId: () => number,
-    radius: number = 60,
-  ) {
+  constructor(scene: Phaser.Scene, radius: number = 60) {
     this.scene = scene;
     this.radius = radius;
-    this.getTargetId = getTargetId;
+  }
+
+  create() {
+    this.scene.input.on('pointerdown', this.handlePointerDown, this);
+    this.scene.input.on('pointermove', this.handlePointerMove, this);
+    this.scene.input.on('pointerup', this.handlePointerUp, this);
+    this.scene.input.on('pointerupoutside', this.handlePointerUp, this);
+    gameBus.on(GameEvents.ANGLE_POWER_UI, ({ angle, power }) => {
+      this.updateVector(angle, power);
+    });
+    gameBus.on(GameEvents.OTHER_ACTION_UI, (action) => {
+      if (action === OtherActions.HYPERSPACE) {
+        this.toggleHyperspace(true);
+      } else if (!action) {
+        this.toggleHyperspace(false);
+      }
+    });
+  }
+
+  setGetTargetIdCallback(cb: () => number) {
+    this.getTargetId = cb;
   }
 
   setAnglePowerListener(cb: (angle: number, power: number) => void) {
@@ -65,7 +80,7 @@ export class FiringIndicator {
     this.square = undefined;
   }
 
-  create() {
+  drawIndicator() {
     const { x, y } = getPosition(this.getTargetId());
     this.circle = this.scene.add
       .circle(x, y, this.radius, 0xffffff, 0)
@@ -73,27 +88,9 @@ export class FiringIndicator {
       .setDepth(Depths.INTERFACE);
     this.line = this.scene.add.line(0, 0, 0, 0, 0, 0, 0xffffff).setOrigin(0, 0);
     this.line.setDepth(Depths.INTERFACE);
-
-    if (!this.didBind) {
-      this.scene.input.on('pointerdown', this.handlePointerDown, this);
-      this.scene.input.on('pointermove', this.handlePointerMove, this);
-      this.scene.input.on('pointerup', this.handlePointerUp, this);
-      this.scene.input.on('pointerupoutside', this.handlePointerUp, this);
-      this.didBind = true;
-      gameBus.on(GameEvents.ANGLE_POWER_UI, ({ angle, power }) => {
-        this.updateVector(angle, power);
-      });
-      gameBus.on(GameEvents.OTHER_ACTION_UI, (action) => {
-        if (action === OtherActions.HYPERSPACE) {
-          this.toggleHyperspace(true);
-        } else if (!action) {
-          this.toggleHyperspace(false);
-        }
-      });
-    }
   }
 
-  remove() {
+  removeIndicator() {
     this.circle?.destroy();
     this.line?.destroy();
     this.circle = undefined;
@@ -119,6 +116,18 @@ export class FiringIndicator {
     this.line.setTo(x, y, x + dx, y + dy);
   }
 
+  destroy() {
+    gameBus.off(GameEvents.OTHER_ACTION_UI);
+    gameBus.off(GameEvents.ANGLE_POWER_UI);
+    this.isDragging = false;
+    this.isUsingHyperspace = false;
+    this.scene.input.off('pointerdown');
+    this.scene.input.off('pointermove');
+    this.scene.input.off('pointerup');
+    this.scene.input.off('pointeroutside');
+    this.removeIndicator();
+  }
+
   private handlePointerDown(p: Phaser.Input.Pointer) {
     this.isDragging = true;
     this.updateAnglePower(p);
@@ -136,7 +145,6 @@ export class FiringIndicator {
 
   private updateAnglePower(pointer: Phaser.Input.Pointer) {
     if (this.isUsingHyperspace) {
-      console.log('using hyperspace so quit early');
       return;
     }
     const loc = new Phaser.Math.Vector2(pointer.x, pointer.y);

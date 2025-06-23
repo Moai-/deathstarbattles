@@ -21,11 +21,12 @@ import {
   GameState,
   PlayerTypes,
 } from 'shared/src/types';
-import { generateNonOverlappingPositions } from './util';
+import { generateNonOverlappingPositions, noop } from './util';
 import { Renderable } from 'src/render/components/renderable';
 import Hyperspace from 'src/render/animations/hyperspace';
 import { GameConfig } from 'src/ui/types';
 import { objectClearance } from './gameSetup/placeEntities';
+import { getSoundManager } from './resourceScene';
 
 export default class GameManager {
   // globals
@@ -63,28 +64,26 @@ export default class GameManager {
     this.scene = scene;
     this.world = world;
     this.objectManager = objectManager;
-    this.indicator = new FiringIndicator(scene, () => this.activePlayer);
+    this.indicator = new FiringIndicator(scene);
     this.projectileManager = new ProjectileManager(world);
-    this.projectileManager.setCleanupCallback(() => this.postCombatPhase());
-    this.projectileManager.setSingleCleanupCallback((eid) =>
-      this.objectManager.removeBoundaryIndicator(eid!),
-    );
-    this.collisionHandler = new CollisionHandler(
-      world,
-      this.scene,
-      this.allObjects,
-    );
-    this.collisionHandler.setProjectileDestroyedCallback((eid) => {
-      this.projectileManager.removeProjectile(eid);
-      this.objectManager.removeBoundaryIndicator(eid);
-    });
-    this.collisionHandler.setTargetDestroyedCallback((eid) => {
-      this.getPlayerInfo(eid)!.isAlive = false;
-    });
-    this.inputHandler = new PlayerInputHandler(() => this.endTurn());
-    this.indicator.setAnglePowerListener((angle, power) =>
-      this.inputHandler.setAnglePower(angle, power),
-    );
+    this.collisionHandler = new CollisionHandler(world, scene, this.allObjects);
+    this.inputHandler = new PlayerInputHandler();
+    console.log('gameManager constructed');
+  }
+
+  create() {
+    this.indicator.create();
+    this.inputHandler.create();
+    this.setUpListeners();
+    this.active = true;
+  }
+
+  destroy() {
+    this.clearListeners();
+    this.indicator.destroy();
+    this.inputHandler.destroy();
+    this.projectileManager.destroy();
+    this.active = false;
   }
 
   onCollision(eid1: number, eid2: number) {
@@ -96,6 +95,7 @@ export default class GameManager {
   }
 
   startGame(conf: GameConfig) {
+    this.active = true;
     this.travelHum = this.scene.sound.add('travelHum', {
       volume: 0.5,
       loop: true,
@@ -138,7 +138,7 @@ export default class GameManager {
       }
     }
 
-    this.indicator.create();
+    this.indicator.drawIndicator();
     this.syncAnglePower();
     this.objectManager.hideAllchildren();
 
@@ -181,16 +181,15 @@ export default class GameManager {
     if (!didFire) {
       this.postCombatPhase();
     } else {
-      this.scene.sound.play('laserShot', {
-        volume: 0.3,
-      });
-      this.travelHum?.play();
+      const sm = getSoundManager(this.scene);
+      sm.playSound('laserShot');
+      sm.playSound('travelHum');
     }
   }
 
   private postCombatPhase() {
     this.turnInputs = [];
-    this.travelHum?.stop();
+    getSoundManager(this.scene).stopSound('travelHum');
     if (this.willHyperspace.length) {
       this.willHyperspace.forEach((playerId) => this.useHyperspace(playerId));
       this.willHyperspace = [];
@@ -206,7 +205,7 @@ export default class GameManager {
     const playerInfo = this.getPlayerInfo(this.activePlayer);
     if (playerInfo && playerInfo.isAlive) {
       if (playerInfo.type === PlayerTypes.HUMAN) {
-        this.indicator.remove();
+        this.indicator.removeIndicator();
         this.turnInputs.push({
           playerId: this.activePlayer,
           angle: this.inputHandler.getCurrentAngle(),
@@ -282,14 +281,39 @@ export default class GameManager {
     return this.players.filter(({ isAlive }) => isAlive);
   }
 
+  private setUpListeners() {
+    this.projectileManager.setCleanupCallback(() => this.postCombatPhase());
+    this.projectileManager.setSingleCleanupCallback((eid) =>
+      this.objectManager.removeBoundaryIndicator(eid!),
+    );
+    this.collisionHandler.setProjectileDestroyedCallback((eid) => {
+      this.projectileManager.removeProjectile(eid);
+      this.objectManager.removeBoundaryIndicator(eid);
+    });
+    this.collisionHandler.setTargetDestroyedCallback((eid) => {
+      this.getPlayerInfo(eid)!.isAlive = false;
+    });
+    this.inputHandler.setOnEndTurnCallback(() => this.endTurn());
+    this.indicator.setGetTargetIdCallback(() => this.activePlayer);
+    this.indicator.setAnglePowerListener((angle, power) =>
+      this.inputHandler.setAnglePower(angle, power),
+    );
+  }
+
+  private clearListeners() {
+    this.projectileManager.setCleanupCallback(noop);
+    this.projectileManager.setSingleCleanupCallback(noop);
+    this.collisionHandler.setProjectileDestroyedCallback(noop);
+    this.collisionHandler.setTargetDestroyedCallback(noop);
+    this.inputHandler.setOnEndTurnCallback(noop);
+    this.indicator.setAnglePowerListener(noop);
+    this.indicator.setGetTargetIdCallback(() => 0);
+  }
+
   getGameState() {
     return {
       lastTurnShots: this.world.movements,
       objectInfo: this.allObjects,
     } as GameState;
-  }
-
-  destroy() {
-    this.active = false;
   }
 }

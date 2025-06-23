@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { destroyGame } from 'src/game';
+import { stopMainScene } from 'src/game';
 import { gameBus, GameEvents } from 'src/util';
 import { startGameWithConfig } from '../functions/gameManagement';
 
@@ -8,14 +8,14 @@ export const useStartBackground = (isActive: boolean) => {
     if (isActive) {
       startGameWithConfig({ justBots: true });
       gameBus.on(GameEvents.GAME_END, () => {
-        destroyGame();
+        stopMainScene();
         setTimeout(() => {
           if (isActive) {
             startGameWithConfig({ justBots: true });
           }
         }, 1000);
       });
-      return () => destroyGame();
+      return () => stopMainScene();
     } else {
       gameBus.off(GameEvents.GAME_END);
     }

@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { GameScene } from './gameScene';
 import { BASE_HEIGHT, BASE_WIDTH } from 'shared/src/consts';
-import { MusicScene } from './musicScene';
+import { ResourceScene } from './resourceScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.WEBGL,
@@ -15,30 +15,63 @@ const config: Phaser.Types.Core.GameConfig = {
     height: BASE_HEIGHT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [GameScene, MusicScene],
+  scene: [ResourceScene, GameScene],
   roundPixels: true,
   physics: { default: 'arcade' },
 };
 
-let game: Phaser.Game | null = null;
+declare global {
+  interface Window {
+    __PHASER_GAME__: Phaser.Game | null;
+  }
+}
+
+window.__PHASER_GAME__ = window.__PHASER_GAME__ || null;
+
+export const getGame = (): Phaser.Game | null => window.__PHASER_GAME__;
 
 export const createGame = () => {
-  game = new Phaser.Game(config);
+  if (!window.__PHASER_GAME__) {
+    window.__PHASER_GAME__ = new Phaser.Game(config);
+  } else {
+    console.log(
+      'attempted to create game when previous game was not destroyed',
+    );
+  }
 };
 
 export const destroyGame = () => {
+  const game = getGame();
   if (game) {
+    console.log('destroying game');
     getMainScene()?.destroy();
     game.destroy(true);
-    game = null;
+    window.__PHASER_GAME__ = null;
   }
 };
 
-export const getGame = () => game;
-
 export const getMainScene = () => {
+  const game = getGame();
   if (game) {
-    return game.scene.getScene('game')! as GameScene;
+    return game.scene.getScene('GameScene')! as GameScene;
   }
   return null;
+};
+
+export const stopMainScene = () => {
+  const scene = getMainScene();
+  if (scene) {
+    console.log('scene stop');
+    scene.scene.stop();
+    scene.destroy();
+  }
+};
+
+export const startMainScene = () => {
+  const scene = getMainScene();
+  if (scene) {
+    console.log('scene start');
+    scene.create();
+    scene.scene.start();
+  }
 };
