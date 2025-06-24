@@ -1,5 +1,6 @@
 import { Collision } from 'shared/src/ecs/components/collision';
 import { Position } from 'shared/src/ecs/components/position';
+import { Projectile } from 'shared/src/ecs/components/projectile';
 import { ExitTypes, Wormhole } from 'shared/src/ecs/components/wormhole';
 import { Renderable } from 'src/render/components/renderable';
 import { RenderableTypes } from 'src/render/types';
@@ -24,6 +25,8 @@ const getPosition = (eid: number) => ({
   x: Position.x[eid],
   y: Position.y[eid],
 });
+
+const getProjectileOwner = (eid: number) => Projectile.parent[eid];
 
 const getRadius = (eid: number) => Collision.radius[eid];
 
@@ -50,6 +53,7 @@ export {
   getPosition,
   getRadius,
   getType,
+  getProjectileOwner,
   pairWormholes,
   scrambleWormhole,
 };

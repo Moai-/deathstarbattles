@@ -49,13 +49,6 @@ export default class GameManager {
   private willHyperspace: Array<number> = [];
   private active = true;
 
-  // misc
-  private travelHum:
-    | Phaser.Sound.NoAudioSound
-    | Phaser.Sound.HTML5AudioSound
-    | Phaser.Sound.WebAudioSound
-    | null = null;
-
   constructor(
     scene: Phaser.Scene,
     world: GameWorld,
@@ -95,10 +88,6 @@ export default class GameManager {
 
   startGame(conf: GameConfig) {
     this.active = true;
-    this.travelHum = this.scene.sound.add('travelHum', {
-      volume: 0.5,
-      loop: true,
-    });
     this.activePlayer = -1;
     this.turnInputs = [];
     const { players, objectPlacements } = runGameSetup(
@@ -141,21 +130,15 @@ export default class GameManager {
     this.syncAnglePower();
     this.objectManager.hideAllchildren();
 
-    if (this.history.length) {
-      const lastTurn = this.history[this.history.length - 1];
-      const thisPlayerInput = lastTurn.find(
-        (inputs) => inputs.playerId === this.activePlayer,
-      );
-      if (thisPlayerInput) {
-        const { angle, power } = thisPlayerInput;
-        this.syncAnglePower(angle, power);
-        if (thisPlayerInput.otherAction !== OtherActions.HYPERSPACE) {
-          const parent = this.projectileManager.getByPlayerId(
-            this.activePlayer,
-          );
-          if (parent) {
-            this.objectManager.showChildren(parent.ownId);
-          }
+    const thisPlayerInput = this.getPreviousTurnInput(this.activePlayer);
+
+    if (thisPlayerInput) {
+      const { angle, power } = thisPlayerInput;
+      this.syncAnglePower(angle, power);
+      if (thisPlayerInput.otherAction !== OtherActions.HYPERSPACE) {
+        const parent = this.projectileManager.getByPlayerId(this.activePlayer);
+        if (parent) {
+          this.objectManager.showChildren(parent.ownId);
         }
       }
     }
@@ -218,6 +201,7 @@ export default class GameManager {
           this.world,
           playerInfo,
           this.getGameState(),
+          this.getPreviousTurnInput(playerInfo.id),
         );
         this.turnInputs.push(thisPlayerInput);
       }
@@ -286,6 +270,19 @@ export default class GameManager {
 
   private getLivingPlayers() {
     return this.players.filter(({ isAlive }) => isAlive);
+  }
+
+  private getPreviousTurnInput(eid: number) {
+    if (this.history.length) {
+      const lastTurn = this.history[this.history.length - 1];
+      const thisPlayerInput = lastTurn.find(
+        (inputs) => inputs.playerId === eid,
+      );
+      if (thisPlayerInput) {
+        return thisPlayerInput;
+      }
+    }
+    return null;
   }
 
   private setUpListeners() {

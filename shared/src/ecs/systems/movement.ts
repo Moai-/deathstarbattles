@@ -2,6 +2,7 @@ import { defineQuery, defineSystem } from 'bitecs';
 import { Position } from '../components/position';
 import { Velocity } from '../components/velocity';
 import { GameWorld } from '../world';
+import { Projectile } from '../components/projectile';
 
 const movingQuery = defineQuery([Position, Velocity]);
 
@@ -16,7 +17,12 @@ export const createMovementSystem = () => {
       w.movements = w.movements || {};
     }
     for (const eid of entities) {
-      w.movements![eid] = w.movements![eid] || { id: eid, movementTrace: [] };
+      const shooter = Projectile.parent[eid];
+      w.movements![shooter] = w.movements![shooter] || {
+        id: eid,
+        movementTrace: [],
+        destroyedTarget: null,
+      };
       const vx = Velocity.x[eid];
       const vy = Velocity.y[eid];
       const dx = vx * dt * slow;
@@ -25,7 +31,7 @@ export const createMovementSystem = () => {
       const newY = Position.y[eid] + dy;
       Position.x[eid] = newX;
       Position.y[eid] = newY;
-      w.movements![eid].movementTrace.push({ x: newX, y: newY });
+      w.movements![shooter].movementTrace.push({ x: newX, y: newY });
     }
     return world;
   });

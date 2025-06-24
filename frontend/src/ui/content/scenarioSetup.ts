@@ -48,7 +48,7 @@ export const scenarioTypes: Array<{
   name: string;
   items: Array<ScenarioItemRule>;
 }> = [
-  { name: 'Lucky Dip', items: [planet(), asteroid(), jovian(), star(), supergiant(), blackHole()] },
+  { name: 'Lucky Dip', items: [planet(), asteroid(), jovian(), star(), supergiant()] },
   { name: 'Planetary', items: [planet({min: 1}), asteroid({p: 0.3})] },
   { name: 'Asteroids', items: [planet({p: 0.1}), asteroid(), blackHole(rare)] },
   { name: 'Star System', items: [star({n: 1}), planet({max: 2}), asteroid(), blackHole(rare)] },

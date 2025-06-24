@@ -4,6 +4,7 @@ export {
   setPosition,
   getPosition,
   getRadius,
+  getProjectileOwner,
   pairWormholes,
   scrambleWormhole,
 } from './entity';

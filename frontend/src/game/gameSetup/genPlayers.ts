@@ -31,7 +31,7 @@ export const generateRandomBots = (world: GameWorld) => {
       id: i,
       type: 1,
       col: playerCols[i],
-      difficulty: Phaser.Math.Between(1, 5),
+      difficulty: 3,
     });
   }
   return generatePlayers(world, rawPlayers);

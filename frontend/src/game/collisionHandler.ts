@@ -7,12 +7,17 @@ import Explosion, {
   laserCols,
   stationCols,
 } from 'src/render/animations/explosion';
-import { getPosition, getRadius, setPosition } from 'src/util';
+import {
+  getPosition,
+  getProjectileOwner,
+  getRadius,
+  setPosition,
+} from 'src/util';
 import { generateNonOverlappingPositions } from './util';
 import { GameObject } from 'shared/src/types';
 import { getSoundManager } from './resourceScene';
 
-type CollisionCallback = (eid: number) => void;
+type CollisionCallback = (targetEid: number) => void;
 
 export class CollisionHandler {
   private world: GameWorld;
@@ -48,11 +53,13 @@ export class CollisionHandler {
     }
 
     if (isProjectile1) {
+      const owner = getProjectileOwner(eid1);
       this.destroyProjectile(eid1);
-      this.handleTarget(eid2);
+      this.handleTarget(eid2, owner);
     } else if (isProjectile2) {
+      const owner = getProjectileOwner(eid2);
       this.destroyProjectile(eid2);
-      this.handleTarget(eid1);
+      this.handleTarget(eid1, owner);
     }
   }
 
@@ -64,13 +71,16 @@ export class CollisionHandler {
     this.onProjectileDestroyed(eid);
   }
 
-  private handleTarget(eid: number) {
-    if (hasComponent(this.world, Destructible, eid)) {
-      const pos = getPosition(eid);
-      const radius = getRadius(eid);
+  private handleTarget(targetEid: number, shooterEid: number) {
+    if (hasComponent(this.world, Destructible, targetEid)) {
+      const pos = getPosition(targetEid);
+      const radius = getRadius(targetEid);
       new Explosion(this.scene, pos, radius * 2, stationCols).play(1000);
-      removeEntity(this.world, eid);
-      this.onTargetDestroyed(eid);
+      removeEntity(this.world, targetEid);
+      if (this.world.movements) {
+        this.world.movements[shooterEid].destroyedTarget = targetEid;
+      }
+      this.onTargetDestroyed(targetEid);
       getSoundManager(this.scene).playSound('stationHit');
     } else {
       getSoundManager(this.scene).playSound('genericHit');

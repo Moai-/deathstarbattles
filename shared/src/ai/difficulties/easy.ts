@@ -1,37 +1,34 @@
-import { OtherActions, TurnGenerator } from 'shared/src/types';
-import { EMPTY_TURN } from '../consts';
+import { TurnGenerator } from 'shared/src/types';
 import {
-  getAngleBetween,
+  addError,
+  computeFirstShot,
   getClosestDestructible,
-  getPosition,
-  getPower,
-  getRandomBetween,
+  hyperspaceTurn,
+  oneIn,
+  shotTurn,
 } from '../utils';
-
+/**
+ * Easy ("aimbot")
+ * – Fire in a tight but still noisy arc at the target with 100% power
+ * – Hyperspace with 1/8 chance
+ */
 const generateEasyTurn: TurnGenerator = (world, playerInfo, gameState) => {
   const playerId = playerInfo.id;
-  const shouldHyperspace = getRandomBetween(1, 8) === 2;
-  if (shouldHyperspace) {
-    return {
-      ...EMPTY_TURN,
-      playerId,
-      otherAction: OtherActions.HYPERSPACE,
-    };
+
+  // 1. Bail randomly
+  if (oneIn(8)) {
+    return hyperspaceTurn(playerId);
   }
-  const ownPoint = getPosition(playerInfo.id);
-  const closestEid = getClosestDestructible(
+
+  // 2. Shoot randomly but in a tight arc
+  const targetEid = getClosestDestructible(
     world,
     playerInfo.id,
     gameState.objectInfo,
   );
-  const target = getPosition(closestEid);
-  const angle = getAngleBetween(ownPoint, target) + (Math.random() * 20 - 10);
-  const power = getPower(ownPoint, target, getRandomBetween(-5, 5));
-  return {
-    playerId,
-    angle,
-    power,
-  };
+  const shotInfo = computeFirstShot({ ownEid: playerId, targetEid });
+  const noisyShot = addError(shotInfo);
+  return shotTurn(playerId, noisyShot);
 };
 
 export default generateEasyTurn;

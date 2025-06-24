@@ -1,23 +1,26 @@
-import { OtherActions, TurnGenerator } from 'shared/src/types';
+import { TurnGenerator } from 'shared/src/types';
 import {
   getAngleBetween,
   getClosestDestructible,
   getPosition,
   getPower,
   getRandomBetween,
+  hyperspaceTurn,
+  oneIn,
 } from '../utils';
-import { EMPTY_TURN } from '../consts';
-
+/**
+ * Trivial ("randbot")
+ * – Aiming is randomized within a quadrant of where the target is
+ * – Hyperspace 1/4 of the time (also randomly)
+ */
 const generateTrivialTurn: TurnGenerator = (world, playerInfo, gameState) => {
   const playerId = playerInfo.id;
-  const shouldHyperspace = getRandomBetween(1, 4) === 2;
-  if (shouldHyperspace) {
-    return {
-      ...EMPTY_TURN,
-      playerId,
-      otherAction: OtherActions.HYPERSPACE,
-    };
+
+  // 1. Bail 1/4 of the time
+  if (oneIn(4)) {
+    return hyperspaceTurn(playerId);
   }
+
   const ownPoint = getPosition(playerInfo.id);
   const closestEid = getClosestDestructible(
     world,

@@ -66,16 +66,24 @@ export type ObjectMovements = {
   [key: number]: {
     id: number;
     movementTrace: Array<AnyPoint>;
+    destroyedTarget: number | null;
   };
-} | null;
+};
 
 export type GameState = {
   objectInfo: Array<GameObject>;
-  lastTurnShots: ObjectMovements;
+  lastTurnShots: ObjectMovements | null;
 };
 
 export type TurnGenerator = (
   world: GameWorld,
   playerInfo: PlayerInfo,
   gameState: GameState,
+  lastTurnInput: TurnInput | null,
 ) => TurnInput;
+
+export type ShotInfo = {
+  willHit: boolean;
+  closest: number | null;
+  dist2: number;
+};
