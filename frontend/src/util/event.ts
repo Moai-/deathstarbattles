@@ -12,6 +12,7 @@ export enum GameEvents {
   SCENE_LOADED = 'sceneloaded',
   START_GAME = 'startgame',
   GAME_END = 'gameend',
+  GAME_LOADED = 'gameloaded',
   GAME_REMOVED = 'gameremoved',
 }
 
@@ -33,6 +34,7 @@ type EventData = {
   [GameEvents.START_GAME]: GameConfig;
   [GameEvents.SCENE_LOADED]: void;
   [GameEvents.GAME_REMOVED]: void;
+  [GameEvents.GAME_LOADED]: void;
   [GameEvents.SET_VOLUME]: GameVolume;
 };
 

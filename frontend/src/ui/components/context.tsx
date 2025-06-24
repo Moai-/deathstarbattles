@@ -21,15 +21,17 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
   const [gameState, setGameState] = useState<GameState>(GameState.MAIN_MENU);
   const [winnerData, setWinnerData] = useState<WinnerData | null>(null);
   useEffect(() => {
-    gameBus.on(GameEvents.GAME_END, (winnerData) => {
-      if (gameState === GameState.INGAME) {
-        const winner = winnerData[0];
-        setWinnerData(winner);
-        setGameState(GameState.SCORESCREEN);
-        stopMainScene();
-      }
-    });
-  });
+    if (gameState === GameState.INGAME) {
+      gameBus.on(GameEvents.GAME_END, (winnerData) => {
+        if (gameState === GameState.INGAME) {
+          const winner = winnerData[0];
+          setWinnerData(winner);
+          setGameState(GameState.SCORESCREEN);
+          stopMainScene();
+        }
+      });
+    }
+  }, [gameState]);
 
   return (
     <GameStateContext.Provider value={{ gameState, setGameState, winnerData }}>

@@ -8,16 +8,14 @@ export const useStartBackground = (isActive: boolean) => {
     if (isActive) {
       startGameWithConfig({ justBots: true });
       gameBus.on(GameEvents.GAME_END, () => {
-        stopMainScene();
-        setTimeout(() => {
-          if (isActive) {
-            startGameWithConfig({ justBots: true });
-          }
-        }, 1000);
+        stopMainScene().then(() => startGameWithConfig({ justBots: true }));
       });
-      return () => stopMainScene();
     } else {
       gameBus.off(GameEvents.GAME_END);
     }
+
+    return () => {
+      gameBus.off(GameEvents.GAME_END);
+    };
   }, [isActive]);
 };

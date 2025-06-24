@@ -68,7 +68,6 @@ export default class GameManager {
     this.projectileManager = new ProjectileManager(world);
     this.collisionHandler = new CollisionHandler(world, scene, this.allObjects);
     this.inputHandler = new PlayerInputHandler();
-    console.log('gameManager constructed');
   }
 
   create() {
@@ -163,6 +162,7 @@ export default class GameManager {
   }
 
   private firePhase() {
+    this.indicator.removeIndicator();
     this.objectManager.removeAllChildren();
     this.projectileManager.reset();
     this.world.movements = null;
@@ -235,11 +235,18 @@ export default class GameManager {
   }
 
   private useHyperspace(eid: number) {
-    // console.log('teleporting player %s (%s)', eid, Renderable.col[eid]);
     const playerInfo = this.getPlayerInfo(eid);
+
     if (!playerInfo || !playerInfo?.isAlive) {
       return;
     }
+    console.log(
+      'teleporting player %s (%s)',
+      eid,
+      Renderable.col[eid],
+      playerInfo,
+    );
+
     const { width, height } = this.scene.scale;
     const radius = getRadius(eid);
     const [newPosition] = generateNonOverlappingPositions(

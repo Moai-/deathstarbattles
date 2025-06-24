@@ -16,8 +16,8 @@ import {
 import { toggleFullscreen } from '../functions/toggleFullscreen';
 import { gameBus, GameEvents } from 'src/util';
 import { OtherActions } from 'shared/src/types';
-import { softDestroyGame } from '../functions/gameManagement';
 import { GameState, useGameState } from './context';
+import { stopMainScene } from 'src/game';
 
 const ControlPanel: React.FC = () => {
   const [angle, setAngle] = useState(90);
@@ -84,7 +84,7 @@ const ControlPanel: React.FC = () => {
   };
 
   const backToMenu = () => {
-    softDestroyGame().then(() => {
+    stopMainScene().then(() => {
       setGameState(GameState.MAIN_MENU);
     });
   };

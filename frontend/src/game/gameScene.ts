@@ -44,12 +44,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
-    console.log('gamescene create');
     gameBus.on(GameEvents.START_GAME, (config) => {
       console.log('starting game', this.unique);
       this.gameManager.startGame(config);
     });
     this.gameManager.create();
+    getSoundManager(this).playSound('songLoop');
     gameBus.emit(GameEvents.SCENE_LOADED);
   }
 
@@ -65,7 +65,6 @@ export class GameScene extends Phaser.Scene {
 
   destroy() {
     // flushRemovedEntities(this.world);
-    console.log('game scene destroy');
     getSoundManager(this).stopAllSounds('effects');
     resetWorld(this.world);
     this.gameManager.destroy();

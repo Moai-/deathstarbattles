@@ -20,8 +20,6 @@ export class ResourceScene extends Phaser.Scene {
 
   create() {
     this.audioManager.create();
-    this.scene.start('GameScene');
-    this.audioManager.playSound('songLoop');
     gameBus.on(
       GameEvents.SET_VOLUME,
       ({ musicVolume, effectsVolume, mute }) => {
@@ -36,6 +34,7 @@ export class ResourceScene extends Phaser.Scene {
         }
       },
     );
+    gameBus.emit(GameEvents.GAME_LOADED);
   }
 
   destroy() {

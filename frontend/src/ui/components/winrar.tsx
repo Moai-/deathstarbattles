@@ -5,7 +5,6 @@ import { GameState, useGameState } from './context';
 
 const WinrarScreen: React.FC = () => {
   const { setGameState, winnerData } = useGameState();
-  console.log('showing winscreen with info', winnerData);
 
   if (!winnerData) {
     return null;

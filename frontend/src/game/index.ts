@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GameScene } from './gameScene';
 import { BASE_HEIGHT, BASE_WIDTH } from 'shared/src/consts';
 import { ResourceScene } from './resourceScene';
+import { gameBus, GameEvents } from 'src/util';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.WEBGL,
@@ -30,20 +31,25 @@ window.__PHASER_GAME__ = window.__PHASER_GAME__ || null;
 
 export const getGame = (): Phaser.Game | null => window.__PHASER_GAME__;
 
-export const createGame = () => {
-  if (!window.__PHASER_GAME__) {
-    window.__PHASER_GAME__ = new Phaser.Game(config);
-  } else {
-    console.log(
-      'attempted to create game when previous game was not destroyed',
-    );
-  }
-};
+export const createGame = () =>
+  new Promise<void>((resolve) => {
+    if (!window.__PHASER_GAME__) {
+      gameBus.on(GameEvents.GAME_LOADED, () => {
+        gameBus.off(GameEvents.GAME_LOADED);
+        resolve();
+      });
+      window.__PHASER_GAME__ = new Phaser.Game(config);
+    } else {
+      console.log(
+        'attempted to create game when previous game was not destroyed',
+      );
+      resolve();
+    }
+  });
 
 export const destroyGame = () => {
   const game = getGame();
   if (game) {
-    console.log('destroying game');
     getMainScene()?.destroy();
     game.destroy(true);
     window.__PHASER_GAME__ = null;
@@ -59,19 +65,24 @@ export const getMainScene = () => {
 };
 
 export const stopMainScene = () => {
-  const scene = getMainScene();
-  if (scene) {
-    console.log('scene stop');
-    scene.scene.stop();
-    scene.destroy();
-  }
+  return new Promise<void>((resolve) => {
+    const scene = getMainScene();
+    if (scene) {
+      gameBus.on(GameEvents.GAME_REMOVED, () => {
+        gameBus.off(GameEvents.GAME_REMOVED);
+        resolve();
+      });
+      scene.scene.stop();
+      scene.destroy();
+    } else {
+      resolve();
+    }
+  });
 };
 
 export const startMainScene = () => {
   const scene = getMainScene();
   if (scene) {
-    console.log('scene start');
-    scene.create();
     scene.scene.start();
   }
 };

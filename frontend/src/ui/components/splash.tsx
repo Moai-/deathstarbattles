@@ -12,21 +12,10 @@ import instructions from '../content/instructions';
 import { SubBlock } from '../styled/text';
 import pkg from '../../../../package.json';
 import { GameState, useGameState } from './context';
-import {
-  softDestroyGame,
-  startGameWithConfig,
-} from '../functions/gameManagement';
 
 const Splash: React.FC = () => {
   const { setGameState } = useGameState();
-  const stopScene = () => {
-    softDestroyGame().then(() => {
-      console.log('game destroyed');
-    });
-  };
-  const startScene = () => {
-    startGameWithConfig({ justBots: true });
-  };
+
   return (
     <OverlayContainer>
       <TopRightButton>
@@ -51,8 +40,6 @@ const Splash: React.FC = () => {
       <NeonButton onClick={() => setGameState(GameState.CONFIG_GAME)}>
         New game
       </NeonButton>
-      <NeonButton onClick={stopScene}>Stop scene</NeonButton>
-      <NeonButton onClick={startScene}>Start scene</NeonButton>
     </OverlayContainer>
   );
 };
