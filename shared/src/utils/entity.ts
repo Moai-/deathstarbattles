@@ -2,6 +2,7 @@ import { Collision } from '../ecs/components/collision';
 import { ObjType } from '../ecs/components/objType';
 import { Position } from '../ecs/components/position';
 import { Projectile } from '../ecs/components/projectile';
+import { Reference } from '../ecs/components/reference';
 import { ExitTypes, Wormhole } from '../ecs/components/wormhole';
 import { AnyPoint, ObjectTypes } from '../types';
 
@@ -42,3 +43,5 @@ export const scrambleWormhole = (eid: number) => {
   Wormhole.exitType[eid] = ExitTypes.RANDOM;
   Wormhole.teleportTarget[eid] = 0;
 };
+
+export const dereference = (eid: number) => Reference.original[eid];

@@ -1,12 +1,12 @@
 import {
-  addComponent,
+  // addComponent,
   addEntity,
   createWorld,
   entityExists,
   IWorld,
 } from 'bitecs';
 import { GameObject, ObjectMovements } from '../types';
-import { NullEntity } from './components/nullEntity';
+// import { NullEntity } from './components/nullEntity';
 
 export const NULL_ENTITY = 0;
 
@@ -26,7 +26,7 @@ export const createGameWorld = () => {
   // null entity
   if (!entityExists(world, NULL_ENTITY)) {
     addEntity(world);
-    addComponent(world, NullEntity, NULL_ENTITY);
+    // addComponent(world, NullEntity, NULL_ENTITY);
   }
   return world;
 };

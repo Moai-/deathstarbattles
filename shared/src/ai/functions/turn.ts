@@ -1,4 +1,4 @@
-import { OtherActions, TurnInput } from 'shared/src/types';
+import { AnyPoint, OtherActions, TurnInput } from 'shared/src/types';
 import { getRandomBetween } from 'shared/src/utils';
 
 export type RawTurn = Pick<TurnInput, 'angle' | 'power'>;
@@ -23,9 +23,14 @@ export const hyperspaceTurn = (playerId: number) =>
     otherAction: OtherActions.HYPERSPACE,
   }) as TurnInput;
 
-export const shotTurn = (playerId: number, turn: RawTurn) =>
+export const shotTurn = (
+  playerId: number,
+  turn: RawTurn,
+  paths?: Array<Array<AnyPoint>>,
+) =>
   ({
     ...turn,
     playerId,
     otherAction: null,
+    paths,
   }) as TurnInput;

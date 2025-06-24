@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { createGameWorld } from 'shared/src/ecs/world';
-import { BASE_HEIGHT, BASE_WIDTH, HIDDEN_BOUNDARY } from 'shared/src/consts';
 import { createMovementSystem } from 'shared/src/ecs/systems/movement';
 import { createGravitySystem } from 'shared/src/ecs/systems/gravity';
 import { createCleanupSystem } from 'shared/src/ecs/systems/cleanup';
@@ -14,10 +13,7 @@ import { gameBus, GameEvents } from 'src/util';
 import { clearBackground } from 'src/render/background';
 import { getSoundManager } from './resourceScene';
 import { makeId } from 'shared/src/utils';
-
-const bMin = 0 - HIDDEN_BOUNDARY;
-const bxMax = BASE_WIDTH + HIDDEN_BOUNDARY;
-const byMax = BASE_HEIGHT + HIDDEN_BOUNDARY;
+import { Depths } from 'src/render/types';
 
 export class GameScene extends Phaser.Scene {
   private objectManager = new GameObjectManager(this);
@@ -25,10 +21,6 @@ export class GameScene extends Phaser.Scene {
   private gameManager = new GameManager(this, this.world, this.objectManager);
   private movementSystem = createMovementSystem();
   private cleanupSystem = createCleanupSystem(
-    bMin,
-    bxMax,
-    bMin,
-    byMax,
     this.gameManager.onCleanup.bind(this.gameManager),
   );
   private gravitySystem = createGravitySystem();
@@ -53,6 +45,27 @@ export class GameScene extends Phaser.Scene {
     this.gameManager.create();
     getSoundManager(this).playSound('songLoop');
     gameBus.emit(GameEvents.SCENE_LOADED);
+    gameBus.on(GameEvents.DEBUG_DRAW_PATH, (paths) => {
+      for (const path of paths) {
+        if (path.length < 2) {
+          return;
+        }
+        const lines: Array<Phaser.GameObjects.Graphics> = [];
+        for (let i = 1; i < path.length; i++) {
+          const thisUnit = path[i];
+          const { x, y } = path[i - 1];
+          const line = this.add.graphics();
+          const size = 2;
+          line.lineStyle(size, 0xffffff, 0.5);
+          line.lineBetween(thisUnit.x, thisUnit.y, x, y);
+          line.setDepth(Depths.INTERFACE);
+          lines.push(line);
+        }
+        setTimeout(() => {
+          lines.forEach((line) => line.destroy(true));
+        }, 2500);
+      }
+    });
   }
 
   update(time: number, deltaMs: number) {
@@ -74,6 +87,7 @@ export class GameScene extends Phaser.Scene {
     this.objectManager.destroy();
     clearBackground(this);
     gameBus.off(GameEvents.START_GAME);
+    gameBus.off(GameEvents.DEBUG_DRAW_PATH);
     gameBus.emit(GameEvents.GAME_REMOVED);
   }
 }

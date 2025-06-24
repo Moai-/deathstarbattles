@@ -12,7 +12,7 @@ export const createBigWormhole = (
   radius: number,
 ) => {
   const eid = createWormhole(world, x, y, radius);
-  HasGravity.strength[eid] = radius;
+  HasGravity.strength[eid] = radius * 50;
   ObjType.type[eid] = ObjectTypes.BIG_WORMHOLE;
   return eid;
 };

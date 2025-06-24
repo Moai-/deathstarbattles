@@ -3,17 +3,18 @@ import { Position } from '../components/position';
 import { Velocity } from '../components/velocity';
 import { HasLifetime } from '../components/hasLifetime';
 import { GameWorld } from '../world';
+import { HIDDEN_BOUNDARY, BASE_WIDTH, BASE_HEIGHT } from 'shared/src/consts';
 
 const boundQuery = defineQuery([Position, Velocity]);
 const timeoutQuery = defineQuery([HasLifetime]);
 
 const DEFAULT_PROJECTILE_LIFETIME = 30;
 
+const bMin = 0 - HIDDEN_BOUNDARY;
+const bxMax = BASE_WIDTH + HIDDEN_BOUNDARY;
+const byMax = BASE_HEIGHT + HIDDEN_BOUNDARY;
+
 export const createCleanupSystem = (
-  minX: number,
-  maxX: number,
-  minY: number,
-  maxY: number,
   onEntityCleanedUp: (eid: number) => void = () => {},
 ) => {
   return defineSystem((world) => {
@@ -21,8 +22,8 @@ export const createCleanupSystem = (
     for (const eid of boundaryEntities) {
       const x = Position.x[eid];
       const y = Position.y[eid];
-      if (x < maxX && x > minX) {
-        if (y < maxY && y > minY) {
+      if (x < bxMax && x > bMin) {
+        if (y < byMax && y > bMin) {
           continue;
         }
       }

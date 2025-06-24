@@ -77,7 +77,7 @@ export default class GameManager {
   }
 
   onCollision(eid1: number, eid2: number, wasDestroyed: boolean) {
-    this.collisionHandler.handleCollision(eid1, eid2, wasDestroyed);
+    return this.collisionHandler.handleCollision(eid1, eid2, wasDestroyed);
   }
 
   onCleanup(eid: number) {
@@ -201,6 +201,9 @@ export default class GameManager {
           this.getGameState(),
           this.getPreviousTurnInput(playerInfo.id),
         );
+        if (thisPlayerInput.paths) {
+          gameBus.emit(GameEvents.DEBUG_DRAW_PATH, thisPlayerInput.paths);
+        }
         this.turnInputs.push(thisPlayerInput);
       }
     }

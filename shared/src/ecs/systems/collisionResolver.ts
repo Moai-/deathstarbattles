@@ -16,7 +16,8 @@ export const createCollisionResolverSystem = (
     projEid: number,
     targetEid: number,
     hitDestructible: boolean,
-  ) => void = () => {},
+    time: number,
+  ) => boolean = () => true,
 ) => {
   return defineSystem((world: GameWorld) => {
     if (!world.movements) return world; // no shots this frame
@@ -40,9 +41,11 @@ export const createCollisionResolverSystem = (
 
       // Target can be destroyed
       if (hasComponent(world, Destructible, target)) {
-        onCollision(projEid, target, true);
-        removeEntity(world, projEid);
-        removeEntity(world, target); // Maybe remove later if target takes multiple shots to kill
+        const doRemove = onCollision(projEid, target, true, world.time);
+        if (doRemove) {
+          removeEntity(world, projEid);
+          removeEntity(world, target);
+        }
         world.movements[parent].destroyedTarget = target;
         continue;
       }
@@ -56,8 +59,10 @@ export const createCollisionResolverSystem = (
       }
 
       // Target is not a wormhole, not destructible, but has collision
-      onCollision(projEid, target, false);
-      removeEntity(world, projEid);
+      const doRemove = onCollision(projEid, target, false, world.time);
+      if (doRemove) {
+        removeEntity(world, projEid);
+      }
     }
 
     return world;

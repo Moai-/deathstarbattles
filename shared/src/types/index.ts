@@ -48,6 +48,7 @@ export type TurnInput = {
   angle: number;
   power: number;
   otherAction?: OtherActions | null;
+  paths?: Array<Array<AnyPoint>>;
 };
 
 export type ClearanceFunction = (a: number, b: number) => number;
@@ -112,3 +113,12 @@ export type GameConfig = {
   itemRules?: Array<ScenarioItemRule>;
   maxItems?: number;
 };
+
+export type TargetCacheEntry = {
+  x: number;
+  y: number;
+  eid: number;
+  r2: number;
+};
+
+export type TargetCache = Array<TargetCacheEntry>;

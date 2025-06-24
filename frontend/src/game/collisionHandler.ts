@@ -19,7 +19,11 @@ export class CollisionHandler {
     this.scene = scene;
   }
 
-  handleCollision(projEid: number, targetEid: number, killed: boolean): void {
+  handleCollision(
+    projEid: number,
+    targetEid: number,
+    killed: boolean,
+  ): boolean {
     const owner = getProjectileOwner(projEid);
     this.destroyProjectile(projEid);
 
@@ -35,6 +39,7 @@ export class CollisionHandler {
     } else {
       getSoundManager(this.scene).playSound('genericHit');
     }
+    return true;
   }
 
   private destroyProjectile(eid: number) {

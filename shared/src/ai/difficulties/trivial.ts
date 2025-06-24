@@ -4,7 +4,7 @@ import {
   hyperspaceTurn,
   getClosestDestructible,
   getAngleBetween,
-  getPower,
+  addError,
 } from '../functions';
 
 /**
@@ -20,6 +20,7 @@ const generateTrivialTurn: TurnGenerator = (world, playerInfo, gameState) => {
     return hyperspaceTurn(playerId);
   }
 
+  // 2. Shoot randomly only in the vaguest direction of the target
   const ownPoint = getPosition(playerInfo.id);
   const closestEid = getClosestDestructible(
     world,
@@ -31,7 +32,7 @@ const generateTrivialTurn: TurnGenerator = (world, playerInfo, gameState) => {
   const quadrant = Math.floor(angleToTarget / 90) * 90;
   const angleError = getRandomBetween(0, 90);
   const angle = quadrant + angleError;
-  const power = getPower(ownPoint, target, getRandomBetween(-10, 10));
+  const { power } = addError({ power: 100, angle: 0 }, 0, 10);
   return {
     angle,
     power,

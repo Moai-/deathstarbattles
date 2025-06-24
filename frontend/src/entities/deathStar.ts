@@ -12,9 +12,10 @@ import { GameWorld, NULL_ENTITY } from 'shared/src/ecs/world';
 import { ObjectTypes } from 'shared/src/types';
 import { colToUi32 } from 'shared/src/utils';
 import { ObjType } from 'shared/src/ecs/components/objType';
+import { DEFAULT_DEATHBEAM_RADIUS } from 'shared/src/consts';
+import { inputsToShot } from 'shared/src/ai/functions';
 
 export const DEFAULT_DEATHSTAR_RADIUS = 17;
-export const DEFAULT_DEATHBEAM_RADIUS = 2;
 
 export const createDeathStar = (
   world: GameWorld,
@@ -42,7 +43,7 @@ export const fireProjectile = (
   world: GameWorld,
   parentEid: number,
   angle: number,
-  speed: number,
+  power: number,
 ) => {
   const eid = addEntity(world);
   addComponent(world, Position, eid);
@@ -55,18 +56,10 @@ export const fireProjectile = (
   addComponent(world, HasLifetime, eid);
   addComponent(world, ObjType, eid);
 
-  const angleRad = Phaser.Math.DegToRad(angle);
-  const fasterSpeed = speed * 2;
-
   Projectile.parent[eid] = parentEid;
   Projectile.lastCollisionTarget[eid] = NULL_ENTITY;
   Collision.radius[eid] = DEFAULT_DEATHBEAM_RADIUS;
-  // slight offset to avoid triggering collision on firing
-  const offset = Collision.radius[parentEid] + DEFAULT_DEATHBEAM_RADIUS;
-  Position.x[eid] = Position.x[parentEid] + Math.cos(angleRad) * offset;
-  Position.y[eid] = Position.y[parentEid] + Math.sin(angleRad) * offset;
-  Velocity.x[eid] = Math.cos(angleRad) * fasterSpeed;
-  Velocity.y[eid] = Math.sin(angleRad) * fasterSpeed;
+  inputsToShot(parentEid, eid, { angle, power });
   ObjType.type[eid] = ObjectTypes.DEATHBEAM;
   Renderable.col[eid] = Renderable.col[parentEid];
   LeavesTrail.col[eid] = Renderable.col[parentEid];

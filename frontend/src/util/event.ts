@@ -1,5 +1,5 @@
 import mitt from 'mitt';
-import { GameConfig, OtherActions } from 'shared/src/types';
+import { AnyPoint, GameConfig, OtherActions } from 'shared/src/types';
 
 export enum GameEvents {
   END_TURN = 'endturn',
@@ -13,6 +13,7 @@ export enum GameEvents {
   GAME_END = 'gameend',
   GAME_LOADED = 'gameloaded',
   GAME_REMOVED = 'gameremoved',
+  DEBUG_DRAW_PATH = 'debugdrawpath',
 }
 
 type WinnerData = { col: number; playerId: number };
@@ -35,6 +36,7 @@ type EventData = {
   [GameEvents.GAME_REMOVED]: void;
   [GameEvents.GAME_LOADED]: void;
   [GameEvents.SET_VOLUME]: GameVolume;
+  [GameEvents.DEBUG_DRAW_PATH]: Array<Array<AnyPoint>>;
 };
 
 export const gameBus = mitt<EventData>();

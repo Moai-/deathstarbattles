@@ -31,7 +31,7 @@ export const generateRandomBots = (world: GameWorld) => {
       id: i,
       type: 1,
       col: playerCols[i],
-      difficulty: 3,
+      difficulty: 4,
     });
   }
   return generatePlayers(world, rawPlayers);

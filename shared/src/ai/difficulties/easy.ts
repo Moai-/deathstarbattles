@@ -21,7 +21,7 @@ const generateEasyTurn: TurnGenerator = (world, playerInfo, gameState) => {
     return hyperspaceTurn(playerId);
   }
 
-  // 2. Shoot randomly but in a tight arc
+  // 2. Shoot in a tight arc towards closest target
   const targetEid = getClosestDestructible(
     world,
     playerInfo.id,

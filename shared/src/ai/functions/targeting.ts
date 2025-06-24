@@ -1,7 +1,7 @@
 import { hasComponent, IWorld } from 'bitecs';
 import { Destructible } from 'shared/src/ecs/components/destructible';
 import { GameWorld } from 'shared/src/ecs/world';
-import { GameObject } from 'shared/src/types';
+import { GameObject, TargetCache } from 'shared/src/types';
 import { getPosition, getRadius } from 'shared/src/utils';
 import { getSquaredDistance } from './numeric';
 
@@ -50,7 +50,7 @@ export const buildTargetCache = (
   playerId: number,
   world: IWorld,
   gameObjects: Array<GameObject>,
-) =>
+): TargetCache =>
   gameObjects
     .filter(
       (o) => hasComponent(world, Destructible, o.eid) && o.eid !== playerId,
