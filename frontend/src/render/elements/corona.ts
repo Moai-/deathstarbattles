@@ -1,7 +1,7 @@
 import { AnyPoint } from 'shared/src/types';
-import { makeId } from 'src/game/util';
 import { Depths } from '../types';
 import generateStarCols, { darkenCol } from './starCols';
+import { makeId } from 'shared/src/utils';
 
 const drawCorona = (
   scene: Phaser.Scene,

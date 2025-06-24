@@ -1,4 +1,4 @@
-import { GameWorld } from './ecs/world';
+import { GameWorld } from '../ecs/world';
 
 export enum OtherActions {
   NONE,
@@ -15,14 +15,17 @@ export enum PlayerTypes {
 }
 
 export enum ObjectTypes {
+  NONE,
+  DEATHSTAR,
+  DEATHBEAM,
   ASTEROID,
+  BLACK_HOLE,
   PLANET,
-  JOVIAN,
   STAR,
   SUPERGIANT,
-  BLACK_HOLE,
   RED_GIANT,
   WHITE_DWARF,
+  JOVIAN,
   WORMHOLE,
   BIG_WORMHOLE,
   WHITE_HOLE,
@@ -86,4 +89,26 @@ export type ShotInfo = {
   willHit: boolean;
   closest: number | null;
   dist2: number;
+};
+
+export interface ScenarioItem {
+  id: number;
+  type: ObjectTypes; // 'asteroid', 'planet', etc.
+  amount: number;
+}
+
+export interface ScenarioItemRule {
+  type: ObjectTypes;
+  min?: number;
+  max?: number;
+  n?: number;
+  p?: number;
+}
+
+export type GameConfig = {
+  justBots?: boolean;
+  players?: Array<PlayerSetup>;
+  items?: Array<ScenarioItem>;
+  itemRules?: Array<ScenarioItemRule>;
+  maxItems?: number;
 };

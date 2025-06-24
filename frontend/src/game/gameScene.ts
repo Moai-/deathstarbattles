@@ -5,14 +5,15 @@ import { createMovementSystem } from 'shared/src/ecs/systems/movement';
 import { createGravitySystem } from 'shared/src/ecs/systems/gravity';
 import { createCleanupSystem } from 'shared/src/ecs/systems/cleanup';
 import { createCollisionSystem } from 'shared/src/ecs/systems/collision';
+import { createCollisionResolverSystem } from 'shared/src/ecs/systems/collisionResolver';
 import { createRenderSystem } from '../render/renderSystem';
 import { GameObjectManager } from '../render/objectManager';
 import GameManager from './gameManager';
 import { resetWorld } from 'bitecs';
 import { gameBus, GameEvents } from 'src/util';
-import { makeId } from './util';
 import { clearBackground } from 'src/render/background';
 import { getSoundManager } from './resourceScene';
+import { makeId } from 'shared/src/utils';
 
 const bMin = 0 - HIDDEN_BOUNDARY;
 const bxMax = BASE_WIDTH + HIDDEN_BOUNDARY;
@@ -31,7 +32,8 @@ export class GameScene extends Phaser.Scene {
     this.gameManager.onCleanup.bind(this.gameManager),
   );
   private gravitySystem = createGravitySystem();
-  private collisionSystem = createCollisionSystem(
+  private collisionSystem = createCollisionSystem();
+  private collisionResolverSystem = createCollisionResolverSystem(
     this.gameManager.onCollision.bind(this.gameManager),
   );
   private renderSystem = createRenderSystem(this, this.objectManager);
@@ -59,6 +61,7 @@ export class GameScene extends Phaser.Scene {
     this.movementSystem(this.world);
     this.gravitySystem(this.world);
     this.collisionSystem(this.world);
+    this.collisionResolverSystem(this.world);
     this.cleanupSystem(this.world);
     this.renderSystem(this.world);
   }

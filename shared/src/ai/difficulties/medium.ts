@@ -1,16 +1,16 @@
 import { ShotInfo, TurnGenerator } from 'shared/src/types';
+import { oneIn } from 'shared/src/utils';
 import {
-  getClosestDestructible,
-  analyzeLastShot,
   buildTargetCache,
-  oneIn,
-  checkDangerousShots,
-  computeFirstShot,
-  hyperspaceTurn,
-  correctFromLastShot,
+  analyzeLastShot,
   shotTurn,
+  checkDangerousShots,
+  hyperspaceTurn,
+  getClosestDestructible,
+  computeFirstShot,
   addError,
-} from '../utils';
+  correctFromLastShot,
+} from '../functions';
 
 /**
  * Medium ("cleverbot")

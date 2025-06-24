@@ -1,9 +1,9 @@
-import { addComponent, addEntity, IWorld } from 'bitecs';
-import { Position } from 'shared/src/ecs/components/position';
-import { Collision } from 'shared/src/ecs/components/collision';
+import { IWorld } from 'bitecs';
 import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { Renderable } from '../render/components/renderable';
-import { RenderableTypes } from '../render/types';
+import { ObjectTypes } from 'shared/src/types';
+import { generateRandomCol } from 'shared/src/utils';
+import { createCollidingBase } from './bases';
 
 export const MIN_RAD = 70;
 export const MAX_RAD = 230;
@@ -14,18 +14,13 @@ export const createJovian = (
   y: number,
   radius: number,
 ) => {
-  const eid = addEntity(world);
-  addComponent(world, Position, eid);
-  addComponent(world, Collision, eid);
-  addComponent(world, Renderable, eid);
-  addComponent(world, HasGravity, eid);
+  const eid = createCollidingBase(world, x, y, radius, ObjectTypes.JOVIAN);
 
-  Position.x[eid] = x;
-  Position.y[eid] = y;
-  Collision.radius[eid] = radius;
   HasGravity.strength[eid] = radius * 50;
-  Renderable.type[eid] = RenderableTypes.JOVIAN;
-  Renderable.col[eid] = generateRandomJovianCol();
+  Renderable.col[eid] = generateRandomCol(
+    { r: 140, g: 0, b: 0 },
+    { r: 111, g: 121, b: 51 },
+  );
 
   return eid;
 };
@@ -33,12 +28,4 @@ export const createJovian = (
 export const createRandomJovian = (world: IWorld) => {
   const radius = Phaser.Math.Between(MIN_RAD, MAX_RAD);
   return createJovian(world, 0, 0, radius);
-};
-
-const generateRandomJovianCol = () => {
-  const r = 140 + Math.floor(Math.random() * 111);
-  const g = Math.floor(Math.random() * 121);
-  const b = Math.floor(Math.random() * 51);
-
-  return (r << 16) | (g << 8) | b;
 };

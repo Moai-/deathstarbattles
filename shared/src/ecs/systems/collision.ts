@@ -6,9 +6,7 @@ import { Projectile } from '../components/projectile';
 const projectileQuery = defineQuery([Position, Collision, Projectile]);
 const targetQuery = defineQuery([Position, Collision]);
 
-export const createCollisionSystem = (
-  onCollision: (projEid: number, targetEid: number) => void = () => {},
-) => {
+export const createCollisionSystem = () => {
   return defineSystem((world) => {
     const projectiles = projectileQuery(world);
     const targets = targetQuery(world);
@@ -26,7 +24,7 @@ export const createCollisionSystem = (
         const rad2 = Collision.radius[eid2];
 
         if (circlesDoOverlap(pos1.x, pos1.y, rad1, pos2.x, pos2.y, rad2)) {
-          onCollision(eid1, eid2);
+          Projectile.lastCollisionTarget[eid1] = eid2;
         }
       }
     }

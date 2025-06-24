@@ -1,6 +1,6 @@
 import renderDeathStar from './deathStar';
 
-import { RenderableTypes, RenderObject } from '../types';
+import { RenderObject } from '../types';
 import renderDeathBeam from './deathBeam';
 import renderAsteroid from './asteroid';
 import renderBlackHole from './blackHole';
@@ -12,21 +12,23 @@ import renderWhiteDwarf from './whiteDwarf';
 import renderWormhole from './wormhole';
 import renderBigWormhole from './bigWormhole';
 import renderWhiteHole from './whiteHole';
+import { ObjectTypes } from 'shared/src/types';
 
-const renderMap: Record<RenderableTypes, RenderObject> = {
-  [RenderableTypes.NONE]: renderBlackHole,
-  [RenderableTypes.DEATHSTAR]: renderDeathStar,
-  [RenderableTypes.DEATHBEAM]: renderDeathBeam,
-  [RenderableTypes.ASTEROID]: renderAsteroid,
-  [RenderableTypes.BLACK_HOLE]: renderBlackHole,
-  [RenderableTypes.PLANET]: renderPlanet,
-  [RenderableTypes.STAR]: renderStar,
-  [RenderableTypes.SUPERGIANT]: renderSupergiant,
-  [RenderableTypes.JOVIAN]: renderJovian,
-  [RenderableTypes.WHITE_DWARF]: renderWhiteDwarf,
-  [RenderableTypes.WORMHOLE]: renderWormhole,
-  [RenderableTypes.BIG_WORMHOLE]: renderBigWormhole,
-  [RenderableTypes.WHITE_HOLE]: renderWhiteHole,
+const renderMap: Record<ObjectTypes, RenderObject> = {
+  [ObjectTypes.NONE]: renderBlackHole,
+  [ObjectTypes.DEATHSTAR]: renderDeathStar,
+  [ObjectTypes.DEATHBEAM]: renderDeathBeam,
+  [ObjectTypes.ASTEROID]: renderAsteroid,
+  [ObjectTypes.BLACK_HOLE]: renderBlackHole,
+  [ObjectTypes.PLANET]: renderPlanet,
+  [ObjectTypes.STAR]: renderStar,
+  [ObjectTypes.RED_GIANT]: renderStar,
+  [ObjectTypes.SUPERGIANT]: renderSupergiant,
+  [ObjectTypes.JOVIAN]: renderJovian,
+  [ObjectTypes.WHITE_DWARF]: renderWhiteDwarf,
+  [ObjectTypes.WORMHOLE]: renderWormhole,
+  [ObjectTypes.BIG_WORMHOLE]: renderBigWormhole,
+  [ObjectTypes.WHITE_HOLE]: renderWhiteHole,
 };
 
 export default renderMap;

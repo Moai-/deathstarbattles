@@ -1,7 +1,6 @@
 import { AnyPoint } from 'shared/src/types';
-import { Renderable } from './components/renderable';
+import { getType } from 'shared/src/utils';
 import renderMap from './objects';
-import { RenderableTypes } from './types';
 import renderBoundaryIndicator from './objects/boundaryIndicator';
 
 export class GameObjectManager {
@@ -156,7 +155,7 @@ export class GameObjectManager {
   // }
 
   private renderEntity(eid: number) {
-    const renderType = Renderable.type[eid] as RenderableTypes;
+    const renderType = getType(eid);
     return renderMap[renderType](this.scene, eid);
   }
 }

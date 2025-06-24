@@ -1,13 +1,12 @@
 import { TurnGenerator } from 'shared/src/types';
+import { oneIn, getPosition, getRandomBetween } from 'shared/src/utils';
 import {
-  getAngleBetween,
-  getClosestDestructible,
-  getPosition,
-  getPower,
-  getRandomBetween,
   hyperspaceTurn,
-  oneIn,
-} from '../utils';
+  getClosestDestructible,
+  getAngleBetween,
+  getPower,
+} from '../functions';
+
 /**
  * Trivial ("randbot")
  * – Aiming is randomized within a quadrant of where the target is

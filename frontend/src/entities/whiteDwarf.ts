@@ -1,9 +1,10 @@
-import { addComponent, addEntity, IWorld } from 'bitecs';
-import { Position } from 'shared/src/ecs/components/position';
+import { IWorld } from 'bitecs';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { Renderable } from '../render/components/renderable';
-import { RenderableTypes } from '../render/types';
+import { ObjectTypes } from 'shared/src/types';
+import { generateRandomCol } from 'shared/src/utils';
+import { createCollidingBase } from './bases';
 
 const MIN_STAR_RAD = 6;
 const MAX_STAR_RAD = 12;
@@ -14,18 +15,13 @@ export const createWhiteDwarf = (
   y: number,
   radius: number,
 ) => {
-  const eid = addEntity(world);
-  addComponent(world, Position, eid);
-  addComponent(world, Collision, eid);
-  addComponent(world, Renderable, eid);
-  addComponent(world, HasGravity, eid);
-
-  Position.x[eid] = x;
-  Position.y[eid] = y;
+  const eid = createCollidingBase(world, x, y, radius, ObjectTypes.WHITE_DWARF);
   Collision.radius[eid] = radius;
   HasGravity.strength[eid] = (radius + 20) * 1500;
-  Renderable.type[eid] = RenderableTypes.WHITE_DWARF;
-  Renderable.col[eid] = generateRandomStarCol();
+  Renderable.col[eid] = generateRandomCol(
+    { r: 230, g: 230, b: 230 },
+    { r: 25, g: 25, b: 25 },
+  );
 
   return eid;
 };
@@ -33,12 +29,4 @@ export const createWhiteDwarf = (
 export const createRandomWhiteDwarf = (world: IWorld) => {
   const radius = Phaser.Math.Between(MIN_STAR_RAD, MAX_STAR_RAD);
   return createWhiteDwarf(world, 0, 0, radius);
-};
-
-export const generateRandomStarCol = () => {
-  const r = 230 + Math.floor(Math.random() * 25);
-  const g = 230 + Math.floor(Math.random() * 25);
-  const b = 230 + Math.floor(Math.random() * 25);
-
-  return (r << 16) | (g << 8) | b;
 };

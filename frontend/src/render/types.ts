@@ -1,21 +1,5 @@
 import { Scene } from 'phaser';
 
-export enum RenderableTypes {
-  NONE,
-  DEATHSTAR,
-  DEATHBEAM,
-  ASTEROID,
-  BLACK_HOLE,
-  PLANET,
-  STAR,
-  SUPERGIANT,
-  WHITE_DWARF,
-  JOVIAN,
-  WORMHOLE,
-  BIG_WORMHOLE,
-  WHITE_HOLE,
-}
-
 export enum Depths {
   BOTTOM,
   STARS,

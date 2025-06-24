@@ -6,8 +6,8 @@ import { NeonButton } from '../styled';
 import { scenarioTypes } from '../content/scenarioSetup';
 import { startGameWithConfig } from '../functions/gameManagement';
 import { PlayerSetup } from 'shared/src/types';
-import playerCols from 'src/game/playerCols';
 import { GameState, useGameState } from './context';
+import { playerCols } from 'shared/src/utils';
 
 export const DropdownRow = styled.div`
   display: flex;

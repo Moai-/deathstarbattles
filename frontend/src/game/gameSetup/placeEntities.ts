@@ -1,18 +1,19 @@
 import { ClearanceFunction, GameObject, ObjectTypes } from 'shared/src/types';
-import { Renderable } from 'src/render/components/renderable';
-import { getRadius, setPosition } from 'src/util';
 import {
   generateNonOverlappingPositions,
   generateSupergiantStarPosition,
-} from '../util';
-import { getType, pairWormholes, scrambleWormhole } from 'src/util/entity';
-import { RenderableTypes } from 'src/render/types';
+  getRadius,
+  getType,
+  pairWormholes,
+  scrambleWormhole,
+  setPosition,
+} from 'shared/src/utils';
 
 export const playerClearance: ClearanceFunction = (a, b) => a + b + 80;
 export const objectClearance: ClearanceFunction = (a, b) => a + b + 30;
 
 const getAdjustedRadius = (eid: number) => {
-  const type = Renderable.type[eid];
+  const type = getType(eid);
   switch (type) {
     case ObjectTypes.BLACK_HOLE:
       return 120;
@@ -46,10 +47,7 @@ export const placeEntities: (
 
   for (const obj of levelObjects) {
     const type = getType(obj.eid);
-    if (
-      type === RenderableTypes.SUPERGIANT ||
-      type === RenderableTypes.BIG_WORMHOLE
-    ) {
+    if (type === ObjectTypes.SUPERGIANT || type === ObjectTypes.BIG_WORMHOLE) {
       if (lastSupergiantSide) {
         let actualSide = '';
         switch (lastSupergiantSide) {
@@ -114,10 +112,7 @@ export const placeEntities: (
   placed.forEach((obj) => {
     setPosition(obj.eid, obj);
     const type = getType(obj.eid);
-    if (
-      type === RenderableTypes.WORMHOLE ||
-      type === RenderableTypes.BIG_WORMHOLE
-    ) {
+    if (type === ObjectTypes.WORMHOLE || type === ObjectTypes.BIG_WORMHOLE) {
       wormholes.push(obj.eid);
     }
   });

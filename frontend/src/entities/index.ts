@@ -1,4 +1,4 @@
-import { GameWorld } from 'shared/src/ecs/world';
+import { GameWorld, NULL_ENTITY } from 'shared/src/ecs/world';
 import { ObjectTypes } from 'shared/src/types';
 import { createRandomAsteroid } from './asteroid';
 import { createRandomBlackHole } from './blackHole';
@@ -12,7 +12,14 @@ import { createRandomWormhole } from './wormhole';
 import { createRandomBigWormhole } from './bigWormhole';
 import { createRandomWhiteHole } from './whiteHole';
 
+const none = () => NULL_ENTITY;
+
 export const createRandom: Record<ObjectTypes, (world: GameWorld) => number> = {
+  // These three do not get created randomly
+  [ObjectTypes.NONE]: none,
+  [ObjectTypes.DEATHSTAR]: none,
+  [ObjectTypes.DEATHBEAM]: none,
+  // Random object generation index
   [ObjectTypes.ASTEROID]: createRandomAsteroid,
   [ObjectTypes.STAR]: createRandomStar,
   [ObjectTypes.BLACK_HOLE]: createRandomBlackHole,

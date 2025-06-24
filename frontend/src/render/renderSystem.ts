@@ -9,10 +9,10 @@ import {
 } from './components/leavesTrail';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { Projectile } from 'shared/src/ecs/components/projectile';
-import { getPosition, ui32ToCol } from '../util';
 import { AnyPoint } from 'shared/src/types';
-import { getSquaredDistance } from 'shared/src/ai/utils';
 import { Depths } from './types';
+import { getSquaredDistance } from 'shared/src/ai/functions';
+import { ui32ToCol, getPosition } from 'shared/src/utils';
 
 const renderQuery = defineQuery([Position, Renderable]);
 const renderQueryEnter = enterQuery(renderQuery);

@@ -1,5 +1,4 @@
-import { ObjectTypes } from 'shared/src/types';
-import { ScenarioItemRule } from '../types';
+import { ObjectTypes, ScenarioItemRule } from 'shared/src/types';
 
 export const scenarioItems = [
   { key: ObjectTypes.ASTEROID, label: 'Asteroid', maxAmount: 16 },

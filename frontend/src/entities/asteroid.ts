@@ -1,9 +1,8 @@
-import { addComponent, addEntity, IWorld } from 'bitecs';
-import { Position } from 'shared/src/ecs/components/position';
+import { IWorld } from 'bitecs';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { HasGravity } from 'shared/src/ecs/components/hasGravity';
-import { Renderable } from '../render/components/renderable';
-import { RenderableTypes } from '../render/types';
+import { ObjectTypes } from 'shared/src/types';
+import { createCollidingBase } from './bases';
 
 export const MIN_ASTEROID_RAD = 15;
 export const MAX_ASTEROID_RAD = 35;
@@ -14,15 +13,8 @@ export const createAsteroid = (
   y: number,
   radius: number,
 ) => {
-  const eid = addEntity(world);
-  addComponent(world, Position, eid);
-  addComponent(world, Collision, eid);
-  addComponent(world, Renderable, eid);
-  addComponent(world, HasGravity, eid);
+  const eid = createCollidingBase(world, x, y, radius, ObjectTypes.ASTEROID);
 
-  Position.x[eid] = x;
-  Position.y[eid] = y;
-  Renderable.type[eid] = RenderableTypes.ASTEROID;
   Collision.radius[eid] = radius;
   HasGravity.strength[eid] = radius * 25;
 

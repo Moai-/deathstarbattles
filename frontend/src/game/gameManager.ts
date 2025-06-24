@@ -5,28 +5,27 @@ import { FiringIndicator } from './firingIndicator';
 import { PlayerInputHandler } from './playerInput';
 import { runGameSetup } from './gameSetup';
 import { ProjectileManager } from './projectileManager';
-import {
-  gameBus,
-  GameEvents,
-  getPosition,
-  getRadius,
-  setPosition,
-} from '../util';
+import { gameBus, GameEvents } from '../util';
 import { CollisionHandler } from './collisionHandler';
 import {
-  GameObject,
   TurnInput,
   OtherActions,
   PlayerInfo,
   GameState,
   PlayerTypes,
+  GameConfig,
 } from 'shared/src/types';
-import { generateNonOverlappingPositions, noop } from './util';
 import { Renderable } from 'src/render/components/renderable';
 import Hyperspace from 'src/render/animations/hyperspace';
-import { GameConfig } from 'src/ui/types';
 import { objectClearance } from './gameSetup/placeEntities';
 import { getSoundManager } from './resourceScene';
+import {
+  getRadius,
+  getPosition,
+  setPosition,
+  generateNonOverlappingPositions,
+  noop,
+} from 'shared/src/utils';
 
 export default class GameManager {
   // globals
@@ -43,7 +42,6 @@ export default class GameManager {
   // game state
   private activePlayer = -1;
   private players: Array<PlayerInfo> = [];
-  private allObjects: Array<GameObject> = [];
   private history: Array<Array<TurnInput>> = [];
   private turnInputs: Array<TurnInput> = [];
   private willHyperspace: Array<number> = [];
@@ -59,7 +57,7 @@ export default class GameManager {
     this.objectManager = objectManager;
     this.indicator = new FiringIndicator(scene);
     this.projectileManager = new ProjectileManager(world);
-    this.collisionHandler = new CollisionHandler(world, scene, this.allObjects);
+    this.collisionHandler = new CollisionHandler(world, scene);
     this.inputHandler = new PlayerInputHandler();
   }
 
@@ -78,8 +76,8 @@ export default class GameManager {
     this.active = false;
   }
 
-  onCollision(eid1: number, eid2: number) {
-    this.collisionHandler.handleCollision(eid1, eid2);
+  onCollision(eid1: number, eid2: number, wasDestroyed: boolean) {
+    this.collisionHandler.handleCollision(eid1, eid2, wasDestroyed);
   }
 
   onCleanup(eid: number) {
@@ -97,7 +95,7 @@ export default class GameManager {
     );
 
     this.players = players;
-    this.allObjects = objectPlacements;
+    this.world.allObjects = objectPlacements;
     this.startTurn();
   }
 
@@ -224,12 +222,12 @@ export default class GameManager {
     if (!playerInfo || !playerInfo?.isAlive) {
       return;
     }
-    console.log(
-      'teleporting player %s (%s)',
-      eid,
-      Renderable.col[eid],
-      playerInfo,
-    );
+    // console.log(
+    //   'teleporting player %s (%s)',
+    //   eid,
+    //   Renderable.col[eid],
+    //   playerInfo,
+    // );
 
     const { width, height } = this.scene.scale;
     const radius = getRadius(eid);
@@ -238,7 +236,7 @@ export default class GameManager {
       height,
       [radius],
       objectClearance,
-      this.allObjects,
+      this.world.allObjects,
     );
     const { x, y } = newPosition;
     const oldPos = getPosition(eid);
@@ -249,7 +247,9 @@ export default class GameManager {
       () => {
         new Hyperspace(this.scene, newPosition, radius, false).play(() => {
           setPosition(eid, newPosition);
-          const thisObject = this.allObjects.find((obj) => obj.eid === eid);
+          const thisObject = this.world.allObjects.find(
+            (obj) => obj.eid === eid,
+          );
           if (thisObject) {
             thisObject.x = x;
             thisObject.y = y;
@@ -317,7 +317,7 @@ export default class GameManager {
   getGameState() {
     return {
       lastTurnShots: this.world.movements,
-      objectInfo: this.allObjects,
+      objectInfo: this.world.allObjects,
     } as GameState;
   }
 }

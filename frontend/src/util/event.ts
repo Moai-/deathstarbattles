@@ -1,6 +1,5 @@
 import mitt from 'mitt';
-import { OtherActions } from 'shared/src/types';
-import { GameConfig } from 'src/ui/types';
+import { GameConfig, OtherActions } from 'shared/src/types';
 
 export enum GameEvents {
   END_TURN = 'endturn',

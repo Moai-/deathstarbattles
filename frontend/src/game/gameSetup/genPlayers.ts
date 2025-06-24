@@ -1,7 +1,7 @@
 import { GameWorld } from 'shared/src/ecs/world';
 import { PlayerSetup, PlayerInfo } from 'shared/src/types';
+import { playerCols } from 'shared/src/utils';
 import { createDeathStar } from 'src/entities/deathStar';
-import playerCols from '../playerCols';
 
 export const generatePlayers = (
   world: GameWorld,

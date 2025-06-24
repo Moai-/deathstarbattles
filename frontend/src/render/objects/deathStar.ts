@@ -1,11 +1,11 @@
 import { Position } from 'shared/src/ecs/components/position';
 import { Depths, RenderObject } from '../types';
-import { ui32ToCol } from '../../util/col';
 import { Renderable } from '../components/renderable';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { addShadow } from '../elements/shadow';
 import { addEquatorialRidge } from '../elements/equatorialRidge';
 import { addEllipse } from '../elements/ellipse';
+import { ui32ToCol } from 'shared/src/utils';
 
 const renderDeathStar: RenderObject = (scene, eid) => {
   const x = Position.x[eid];

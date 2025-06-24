@@ -1,4 +1,5 @@
-import { ClearanceFunction, GameObject } from 'shared/src/types';
+import { ClearanceFunction, GameObject } from '../types';
+import { getRandomBetween } from './random';
 
 export function getRandomEdgePosition(
   width: number,
@@ -57,8 +58,8 @@ export function generateNonOverlappingPositions(
     let found = false;
 
     while (attempt++ < 1000 && !found) {
-      const x = Phaser.Math.Between(radius, width - radius);
-      const y = Phaser.Math.Between(radius, height - radius);
+      const x = getRandomBetween(radius, width - radius);
+      const y = getRandomBetween(radius, height - radius);
 
       const candidate = { x, y, radius, eid: -1 };
       // console.log('Checking candidate %s, %s (radius %s)...', x, y, radius);
@@ -96,7 +97,6 @@ export function generateNonOverlappingPositions(
     }
 
     if (!found) {
-      (existing);
       throw new Error(
         `Failed to place object with radius ${radius} after 1000 attempts.`,
       );
@@ -144,17 +144,3 @@ export const generateSupergiantStarPosition = (
 
   return { x, y, side };
 };
-
-// https://stackoverflow.com/questions/1349404/generate-a-string-of-random-characters
-export function makeId(length = 5) {
-  let result = '';
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
-
-export const noop = () => {};

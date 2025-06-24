@@ -1,10 +1,11 @@
-import { addComponent, addEntity, IWorld } from 'bitecs';
+import { addComponent, IWorld } from 'bitecs';
 import { Position } from 'shared/src/ecs/components/position';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { Renderable } from '../render/components/renderable';
-import { RenderableTypes } from '../render/types';
 import { Wormhole } from 'shared/src/ecs/components/wormhole';
+import { ObjectTypes } from 'shared/src/types';
+import { createCollidingBase } from './bases';
 
 const MIN_STAR_RAD = 30;
 const MAX_STAR_RAD = 80;
@@ -15,11 +16,8 @@ export const createWormhole = (
   y: number,
   radius: number,
 ) => {
-  const eid = addEntity(world);
-  addComponent(world, Position, eid);
-  addComponent(world, Collision, eid);
-  addComponent(world, Renderable, eid);
-  addComponent(world, HasGravity, eid);
+  const eid = createCollidingBase(world, x, y, radius, ObjectTypes.WORMHOLE);
+
   addComponent(world, Wormhole, eid);
 
   const timeSeed = Math.floor(Date.now() / 5000);
@@ -32,7 +30,6 @@ export const createWormhole = (
   Position.y[eid] = y;
   Collision.radius[eid] = radius;
   HasGravity.strength[eid] = radius * 50;
-  Renderable.type[eid] = RenderableTypes.WORMHOLE;
   Renderable.col[eid] = generateWormholeColWithBias(bias, timeSeed);
 
   return eid;

@@ -1,9 +1,9 @@
 import { IWorld } from 'bitecs';
 import { createWormhole } from './wormhole';
 import { HasGravity } from 'shared/src/ecs/components/hasGravity';
-import { Renderable } from 'src/render/components/renderable';
-import { RenderableTypes } from 'src/render/types';
 import { MAX_SUPERGIANT_RAD, MIN_SUPERGIANT_RAD } from './supergiant';
+import { ObjectTypes } from 'shared/src/types';
+import { ObjType } from 'shared/src/ecs/components/objType';
 
 export const createBigWormhole = (
   world: IWorld,
@@ -13,7 +13,7 @@ export const createBigWormhole = (
 ) => {
   const eid = createWormhole(world, x, y, radius);
   HasGravity.strength[eid] = radius;
-  Renderable.type[eid] = RenderableTypes.BIG_WORMHOLE;
+  ObjType.type[eid] = ObjectTypes.BIG_WORMHOLE;
   return eid;
 };
 

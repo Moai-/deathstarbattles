@@ -1,13 +1,8 @@
 import { OtherActions } from 'shared/src/types';
+import { getPosition, getRadius, ui32ToCol } from 'shared/src/utils';
 import { Renderable } from 'src/render/components/renderable';
 import { Depths } from 'src/render/types';
-import {
-  gameBus,
-  GameEvents,
-  getPosition,
-  getRadius,
-  ui32ToCol,
-} from 'src/util';
+import { gameBus, GameEvents } from 'src/util';
 
 export class FiringIndicator {
   private scene: Phaser.Scene;

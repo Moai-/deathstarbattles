@@ -1,4 +1,4 @@
-import { ui32ToCol } from '../../util';
+import { ui32ToCol } from 'shared/src/utils';
 import { Renderable } from '../components/renderable';
 import { Depths } from '../types';
 

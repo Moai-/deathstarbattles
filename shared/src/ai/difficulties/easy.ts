@@ -1,12 +1,13 @@
 import { TurnGenerator } from 'shared/src/types';
+import { oneIn } from 'shared/src/utils';
 import {
-  addError,
-  computeFirstShot,
-  getClosestDestructible,
   hyperspaceTurn,
-  oneIn,
+  getClosestDestructible,
+  computeFirstShot,
+  addError,
   shotTurn,
-} from '../utils';
+} from '../functions';
+
 /**
  * Easy ("aimbot")
  * – Fire in a tight but still noisy arc at the target with 100% power

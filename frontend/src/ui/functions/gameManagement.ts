@@ -1,5 +1,5 @@
+import { GameConfig } from 'shared/src/types';
 import { createGame, getGame, startMainScene, stopMainScene } from 'src/game';
-import { GameConfig } from '../types';
 import { gameBus, GameEvents } from 'src/util';
 
 export const startGameWithConfig = async (config: GameConfig) =>

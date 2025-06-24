@@ -2,10 +2,10 @@ import { Position } from 'shared/src/ecs/components/position';
 import { Depths, RenderObject } from '../types';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { Renderable } from '../components/renderable';
-import { ui32ToCol } from '../../util/col';
 import generateStarCols from '../elements/starCols';
 import { nailToContainer } from 'src/util';
 import { drawCoronaSpiky } from '../elements/corona';
+import { ui32ToCol } from 'shared/src/utils';
 
 const renderWhiteHole: RenderObject = (scene, eid) => {
   const x = Position.x[eid];

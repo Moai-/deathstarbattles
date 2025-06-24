@@ -1,28 +1,20 @@
-import { addComponent, addEntity, IWorld } from 'bitecs';
-import { Position } from 'shared/src/ecs/components/position';
+import { IWorld } from 'bitecs';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { HasGravity } from 'shared/src/ecs/components/hasGravity';
-import { Renderable } from '../render/components/renderable';
-import { RenderableTypes } from '../render/types';
+import { ObjectTypes } from 'shared/src/types';
+import { createCollidingBase } from './bases';
 
 export const MIN_PLANET_RAD = 30;
 export const MAX_PLANET_RAD = 70;
 
-export const createAsteroid = (
+export const createPlanet = (
   world: IWorld,
   x: number,
   y: number,
   radius: number,
 ) => {
-  const eid = addEntity(world);
-  addComponent(world, Position, eid);
-  addComponent(world, Collision, eid);
-  addComponent(world, Renderable, eid);
-  addComponent(world, HasGravity, eid);
+  const eid = createCollidingBase(world, x, y, radius, ObjectTypes.PLANET);
 
-  Position.x[eid] = x;
-  Position.y[eid] = y;
-  Renderable.type[eid] = RenderableTypes.PLANET;
   Collision.radius[eid] = radius;
   HasGravity.strength[eid] = radius * 30;
 
@@ -31,5 +23,5 @@ export const createAsteroid = (
 
 export const createRandomPlanet = (world: IWorld) => {
   const radius = Phaser.Math.Between(MIN_PLANET_RAD, MAX_PLANET_RAD);
-  return createAsteroid(world, 0, 0, radius);
+  return createPlanet(world, 0, 0, radius);
 };
