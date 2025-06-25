@@ -1,12 +1,10 @@
-import { makeComponent, Schema } from '../componentFactory';
+import { defineComponent, Types } from 'bitecs';
 
-const HasGravitySchema = {
-  strength: 'f32',
-  radius: 'f32',
-  falloffType: 'ui8',
-} as const satisfies Schema;
-
-export const HasGravity = makeComponent(HasGravitySchema);
+export const HasGravity = defineComponent({
+  strength: Types.f32,
+  radius: Types.f32,
+  falloffType: Types.ui8,
+});
 
 export enum GravityFalloffType {
   INVERSE_SQUARE,

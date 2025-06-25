@@ -1,13 +1,10 @@
 import { defineQuery, defineSystem } from 'bitecs';
-import { AllComponents } from '../components';
+import { Position, Collision, Projectile } from '../components';
 
-export const createCollisionSystem = ({
-  Position,
-  Collision,
-  Projectile,
-}: AllComponents) => {
-  const projectileQuery = defineQuery([Position, Collision, Projectile]);
-  const targetQuery = defineQuery([Position, Collision]);
+const projectileQuery = defineQuery([Position, Collision, Projectile]);
+const targetQuery = defineQuery([Position, Collision]);
+
+export const createCollisionSystem = () => {
   return defineSystem((world) => {
     const projectiles = projectileQuery(world);
     const targets = targetQuery(world);

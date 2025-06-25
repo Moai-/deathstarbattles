@@ -5,10 +5,11 @@ import { GameWorld, NULL_ENTITY } from '../world';
 import { Destructible } from '../components/destructible';
 import { BASE_HEIGHT, BASE_WIDTH } from 'shared/src/consts';
 import { generateNonOverlappingPositions } from 'shared/src/utils';
-import { AllComponents } from '../components';
+import { Projectile, Position, Collision } from '../components';
+
+const projectileQuery = defineQuery([Projectile, Position, Collision]);
 
 export const createCollisionResolverSystem = (
-  { Projectile, Position, Collision }: AllComponents,
   onCollision: (
     projEid: number,
     targetEid: number,
@@ -16,8 +17,6 @@ export const createCollisionResolverSystem = (
     time: number,
   ) => boolean = () => true,
 ) => {
-  const projectileQuery = defineQuery([Projectile, Position, Collision]);
-
   return defineSystem((world: GameWorld) => {
     if (!world.movements) return world; // no shots this frame
 

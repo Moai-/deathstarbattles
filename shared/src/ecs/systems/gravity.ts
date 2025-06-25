@@ -1,18 +1,12 @@
 import { defineSystem, defineQuery } from 'bitecs';
 import { GameWorld } from '../world';
-import { AllComponents } from '../components';
-import { GravityFalloffType } from '../components/hasGravity';
+import { GravityFalloffType, HasGravity } from '../components/hasGravity';
+import { Position, AffectedByGravity, Velocity } from '../components';
 
 const GRAVITY_EPSILON = 0.0001;
-
-export const createGravitySystem = ({
-  Position,
-  HasGravity,
-  AffectedByGravity,
-  Velocity,
-}: AllComponents) => {
-  const sourceQuery = defineQuery([HasGravity, Position]);
-  const targetQuery = defineQuery([AffectedByGravity, Velocity, Position]);
+const sourceQuery = defineQuery([HasGravity, Position]);
+const targetQuery = defineQuery([AffectedByGravity, Velocity, Position]);
+export const createGravitySystem = () => {
   return defineSystem((world: GameWorld) => {
     const dt = world.delta;
     const sources = sourceQuery(world);

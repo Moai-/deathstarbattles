@@ -1,7 +1,7 @@
 import { defineQuery, defineSystem, removeEntity } from 'bitecs';
 import { GameWorld } from '../world';
 import { HIDDEN_BOUNDARY, BASE_WIDTH, BASE_HEIGHT } from 'shared/src/consts';
-import { AllComponents } from '../components';
+import { Position, Velocity, HasLifetime } from '../components';
 
 const DEFAULT_PROJECTILE_LIFETIME = 30;
 
@@ -10,7 +10,6 @@ const bxMax = BASE_WIDTH + HIDDEN_BOUNDARY;
 const byMax = BASE_HEIGHT + HIDDEN_BOUNDARY;
 
 export const createCleanupSystem = (
-  { Position, Velocity, HasLifetime }: AllComponents,
   onEntityCleanedUp: (eid: number) => void = () => {},
 ) => {
   const boundQuery = defineQuery([Position, Velocity]);

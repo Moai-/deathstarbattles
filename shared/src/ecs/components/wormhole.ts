@@ -1,11 +1,9 @@
-import { makeComponent, Schema } from '../componentFactory';
+import { defineComponent, Types } from 'bitecs';
 
-const WormholeSchema = {
-  teleportTarget: 'eid',
-  exitType: 'ui8',
-} as const satisfies Schema;
-
-export const Wormhole = makeComponent(WormholeSchema);
+export const Wormhole = defineComponent({
+  teleportTarget: Types.eid,
+  exitType: Types.ui8,
+});
 
 export enum ExitTypes {
   PAIRED,

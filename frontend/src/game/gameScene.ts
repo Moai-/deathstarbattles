@@ -1,11 +1,11 @@
 import Phaser from 'phaser';
 import { createGameWorld } from 'shared/src/ecs/world';
 import {
-  createBaseCleanupSystem,
-  createBaseCollisionResolverSystem,
-  createBaseCollisionSystem,
-  createBaseGravitySystem,
-  createBaseMovementSystem,
+  createCleanupSystem,
+  createCollisionResolverSystem,
+  createCollisionSystem,
+  createGravitySystem,
+  createMovementSystem,
 } from 'shared/src/ecs/systems';
 import { createRenderSystem } from '../render/renderSystem';
 import { GameObjectManager } from '../render/objectManager';
@@ -15,18 +15,19 @@ import { gameBus, GameEvents } from 'src/util';
 import { clearBackground } from 'src/render/background';
 import { getSoundManager } from './resourceScene';
 import { makeId } from 'shared/src/utils';
+// import { drawPathListener } from 'src/util/debug';
 
 export class GameScene extends Phaser.Scene {
   private objectManager = new GameObjectManager(this);
   private world = createGameWorld();
   private gameManager = new GameManager(this, this.world, this.objectManager);
-  private movementSystem = createBaseMovementSystem();
-  private cleanupSystem = createBaseCleanupSystem(
+  private movementSystem = createMovementSystem();
+  private cleanupSystem = createCleanupSystem(
     this.gameManager.onCleanup.bind(this.gameManager),
   );
-  private gravitySystem = createBaseGravitySystem();
-  private collisionSystem = createBaseCollisionSystem();
-  private collisionResolverSystem = createBaseCollisionResolverSystem(
+  private gravitySystem = createGravitySystem();
+  private collisionSystem = createCollisionSystem();
+  private collisionResolverSystem = createCollisionResolverSystem(
     this.gameManager.onCollision.bind(this.gameManager),
   );
   private renderSystem = createRenderSystem(this, this.objectManager);
@@ -46,6 +47,7 @@ export class GameScene extends Phaser.Scene {
     this.gameManager.create();
     getSoundManager(this).playSound('songLoop');
     gameBus.emit(GameEvents.SCENE_LOADED);
+    // drawPathListener(this);
   }
 
   update(time: number, deltaMs: number) {

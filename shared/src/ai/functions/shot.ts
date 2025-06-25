@@ -11,6 +11,7 @@ import { Collision } from 'shared/src/ecs/components/collision';
 import { Position } from 'shared/src/ecs/components/position';
 import { Velocity } from 'shared/src/ecs/components/velocity';
 import { DEFAULT_DEATHBEAM_RADIUS } from 'shared/src/consts';
+import { SimResult } from '../simulation/types';
 
 const SAMPLE_STEP = 4;
 
@@ -154,3 +155,13 @@ export const inputsToShot = (
 
 export const explore = (lastInput: RawTurn) =>
   addError(lastInput, 40, 1.2 + Math.random() * 0.3);
+
+export const isStuck = (sim: SimResult, sim2: SimResult): boolean => {
+  // no collision on at least one sim, so as far as we know, we're not stuck
+  if (sim.firstCollisionEid === 0) {
+    return false;
+  }
+  const sameHit = sim.firstCollisionEid === sim2.firstCollisionEid;
+  const sameTime = Math.abs(sim.firstCollisionT - sim2.firstCollisionT) < 300;
+  return sameHit && sameTime;
+};

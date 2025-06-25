@@ -1,13 +1,12 @@
 import { defineQuery, defineSystem } from 'bitecs';
 import { GameWorld } from '../world';
 import { Projectile } from '../components/projectile';
-import { AllComponents } from '../components';
+import { Position, Velocity } from '../components';
 
 const slow = 1 / 400;
+const movingQuery = defineQuery([Position, Velocity]);
 
-export const createMovementSystem = ({ Position, Velocity }: AllComponents) => {
-  const movingQuery = defineQuery([Position, Velocity]);
-
+export const createMovementSystem = () => {
   return defineSystem((world) => {
     const w = world as GameWorld;
     const dt = w.delta;

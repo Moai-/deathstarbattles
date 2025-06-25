@@ -1,8 +1,6 @@
-import { makeComponent, Schema } from '../componentFactory';
+import { defineComponent, Types } from 'bitecs';
 
-const ObjectInfoSchema = {
-  type: 'ui8',
-  cloneOf: 'eid',
-} as const satisfies Schema;
-
-export const ObjectInfo = makeComponent(ObjectInfoSchema);
+export const ObjectInfo = defineComponent({
+  type: Types.ui8,
+  cloneOf: Types.eid,
+});

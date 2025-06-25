@@ -11,8 +11,9 @@ import {
   Wormhole,
 } from 'shared/src/ecs/components';
 import { ComponentTags, SimSnapshot } from './types';
-import { Component, hasComponent } from 'bitecs';
+import { addComponent, addEntity, Component, hasComponent } from 'bitecs';
 import { GameWorld } from 'shared/src/ecs/world';
+import { ENTITY_START_CURSOR } from 'shared/src/consts';
 
 export const buildSnapshot = (
   eids: Array<number>,
@@ -127,7 +128,87 @@ export const buffersOf = (s: SimSnapshot) => [
   s.exitType.buffer,
 ];
 
-// const eids = gatherBodies(projectileEid); // your query
-// const snapshot = buildSnapshot(eids);
+// With a world snapshot as input, restore all entities within it and populate them
+export const restoreSnapshot = (snapshot: SimSnapshot, world: GameWorld) => {
+  const cloneMap = new Map<number, number>();
 
-// worker.postMessage(snapshot, buffersOf(snapshot));
+  const n = snapshot.count;
+
+  Collision.radius.set(snapshot.radius.subarray(0, n), ENTITY_START_CURSOR);
+  HasGravity.strength.set(
+    snapshot.strength.subarray(0, n),
+    ENTITY_START_CURSOR,
+  );
+  HasGravity.falloffType.set(
+    snapshot.falloffType.subarray(0, n),
+    ENTITY_START_CURSOR,
+  );
+  HasLifetime.createdAt.set(
+    snapshot.createdAt.subarray(0, n),
+    ENTITY_START_CURSOR,
+  );
+  Position.x.set(snapshot.posX.subarray(0, n), ENTITY_START_CURSOR);
+  Position.y.set(snapshot.posY.subarray(0, n), ENTITY_START_CURSOR);
+  Projectile.parent.set(snapshot.parent.subarray(0, n), ENTITY_START_CURSOR);
+  Projectile.lastCollisionTarget.set(
+    snapshot.lastCollisionTarget.subarray(0, n),
+    ENTITY_START_CURSOR,
+  );
+  Velocity.x.set(snapshot.velX.subarray(0, n), ENTITY_START_CURSOR);
+  Velocity.y.set(snapshot.velY.subarray(0, n), ENTITY_START_CURSOR);
+  Wormhole.teleportTarget.set(
+    snapshot.teleportTarget.subarray(0, n),
+    ENTITY_START_CURSOR,
+  );
+  Wormhole.exitType.set(snapshot.exitType.subarray(0, n), ENTITY_START_CURSOR);
+
+  for (let i = 0; i < n; i++) {
+    const eid = snapshot.eid[i];
+    const clonedEid = addEntity(world);
+    cloneMap.set(eid, clonedEid);
+
+    addComponent(world, ObjectInfo, clonedEid);
+    ObjectInfo.type[clonedEid] = snapshot.type[i];
+    ObjectInfo.cloneOf[clonedEid] = eid;
+
+    const tag = snapshot.componentTags[i];
+
+    if (tag & ComponentTags.AffectedByGravity) {
+      addComponent(world, AffectedByGravity, clonedEid);
+    }
+
+    if (tag & ComponentTags.Destructible) {
+      addComponent(world, Destructible, clonedEid);
+    }
+
+    if (tag & ComponentTags.Collision) {
+      addComponent(world, Collision, clonedEid);
+    }
+
+    if (tag & ComponentTags.HasGravity) {
+      addComponent(world, HasGravity, clonedEid);
+    }
+
+    if (tag & ComponentTags.HasLifetime) {
+      addComponent(world, HasLifetime, clonedEid);
+    }
+
+    if (tag & ComponentTags.Position) {
+      addComponent(world, Position, clonedEid);
+    }
+
+    if (tag & ComponentTags.Projectile) {
+      addComponent(world, Projectile, clonedEid);
+    }
+
+    if (tag & ComponentTags.Velocity) {
+      addComponent(world, Velocity, clonedEid);
+    }
+
+    if (tag & ComponentTags.Wormhole) {
+      addComponent(world, Wormhole, clonedEid);
+    }
+  }
+
+  return cloneMap;
+};

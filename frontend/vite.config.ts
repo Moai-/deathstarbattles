@@ -16,7 +16,11 @@ export default defineConfig({
   server: {
     open: true,
     host: '0.0.0.0',
-    port: 5173
+    port: 5173,
+    fs: {
+      // Always include the root itself, plus the shared folder
+      allow: [path.resolve(__dirname), path.resolve(__dirname, '../shared')],
+    },
   },
   build: {
     outDir: '../dist',

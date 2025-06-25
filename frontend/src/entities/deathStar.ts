@@ -46,7 +46,6 @@ export const fireProjectile = (
   power: number,
 ) => {
   const eid = addEntity(world);
-  console.log('firing', eid);
   addComponent(world, Position, eid);
   addComponent(world, Velocity, eid);
   addComponent(world, Collision, eid);

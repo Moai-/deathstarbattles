@@ -1,38 +1,10 @@
-import { AffectedByGravity } from './affectedByGravity';
-import { Collision } from './collision';
-import { Destructible } from './destructible';
-import { HasGravity } from './hasGravity';
-import { HasLifetime } from './hasLifetime';
-import { ObjectInfo } from './objectInfo';
-import { Position } from './position';
-import { Projectile } from './projectile';
-import { Velocity } from './velocity';
-import { Wormhole } from './wormhole';
-
-export const allComponents = {
-  AffectedByGravity,
-  Collision,
-  Destructible,
-  HasGravity,
-  HasLifetime,
-  ObjectInfo,
-  Position,
-  Projectile,
-  Velocity,
-  Wormhole,
-};
-
-export {
-  AffectedByGravity,
-  Collision,
-  Destructible,
-  HasGravity,
-  HasLifetime,
-  ObjectInfo,
-  Position,
-  Projectile,
-  Velocity,
-  Wormhole,
-};
-
-export type AllComponents = typeof allComponents;
+export { AffectedByGravity } from './affectedByGravity';
+export { Collision } from './collision';
+export { Destructible } from './destructible';
+export { HasGravity } from './hasGravity';
+export { HasLifetime } from './hasLifetime';
+export { ObjectInfo } from './objectInfo';
+export { Position } from './position';
+export { Projectile } from './projectile';
+export { Velocity } from './velocity';
+export { Wormhole } from './wormhole';

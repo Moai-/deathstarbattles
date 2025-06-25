@@ -6,9 +6,7 @@ import {
   IWorld,
 } from 'bitecs';
 import { GameObject, ObjectMovements } from '../types';
-// import { NullEntity } from './components/nullEntity';
-
-export const NULL_ENTITY = 0;
+import { NULL_ENTITY } from '../consts';
 
 export interface GameWorld extends IWorld {
   time: number;
@@ -19,7 +17,6 @@ export interface GameWorld extends IWorld {
 
 export const createGameWorld = () => {
   const world = createWorld() as GameWorld;
-  // enableManualEntityRecycling(world);
   world.time = 0;
   world.delta = 0;
   world.allObjects = [];
@@ -27,7 +24,8 @@ export const createGameWorld = () => {
   // null entity
   if (!entityExists(world, NULL_ENTITY)) {
     addEntity(world);
-    // addComponent(world, NullEntity, NULL_ENTITY);
   }
   return world;
 };
+
+export { NULL_ENTITY };

@@ -1,5 +1,3 @@
-import { makeComponent, Schema } from '../componentFactory';
+import { defineComponent } from 'bitecs';
 
-const AffectedByGravitySchema = {} as const satisfies Schema;
-
-export const AffectedByGravity = makeComponent(AffectedByGravitySchema);
+export const AffectedByGravity = defineComponent();

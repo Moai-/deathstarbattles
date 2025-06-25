@@ -1,11 +1,5 @@
 import { createGameWorld, GameWorld } from 'shared/src/ecs/world';
-import {
-  ComponentTags,
-  SimMessage,
-  SimMessageType,
-  SimResult,
-  SimSnapshot,
-} from './types';
+import { SimMessage, SimMessageType, SimResult } from './types';
 import {
   addComponent,
   addEntity,
@@ -17,30 +11,28 @@ import {
   AffectedByGravity,
   Collision,
   Destructible,
-  HasGravity,
   HasLifetime,
   ObjectInfo,
   Position,
   Projectile,
   Velocity,
-  Wormhole,
 } from 'shared/src/ecs/components';
 import {
-  createBaseCleanupSystem,
-  createBaseCollisionResolverSystem,
-  createBaseCollisionSystem,
-  createBaseGravitySystem,
-  createBaseMovementSystem,
+  createCleanupSystem,
+  createCollisionResolverSystem,
+  createCollisionSystem,
+  createGravitySystem,
+  createMovementSystem,
 } from 'shared/src/ecs/systems';
 import { TargetCache, TurnInput } from 'shared/src/types';
 import { inputsToShot } from '../functions';
 import { getColliders, getRadius } from 'shared/src/utils';
+import { restoreSnapshot } from './snapshot';
 
 type Updater = (world: GameWorld, time: number, delta: number) => void;
 
 const MAX_MS = 10000;
 const MS_STEP = 80;
-const ENTITY_START_CURSOR = 1;
 
 const world = createGameWorld();
 
@@ -53,7 +45,7 @@ self.onmessage = (ev: MessageEvent<SimMessage>) => {
 
   switch (type) {
     case SimMessageType.INITIALIZE:
-      cloneMap = restoreSnapshot(snapshot!);
+      cloneMap = restoreSnapshot(snapshot!, world);
       colliders = buildColliderCache();
       updater = setupSystems();
       self.postMessage({ type: SimMessageType.INITIALIZE_DONE });
@@ -172,101 +164,16 @@ export const buildColliderCache = (): TargetCache =>
     r2: Math.pow(getRadius(o), 2),
   }));
 
-// With a world snapshot as input, restore all entities within it and populate them
-const restoreSnapshot = (snapshot: SimSnapshot) => {
-  const cloneMap = new Map<number, number>();
-
-  const n = snapshot.count;
-
-  Collision.radius.set(snapshot.radius.subarray(0, n), ENTITY_START_CURSOR);
-  HasGravity.strength.set(
-    snapshot.strength.subarray(0, n),
-    ENTITY_START_CURSOR,
-  );
-  HasGravity.falloffType.set(
-    snapshot.falloffType.subarray(0, n),
-    ENTITY_START_CURSOR,
-  );
-  HasLifetime.createdAt.set(
-    snapshot.createdAt.subarray(0, n),
-    ENTITY_START_CURSOR,
-  );
-  Position.x.set(snapshot.posX.subarray(0, n), ENTITY_START_CURSOR);
-  Position.y.set(snapshot.posY.subarray(0, n), ENTITY_START_CURSOR);
-  Projectile.parent.set(snapshot.parent.subarray(0, n), ENTITY_START_CURSOR);
-  Projectile.lastCollisionTarget.set(
-    snapshot.lastCollisionTarget.subarray(0, n),
-    ENTITY_START_CURSOR,
-  );
-  Velocity.x.set(snapshot.velX.subarray(0, n), ENTITY_START_CURSOR);
-  Velocity.y.set(snapshot.velY.subarray(0, n), ENTITY_START_CURSOR);
-  Wormhole.teleportTarget.set(
-    snapshot.teleportTarget.subarray(0, n),
-    ENTITY_START_CURSOR,
-  );
-  Wormhole.exitType.set(snapshot.exitType.subarray(0, n), ENTITY_START_CURSOR);
-
-  for (let i = 0; i < n; i++) {
-    const eid = snapshot.eid[i];
-    const clonedEid = addEntity(world);
-    cloneMap.set(eid, clonedEid);
-
-    addComponent(world, ObjectInfo, clonedEid);
-    ObjectInfo.type[clonedEid] = snapshot.type[i];
-    ObjectInfo.cloneOf[clonedEid] = eid;
-
-    const tag = snapshot.componentTags[i];
-
-    if (tag & ComponentTags.AffectedByGravity) {
-      addComponent(world, AffectedByGravity, clonedEid);
-    }
-
-    if (tag & ComponentTags.Destructible) {
-      addComponent(world, Destructible, clonedEid);
-    }
-
-    if (tag & ComponentTags.Collision) {
-      addComponent(world, Collision, clonedEid);
-    }
-
-    if (tag & ComponentTags.HasGravity) {
-      addComponent(world, HasGravity, clonedEid);
-    }
-
-    if (tag & ComponentTags.HasLifetime) {
-      addComponent(world, HasLifetime, clonedEid);
-    }
-
-    if (tag & ComponentTags.Position) {
-      addComponent(world, Position, clonedEid);
-    }
-
-    if (tag & ComponentTags.Projectile) {
-      addComponent(world, Projectile, clonedEid);
-    }
-
-    if (tag & ComponentTags.Velocity) {
-      addComponent(world, Velocity, clonedEid);
-    }
-
-    if (tag & ComponentTags.Wormhole) {
-      addComponent(world, Wormhole, clonedEid);
-    }
-  }
-
-  return cloneMap;
-};
-
 // Create and set up systems, return an updater function that updates all of them at once
 const setupSystems = () => {
-  const movementSystem = createBaseMovementSystem();
-  const gravitySystem = createBaseGravitySystem();
-  const collisionSystem = createBaseCollisionSystem();
-  const collisionResolverSystem = createBaseCollisionResolverSystem((proj) => {
+  const movementSystem = createMovementSystem();
+  const gravitySystem = createGravitySystem();
+  const collisionSystem = createCollisionSystem();
+  const collisionResolverSystem = createCollisionResolverSystem((proj) => {
     removeEntity(world, proj);
     return false;
   });
-  const cleanupSystem = createBaseCleanupSystem();
+  const cleanupSystem = createCleanupSystem();
 
   return (world: GameWorld, time: number, delta: number) => {
     world.time = time;
