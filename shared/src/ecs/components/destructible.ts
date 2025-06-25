@@ -1,3 +1,5 @@
-import { defineComponent } from 'bitecs';
+import { makeComponent, Schema } from '../componentFactory';
 
-export const Destructible = defineComponent();
+const DestructibleSchema = {} as const satisfies Schema;
+
+export const Destructible = makeComponent(DestructibleSchema);

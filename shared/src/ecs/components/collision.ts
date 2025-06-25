@@ -1,5 +1,7 @@
-import { defineComponent, Types } from 'bitecs';
+import { makeComponent, Schema } from '../componentFactory';
 
-export const Collision = defineComponent({
-  radius: Types.ui16,
-});
+const CollisionSchema = {
+  radius: 'ui16',
+} as const satisfies Schema;
+
+export const Collision = makeComponent(CollisionSchema);

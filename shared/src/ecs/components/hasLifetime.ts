@@ -1,5 +1,7 @@
-import { defineComponent, Types } from 'bitecs';
+import { makeComponent, Schema } from '../componentFactory';
 
-export const HasLifetime = defineComponent({
-  createdAt: Types.ui32,
-});
+const HasLifetimeSchema = {
+  createdAt: 'ui32',
+} as const satisfies Schema;
+
+export const HasLifetime = makeComponent(HasLifetimeSchema);

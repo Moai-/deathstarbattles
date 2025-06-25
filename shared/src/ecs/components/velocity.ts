@@ -1,6 +1,8 @@
-import { defineComponent, Types } from 'bitecs';
+import { makeComponent, Schema } from '../componentFactory';
 
-export const Velocity = defineComponent({
-  x: Types.f32,
-  y: Types.f32,
-});
+const VelocitySchema = {
+  x: 'f32',
+  y: 'f32',
+} as const satisfies Schema;
+
+export const Velocity = makeComponent(VelocitySchema);

@@ -1,8 +1,7 @@
 import { Collision } from '../ecs/components/collision';
-import { ObjType } from '../ecs/components/objType';
+import { ObjectInfo } from '../ecs/components/objectInfo';
 import { Position } from '../ecs/components/position';
 import { Projectile } from '../ecs/components/projectile';
-import { Reference } from '../ecs/components/reference';
 import { ExitTypes, Wormhole } from '../ecs/components/wormhole';
 import { AnyPoint, ObjectTypes } from '../types';
 
@@ -24,7 +23,7 @@ export const setPosition = (eid: number, x: number | AnyPoint, y?: number) => {
   }
 };
 
-export const getType = (eid: number) => ObjType.type[eid] as ObjectTypes;
+export const getType = (eid: number) => ObjectInfo.type[eid] as ObjectTypes;
 
 export const getProjectileOwner = (eid: number) => Projectile.parent[eid];
 
@@ -43,5 +42,3 @@ export const scrambleWormhole = (eid: number) => {
   Wormhole.exitType[eid] = ExitTypes.RANDOM;
   Wormhole.teleportTarget[eid] = 0;
 };
-
-export const dereference = (eid: number) => Reference.original[eid];

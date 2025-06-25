@@ -1,6 +1,8 @@
-import { defineComponent, Types } from 'bitecs';
+import { makeComponent, Schema } from '../componentFactory';
 
-export const Position = defineComponent({
-  x: Types.f32,
-  y: Types.f32,
-});
+const PositionSchema = {
+  x: 'f32',
+  y: 'f32',
+} as const satisfies Schema;
+
+export const Position = makeComponent(PositionSchema);

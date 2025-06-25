@@ -1,6 +1,8 @@
-import { defineComponent, Types } from 'bitecs';
+import { makeComponent, Schema } from '../componentFactory';
 
-export const Projectile = defineComponent({
-  parent: Types.eid,
-  lastCollisionTarget: Types.eid,
-});
+const ProjectileSchema = {
+  parent: 'eid',
+  lastCollisionTarget: 'eid',
+} as const satisfies Schema;
+
+export const Projectile = makeComponent(ProjectileSchema);

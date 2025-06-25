@@ -25,8 +25,6 @@ import { AnyPoint, TargetCache } from 'shared/src/types';
 import { Destructible } from 'shared/src/ecs/components/destructible';
 import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { Wormhole } from 'shared/src/ecs/components/wormhole';
-import { Reference } from 'shared/src/ecs/components/reference';
-import { dereference } from 'shared/src/utils';
 
 /**
  * Fast forward-simulates a single shot.
@@ -105,12 +103,11 @@ export const simulateShot = (
   const resolveSys = createCollisionResolverSystem(
     (projEid, targetEid, killed, time) => {
       removeEntity(sim, projEid);
-      const realTarget = dereference(targetEid);
-      if (realTarget !== playerId) {
+      if (targetEid !== playerId) {
         if (killed) {
-          hitEid = realTarget;
+          hitEid = targetEid;
         } else {
-          firstCollisionEid = realTarget;
+          firstCollisionEid = targetEid;
           firstCollisionT = time;
         }
       }
@@ -192,9 +189,7 @@ const seedStaticBodies = (sim: GameWorld, liveWorld: GameWorld) => {
     const eid = addEntity(sim); // new id is fine
     addComponent(sim, Position, eid);
     addComponent(sim, Collision, eid);
-    addComponent(sim, Reference, eid);
 
-    Reference.original[eid] = obj.eid;
     Position.x[eid] = obj.x;
     Position.y[eid] = obj.y;
     Collision.radius[eid] = Collision.radius[obj.eid];

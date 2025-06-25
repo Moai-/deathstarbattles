@@ -60,6 +60,9 @@ export class AudioManager {
     if (this.muted) {
       return;
     }
+    if (this.scene.sound.locked) {
+      return;
+    }
     const { config, sound } = this.getSound(key);
     const channelVolume = this.getVolumeForCategory(config.cat);
     if (!sound.isPlaying) {
