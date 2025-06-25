@@ -1,10 +1,12 @@
 import Phaser from 'phaser';
 import { createGameWorld } from 'shared/src/ecs/world';
-import { createMovementSystem } from 'shared/src/ecs/systems/movement';
-import { createGravitySystem } from 'shared/src/ecs/systems/gravity';
-import { createCleanupSystem } from 'shared/src/ecs/systems/cleanup';
-import { createCollisionSystem } from 'shared/src/ecs/systems/collision';
-import { createCollisionResolverSystem } from 'shared/src/ecs/systems/collisionResolver';
+import {
+  createBaseCleanupSystem,
+  createBaseCollisionResolverSystem,
+  createBaseCollisionSystem,
+  createBaseGravitySystem,
+  createBaseMovementSystem,
+} from 'shared/src/ecs/systems';
 import { createRenderSystem } from '../render/renderSystem';
 import { GameObjectManager } from '../render/objectManager';
 import GameManager from './gameManager';
@@ -18,13 +20,13 @@ export class GameScene extends Phaser.Scene {
   private objectManager = new GameObjectManager(this);
   private world = createGameWorld();
   private gameManager = new GameManager(this, this.world, this.objectManager);
-  private movementSystem = createMovementSystem();
-  private cleanupSystem = createCleanupSystem(
+  private movementSystem = createBaseMovementSystem();
+  private cleanupSystem = createBaseCleanupSystem(
     this.gameManager.onCleanup.bind(this.gameManager),
   );
-  private gravitySystem = createGravitySystem();
-  private collisionSystem = createCollisionSystem();
-  private collisionResolverSystem = createCollisionResolverSystem(
+  private gravitySystem = createBaseGravitySystem();
+  private collisionSystem = createBaseCollisionSystem();
+  private collisionResolverSystem = createBaseCollisionResolverSystem(
     this.gameManager.onCollision.bind(this.gameManager),
   );
   private renderSystem = createRenderSystem(this, this.objectManager);

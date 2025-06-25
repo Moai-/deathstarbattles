@@ -1,3 +1,4 @@
+import { SimResult } from '../ai/simulation/types';
 import { GameWorld } from '../ecs/world';
 
 export enum OtherActions {
@@ -84,7 +85,8 @@ export type TurnGenerator = (
   playerInfo: PlayerInfo,
   gameState: GameState,
   lastTurnInput: TurnInput | null,
-) => TurnInput;
+  simulator: (t: TurnInput) => Promise<SimResult>,
+) => Promise<TurnInput>;
 
 export type ShotInfo = {
   willHit: boolean;
@@ -119,6 +121,7 @@ export type TargetCacheEntry = {
   y: number;
   eid: number;
   r2: number;
+  breaks: boolean;
 };
 
 export type TargetCache = Array<TargetCacheEntry>;

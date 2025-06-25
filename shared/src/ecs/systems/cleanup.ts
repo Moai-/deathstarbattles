@@ -1,12 +1,7 @@
 import { defineQuery, defineSystem, removeEntity } from 'bitecs';
-import { Position } from '../components/position';
-import { Velocity } from '../components/velocity';
-import { HasLifetime } from '../components/hasLifetime';
 import { GameWorld } from '../world';
 import { HIDDEN_BOUNDARY, BASE_WIDTH, BASE_HEIGHT } from 'shared/src/consts';
-
-const boundQuery = defineQuery([Position, Velocity]);
-const timeoutQuery = defineQuery([HasLifetime]);
+import { AllComponents } from '../components';
 
 const DEFAULT_PROJECTILE_LIFETIME = 30;
 
@@ -15,8 +10,11 @@ const bxMax = BASE_WIDTH + HIDDEN_BOUNDARY;
 const byMax = BASE_HEIGHT + HIDDEN_BOUNDARY;
 
 export const createCleanupSystem = (
+  { Position, Velocity, HasLifetime }: AllComponents,
   onEntityCleanedUp: (eid: number) => void = () => {},
 ) => {
+  const boundQuery = defineQuery([Position, Velocity]);
+  const timeoutQuery = defineQuery([HasLifetime]);
   return defineSystem((world) => {
     const boundaryEntities = boundQuery(world);
     for (const eid of boundaryEntities) {

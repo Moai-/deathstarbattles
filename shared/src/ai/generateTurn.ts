@@ -5,22 +5,23 @@ import { generateMediumTurn } from './difficulties/medium';
 import generateTrivialTurn from './difficulties/trivial';
 
 const generateTurn: TurnGenerator = (
-  world,
+  w,
   playerInfo,
   gameState,
-  lastTurnInput,
+  turnInfo,
+  simulator,
 ) => {
   switch (playerInfo.type) {
     case PlayerTypes.BOT_TRIVIAL:
-      return generateTrivialTurn(world, playerInfo, gameState, lastTurnInput);
+      return generateTrivialTurn(w, playerInfo, gameState, turnInfo, simulator);
     case PlayerTypes.BOT_EASY:
-      return generateEasyTurn(world, playerInfo, gameState, lastTurnInput);
+      return generateEasyTurn(w, playerInfo, gameState, turnInfo, simulator);
     case PlayerTypes.BOT_MEDIUM:
-      return generateMediumTurn(world, playerInfo, gameState, lastTurnInput);
+      return generateMediumTurn(w, playerInfo, gameState, turnInfo, simulator);
     case PlayerTypes.BOT_HARD:
-      return generateHardTurn(world, playerInfo, gameState, lastTurnInput);
+      return generateHardTurn(w, playerInfo, gameState, turnInfo, simulator);
     default:
-      return generateEasyTurn(world, playerInfo, gameState, lastTurnInput);
+      return generateEasyTurn(w, playerInfo, gameState, turnInfo, simulator);
   }
 };
 

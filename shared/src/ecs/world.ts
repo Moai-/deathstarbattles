@@ -23,6 +23,7 @@ export const createGameWorld = () => {
   world.time = 0;
   world.delta = 0;
   world.allObjects = [];
+  world.movements = null;
   // null entity
   if (!entityExists(world, NULL_ENTITY)) {
     addEntity(world);

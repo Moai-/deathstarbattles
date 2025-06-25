@@ -1,8 +1,10 @@
+import { defineQuery } from 'bitecs';
 import { Collision } from '../ecs/components/collision';
 import { ObjectInfo } from '../ecs/components/objectInfo';
 import { Position } from '../ecs/components/position';
 import { Projectile } from '../ecs/components/projectile';
 import { ExitTypes, Wormhole } from '../ecs/components/wormhole';
+import { GameWorld } from '../ecs/world';
 import { AnyPoint, ObjectTypes } from '../types';
 
 export const getRadius = (eid: number) => Collision.radius[eid];
@@ -42,3 +44,6 @@ export const scrambleWormhole = (eid: number) => {
   Wormhole.exitType[eid] = ExitTypes.RANDOM;
   Wormhole.teleportTarget[eid] = 0;
 };
+
+const colliderQuery = defineQuery([Collision]);
+export const getColliders = (world: GameWorld) => colliderQuery(world);

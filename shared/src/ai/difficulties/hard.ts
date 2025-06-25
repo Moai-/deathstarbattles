@@ -10,7 +10,6 @@ import {
   computeFirstShot,
   addError,
   correctFromLastShot,
-  simulateShot,
   isStuck,
   explore,
 } from '../functions';
@@ -23,11 +22,12 @@ import {
  *     - teleport away 1/8 of the time anyway
  * – Simulate 3 shots and pick the one that hits
  */
-export const generateHardTurn: TurnGenerator = (
+export const generateHardTurn: TurnGenerator = async (
   world,
   playerInfo,
   gameState,
   lastTurnInput,
+  simulateShot,
 ) => {
   const playerId = playerInfo.id;
 
@@ -80,7 +80,7 @@ export const generateHardTurn: TurnGenerator = (
         shotInfo!,
       );
 
-  const sim1 = simulateShot(world, playerId, input1, targetCache);
+  const sim1 = await simulateShot({ playerId, ...input1 });
 
   if (sim1.didHit) {
     // console.log('player %s hit on sim 1', playerId);
@@ -105,7 +105,7 @@ export const generateHardTurn: TurnGenerator = (
     { ...shotInfo, dist2: sim1.closestDist2 },
   );
 
-  const sim2 = simulateShot(world, playerId, input2, targetCache);
+  const sim2 = await simulateShot({ playerId, ...input2 });
 
   if (sim2.didHit) {
     // console.log('player %s hit on sim 2', playerId);
@@ -125,7 +125,7 @@ export const generateHardTurn: TurnGenerator = (
     { ...shotInfo, dist2: sim2.closestDist2 },
   );
 
-  const sim3 = simulateShot(world, playerId, input3, targetCache);
+  const sim3 = await simulateShot({ playerId, ...input3 });
 
   if (sim3.didHit) {
     // console.log('player %s hit on sim 3', playerId);
@@ -138,7 +138,7 @@ export const generateHardTurn: TurnGenerator = (
   const stuck = isStuck(sim2, sim3);
   if (stuck) {
     const probeInput = explore(input3);
-    const probeSim = simulateShot(world, playerId, probeInput, targetCache);
+    const probeSim = await simulateShot({ playerId, ...probeInput });
 
     if (
       probeSim.didHit ||

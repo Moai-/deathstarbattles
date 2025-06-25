@@ -25,19 +25,22 @@ import {
   setPosition,
   generateNonOverlappingPositions,
   noop,
+  getColliders,
 } from 'shared/src/utils';
+import { SimManager } from 'shared/src/ai/simulation/manager';
 
 export default class GameManager {
   // globals
   private scene: Phaser.Scene;
   private world: GameWorld;
-  private objectManager: GameObjectManager;
 
   // game components
   private indicator: FiringIndicator;
   private inputHandler: PlayerInputHandler;
   private collisionHandler: CollisionHandler;
   private projectileManager: ProjectileManager;
+  private objectManager: GameObjectManager;
+  private simManager: SimManager;
 
   // game state
   private activePlayer = -1;
@@ -57,6 +60,7 @@ export default class GameManager {
     this.objectManager = objectManager;
     this.indicator = new FiringIndicator(scene);
     this.projectileManager = new ProjectileManager(world);
+    this.simManager = new SimManager();
     this.collisionHandler = new CollisionHandler(world, scene);
     this.inputHandler = new PlayerInputHandler();
   }
@@ -84,7 +88,7 @@ export default class GameManager {
     this.projectileManager.removeProjectile(eid);
   }
 
-  startGame(conf: GameConfig) {
+  async startGame(conf: GameConfig) {
     this.active = true;
     this.activePlayer = -1;
     this.turnInputs = [];
@@ -96,6 +100,11 @@ export default class GameManager {
 
     this.players = players;
     this.world.allObjects = objectPlacements;
+    await this.simManager.startWorker();
+    await this.simManager.initializeWorker(
+      objectPlacements.map((o) => o.eid),
+      this.world,
+    );
     this.startTurn();
   }
 
@@ -168,21 +177,32 @@ export default class GameManager {
     }
   }
 
-  private postCombatPhase() {
+  private async postCombatPhase() {
     this.turnInputs = [];
     getSoundManager(this.scene).stopSound('travelHum');
     if (this.willHyperspace.length) {
       this.willHyperspace.forEach((playerId) => this.useHyperspace(playerId));
       this.willHyperspace = [];
     }
-    setTimeout(() => {
-      if (this.active) {
-        this.startTurn();
-      }
-    }, 2000);
+    const beforeRestart = Date.now();
+    this.simManager.shutdownWorker();
+    await this.simManager.startWorker();
+    await this.simManager.initializeWorker(
+      getColliders(this.world),
+      this.world,
+    );
+    const remaining = Date.now() - beforeRestart;
+    setTimeout(
+      () => {
+        if (this.active) {
+          this.startTurn();
+        }
+      },
+      Math.max(2000 - remaining, 0),
+    );
   }
 
-  private endTurn() {
+  private async endTurn() {
     const playerInfo = this.getPlayerInfo(this.activePlayer);
     if (playerInfo && playerInfo.isAlive) {
       if (playerInfo.type === PlayerTypes.HUMAN) {
@@ -195,11 +215,12 @@ export default class GameManager {
         });
         this.inputHandler.resetHyperspace();
       } else {
-        const thisPlayerInput = generateTurn(
+        const thisPlayerInput = await generateTurn(
           this.world,
           playerInfo,
           this.getGameState(),
           this.getPreviousTurnInput(playerInfo.id),
+          (turnInput) => this.simManager.runSimulation(turnInput),
         );
         if (thisPlayerInput.paths) {
           gameBus.emit(GameEvents.DEBUG_DRAW_PATH, thisPlayerInput.paths);
