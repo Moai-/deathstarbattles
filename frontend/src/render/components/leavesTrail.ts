@@ -1,6 +1,7 @@
 import { defineComponent, Types } from 'bitecs';
 
 export enum TrailType {
+  NONE,
   BEADS,
   BEADS_ON_A_STRING,
   MANY_BEADS,

@@ -11,6 +11,10 @@ export const createCollisionSystem = () => {
 
     for (let i = 0; i < projectiles.length; i++) {
       const eid1 = projectiles[i];
+      if (Projectile.active[eid1] === 0) {
+        continue;
+      }
+
       const pos1 = { x: Position.x[eid1], y: Position.y[eid1] };
       const rad1 = Collision.radius[eid1];
 

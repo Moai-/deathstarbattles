@@ -38,9 +38,7 @@ export class SimManager {
   async initializeWorker(eids: Array<number>, world: GameWorld) {
     return new Promise<void>((resolve, reject) => {
       if (!this.isReady || !this.worker) {
-        return reject(
-          `SimManager: worker ${!this.worker && 'does not exist'}${!this.isReady && !this.worker && ' and '}${!this.isReady && 'is not ready'}`,
-        );
+        return reject('SimManager: worker does not exist or is not ready');
       }
       this.isReady = false;
       const snapshot = buildSnapshot(eids, world);
@@ -61,9 +59,7 @@ export class SimManager {
   async runSimulation(turnInput: TurnInput) {
     return new Promise<SimResult>((resolve, reject) => {
       if (!this.isReady || !this.worker) {
-        return reject(
-          `SimManager: worker ${!this.worker && 'does not exist'}${!this.isReady && !this.worker && ' and '}${!this.isReady && 'is not ready'}`,
-        );
+        return reject('SimManager: worker does not exist or is not ready');
       }
       this.isReady = false;
       this.worker.onmessage = (evt) => {

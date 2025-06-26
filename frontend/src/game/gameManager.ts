@@ -43,7 +43,7 @@ export default class GameManager {
   private simManager: SimManager;
 
   // game state
-  private activePlayer = -1;
+  private activePlayerIndex = -1;
   private players: Array<PlayerInfo> = [];
   private history: Array<Array<TurnInput>> = [];
   private turnInputs: Array<TurnInput> = [];
@@ -89,8 +89,9 @@ export default class GameManager {
   }
 
   async startGame(conf: GameConfig) {
+    console.log('start game');
     this.active = true;
-    this.activePlayer = -1;
+    this.activePlayerIndex = -1;
     this.turnInputs = [];
     const { players, objectPlacements } = runGameSetup(
       this.scene,
@@ -99,6 +100,7 @@ export default class GameManager {
     );
 
     this.players = players;
+
     this.world.allObjects = objectPlacements;
     await this.simManager.startWorker();
     await this.simManager.initializeWorker(
@@ -109,8 +111,8 @@ export default class GameManager {
   }
 
   private startTurn() {
-    if (this.activePlayer < 0) {
-      this.activePlayer = this.players[0].id;
+    if (this.activePlayerIndex < 0) {
+      this.activePlayerIndex = 0;
     }
     const living = this.getLivingPlayers();
     if (living.length < 2) {
@@ -123,7 +125,12 @@ export default class GameManager {
       );
       return;
     }
-    const playerInfo = this.getPlayerInfo(this.activePlayer);
+    const playerInfo = this.players[this.activePlayerIndex];
+    console.log(
+      'start turn of player index %s and id %s',
+      this.activePlayerIndex,
+      playerInfo.id,
+    );
     if (playerInfo) {
       if (!playerInfo.isAlive) {
         return this.endTurn();
@@ -137,13 +144,13 @@ export default class GameManager {
     this.syncAnglePower();
     this.objectManager.hideAllchildren();
 
-    const thisPlayerInput = this.getPreviousTurnInput(this.activePlayer);
+    const thisPlayerInput = this.getPreviousTurnInput(playerInfo.id);
 
     if (thisPlayerInput) {
       const { angle, power } = thisPlayerInput;
       this.syncAnglePower(angle, power);
       if (thisPlayerInput.otherAction !== OtherActions.HYPERSPACE) {
-        const parent = this.projectileManager.getByPlayerId(this.activePlayer);
+        const parent = this.projectileManager.getByPlayerId(playerInfo.id);
         if (parent) {
           this.objectManager.showChildren(parent.ownId);
         }
@@ -152,6 +159,7 @@ export default class GameManager {
   }
 
   private firePhase() {
+    console.log('fire phase');
     this.indicator.removeIndicator();
     this.objectManager.removeAllChildren();
     this.projectileManager.reset();
@@ -178,6 +186,7 @@ export default class GameManager {
   }
 
   private async postCombatPhase() {
+    console.log('post combat phase');
     this.turnInputs = [];
     getSoundManager(this.scene).stopSound('travelHum');
     if (this.willHyperspace.length) {
@@ -203,12 +212,17 @@ export default class GameManager {
   }
 
   private async endTurn() {
-    const playerInfo = this.getPlayerInfo(this.activePlayer);
+    const playerInfo = this.players[this.activePlayerIndex];
+    console.log(
+      'end turn for player index %s and id %s',
+      this.activePlayerIndex,
+      playerInfo.id,
+    );
     if (playerInfo && playerInfo.isAlive) {
       if (playerInfo.type === PlayerTypes.HUMAN) {
         this.indicator.removeIndicator();
         this.turnInputs.push({
-          playerId: this.activePlayer,
+          playerId: playerInfo.id,
           angle: this.inputHandler.getCurrentAngle(),
           power: this.inputHandler.getCurrentPower(),
           otherAction: this.inputHandler.getCurrentOtherAction(),
@@ -231,11 +245,11 @@ export default class GameManager {
 
     const len = this.players.length;
 
-    if (this.activePlayer === this.players[len - 1].id) {
-      this.activePlayer = -1;
+    if (this.activePlayerIndex === len - 1) {
+      this.activePlayerIndex = -1;
       this.firePhase();
     } else {
-      this.activePlayer = this.activePlayer + 1;
+      this.activePlayerIndex = this.activePlayerIndex + 1;
       this.startTurn();
     }
   }
@@ -322,7 +336,9 @@ export default class GameManager {
       this.getPlayerInfo(eid)!.isAlive = false;
     });
     this.inputHandler.setOnEndTurnCallback(() => this.endTurn());
-    this.indicator.setGetTargetIdCallback(() => this.activePlayer);
+    this.indicator.setGetTargetIdCallback(
+      () => this.players[this.activePlayerIndex].id,
+    );
     this.indicator.setAnglePowerListener((angle, power) =>
       this.inputHandler.setAnglePower(angle, power),
     );

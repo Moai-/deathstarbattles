@@ -14,8 +14,9 @@ import { colToUi32 } from 'shared/src/utils';
 import { ObjectInfo } from 'shared/src/ecs/components/objectInfo';
 import { DEFAULT_DEATHBEAM_RADIUS } from 'shared/src/consts';
 import { inputsToShot } from 'shared/src/ai/functions';
+import { Player } from 'shared/src/ecs/components/player';
 
-export const DEFAULT_DEATHSTAR_RADIUS = 17;
+export const DEFAULT_DEATHSTAR_RADIUS = 16;
 
 export const createDeathStar = (
   world: GameWorld,
@@ -29,6 +30,7 @@ export const createDeathStar = (
   addComponent(world, Renderable, eid);
   addComponent(world, Destructible, eid);
   addComponent(world, ObjectInfo, eid);
+  addComponent(world, Player, eid);
 
   Position.x[eid] = x;
   Position.y[eid] = y;
@@ -36,6 +38,27 @@ export const createDeathStar = (
   ObjectInfo.type[eid] = ObjectTypes.DEATHSTAR;
   Renderable.col[eid] = colToUi32(color);
 
+  const projEid = addEntity(world);
+  addComponent(world, Position, projEid);
+  addComponent(world, Velocity, projEid);
+  addComponent(world, Collision, projEid);
+  addComponent(world, Renderable, projEid);
+  addComponent(world, LeavesTrail, projEid);
+  addComponent(world, Projectile, projEid);
+  addComponent(world, AffectedByGravity, projEid);
+  addComponent(world, HasLifetime, projEid);
+  addComponent(world, ObjectInfo, projEid);
+
+  Player.pooledProjectile[eid] = projEid;
+  Projectile.parent[projEid] = eid;
+  Projectile.lastCollisionTarget[projEid] = NULL_ENTITY;
+  Collision.radius[projEid] = DEFAULT_DEATHBEAM_RADIUS;
+  ObjectInfo.type[projEid] = ObjectTypes.DEATHBEAM;
+  ObjectInfo.type[projEid] = ObjectTypes.DEATHBEAM;
+  Renderable.col[projEid] = Renderable.col[eid];
+  Renderable.hidden[projEid] = 1;
+  LeavesTrail.col[projEid] = Renderable.col[eid];
+  LeavesTrail.type[projEid] = TrailType.BEADS_ON_A_STRING;
   return eid;
 };
 
@@ -45,26 +68,27 @@ export const fireProjectile = (
   angle: number,
   power: number,
 ) => {
-  const eid = addEntity(world);
-  addComponent(world, Position, eid);
-  addComponent(world, Velocity, eid);
-  addComponent(world, Collision, eid);
-  addComponent(world, Renderable, eid);
-  addComponent(world, LeavesTrail, eid);
-  addComponent(world, Projectile, eid);
-  addComponent(world, AffectedByGravity, eid);
-  addComponent(world, HasLifetime, eid);
-  addComponent(world, ObjectInfo, eid);
-
-  Projectile.parent[eid] = parentEid;
-  Projectile.lastCollisionTarget[eid] = NULL_ENTITY;
-  Collision.radius[eid] = DEFAULT_DEATHBEAM_RADIUS;
-  inputsToShot(parentEid, eid, { angle, power });
-  ObjectInfo.type[eid] = ObjectTypes.DEATHBEAM;
-  Renderable.col[eid] = Renderable.col[parentEid];
-  LeavesTrail.col[eid] = Renderable.col[parentEid];
-  LeavesTrail.type[eid] = TrailType.BEADS_ON_A_STRING;
+  const eid = Player.pooledProjectile[parentEid];
+  console.log('fire projectile', eid);
   HasLifetime.createdAt[eid] = Math.floor(world.time);
+  Renderable.hidden[eid] = 0;
+  Renderable.didVisibilityChange[eid] = 1;
+  Projectile.active[eid] = 1;
+  Projectile.lastCollisionTarget[eid] = NULL_ENTITY;
+
+  inputsToShot(parentEid, eid, { angle, power });
 
   return eid;
+};
+
+export const removeProjectile = (removeProp: {
+  parentEid?: number;
+  projEid?: number;
+}) => {
+  const { parentEid, projEid } = removeProp;
+  const eid = parentEid ? Player.pooledProjectile[parentEid] : projEid!;
+  HasLifetime.createdAt[eid] = 0;
+  Renderable.hidden[eid] = 1;
+  Renderable.didVisibilityChange[eid] = 1;
+  Projectile.active[eid] = 0;
 };

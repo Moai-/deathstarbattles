@@ -124,6 +124,9 @@ export class FiringIndicator {
   }
 
   private handlePointerDown(p: Phaser.Input.Pointer) {
+    if (!this.circle) {
+      return;
+    }
     this.isDragging = true;
     this.updateAnglePower(p);
   }
@@ -135,6 +138,9 @@ export class FiringIndicator {
   }
 
   private handlePointerUp() {
+    if (!this.circle) {
+      return;
+    }
     this.isDragging = false;
   }
 

@@ -150,6 +150,7 @@ const fireProjectile = (input: TurnInput) => {
 
   Collision.radius[proj] = 2;
   Projectile.parent[proj] = input.playerId;
+  Projectile.active[proj] = 1;
   HasLifetime.createdAt[proj] = 0;
   inputsToShot(playerId, proj, input);
   return proj;
@@ -173,7 +174,7 @@ const setupSystems = () => {
     removeEntity(world, proj);
     return false;
   });
-  const cleanupSystem = createCleanupSystem();
+  const cleanupSystem = createCleanupSystem((eid) => removeEntity(world, eid));
 
   return (world: GameWorld, time: number, delta: number) => {
     world.time = time;

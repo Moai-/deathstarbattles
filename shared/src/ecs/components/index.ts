@@ -8,3 +8,4 @@ export { Position } from './position';
 export { Projectile } from './projectile';
 export { Velocity } from './velocity';
 export { Wormhole } from './wormhole';
+export { Player } from './player';

@@ -2,24 +2,17 @@ import { defineQuery, enterQuery, defineSystem, exitQuery } from 'bitecs';
 import { Position } from 'shared/src/ecs/components/position';
 import { Renderable } from './components/renderable';
 import { GameObjectManager } from './objectManager';
-import {
-  LeavesTrail,
-  MAX_STRING_DIST_SQ,
-  TrailType,
-} from './components/leavesTrail';
-import { Collision } from 'shared/src/ecs/components/collision';
+import { LeavesTrail } from './components/leavesTrail';
 import { Projectile } from 'shared/src/ecs/components/projectile';
 import { AnyPoint } from 'shared/src/types';
-import { Depths } from './types';
-import { getSquaredDistance } from 'shared/src/ai/functions';
-import { ui32ToCol, getPosition } from 'shared/src/utils';
+import { dimTrail, makeTrail } from './elements/trail';
+import { getPosition } from 'shared/src/utils';
 
 const renderQuery = defineQuery([Position, Renderable]);
 const renderQueryEnter = enterQuery(renderQuery);
 const renderQueryExit = exitQuery(renderQuery);
 
 const trailQuery = defineQuery([Position, LeavesTrail]);
-const exitTrailQuery = exitQuery(trailQuery);
 
 const projectileQuery = defineQuery([Projectile]);
 
@@ -31,7 +24,9 @@ export const createRenderSystem = (
     const enteredEntities = renderQueryEnter(world);
 
     for (const eid of enteredEntities) {
-      objectManager.createObject(eid);
+      if (!hidden(eid)) {
+        objectManager.createObject(eid);
+      }
     }
 
     const exitedEntities = renderQueryExit(world);
@@ -43,106 +38,40 @@ export const createRenderSystem = (
     const updatedEntities = renderQuery(world);
 
     for (const eid of updatedEntities) {
-      const x = Position.x[eid];
-      const y = Position.y[eid];
-      objectManager.updateObjectPosition(eid, x, y);
+      if (Renderable.didVisibilityChange[eid]) {
+        if (hidden(eid)) {
+          objectManager.removeObject(eid);
+          if (LeavesTrail.type[eid] !== 0) {
+            dimTrail(eid, objectManager, scene);
+          }
+          continue;
+        } else {
+          objectManager.createObject(eid);
+        }
+        Renderable.didVisibilityChange[eid] = 0;
+      }
+      if (!hidden(eid)) {
+        const x = Position.x[eid];
+        const y = Position.y[eid];
+        objectManager.updateObjectPosition(eid, x, y);
+      }
     }
 
     const updatedTrails = trailQuery(world);
 
     for (const eid of updatedTrails) {
-      const x = Position.x[eid];
-      const y = Position.y[eid];
-      const trailType = LeavesTrail.type[eid];
-      if (
-        trailType === TrailType.BEADS ||
-        trailType === TrailType.BEADS_ON_A_STRING ||
-        trailType === TrailType.MANY_BEADS
-      ) {
-        const radius = Collision.radius[eid];
-        const col = ui32ToCol(LeavesTrail.col[eid]);
-        const circle = scene.add.circle(x, y, radius, col, 1).setVisible(false);
-        circle.setDepth(Depths.PROJECTILES);
-        if (trailType === TrailType.BEADS_ON_A_STRING) {
-          const lastChild = objectManager.getLastChild(
-            eid,
-          ) as Phaser.GameObjects.Arc;
-          const bead =
-            lastChild || objectManager.getObject(Projectile.parent[eid]);
-          // const bead = lastChild as Phaser.GameObjects.Arc;
-          if (bead) {
-            const sqDist = getSquaredDistance(circle, bead);
-            const line = scene.add.graphics();
-            const sizeRatio = sqDist / MAX_STRING_DIST_SQ;
-            const max = radius * 2;
-            const size = lastChild ? (radius * 2) / sizeRatio : max;
-            circle.radius = Math.min(radius, radius / sizeRatio);
-            line.lineStyle(Math.min(max, size), col);
-            line.lineBetween(bead.x, bead.y, x, y);
-            line.setDepth(Depths.PROJECTILES);
-            objectManager.createChild(eid, line);
-            const children = objectManager.getChildren(eid);
-            for (let i = 0; i < children.length; i++) {
-              if (i >= children.length - 5) {
-                (children[i] as Phaser.GameObjects.Graphics).setAlpha(1);
-              } else {
-                (children[i] as Phaser.GameObjects.Graphics).setAlpha(0.7);
-              }
-            }
-          }
-        }
-        if (trailType === TrailType.MANY_BEADS) {
-          const lastChild = objectManager.getLastChild(eid);
-          if (lastChild) {
-            const bead = lastChild as Phaser.GameObjects.Arc;
-            const dx = x - bead.x;
-            const dy = y - bead.y;
-            const stepX = dx / 4; // 2 extra circles => divide by 3
-            const stepY = dy / 4;
-            objectManager.createChild(
-              eid,
-              scene.add.circle(x + stepX, y + stepY, radius, col, 1),
-            );
-            objectManager.createChild(
-              eid,
-              scene.add.circle(x + stepX * 2, y + stepY * 2, radius, col, 1),
-            );
-            objectManager.createChild(
-              eid,
-              scene.add.circle(x + stepX * 3, y + stepY * 3, radius, col, 1),
-            );
-            // const midX = (bead.x + x) / 2;
-            // const midY = (bead.y + y) / 2;
-            // const nextBead = scene.add.circle(midX, midY, radius, col, 0.4);
-            // objectManager.createChild(eid, nextBead);
-          }
-        }
-        objectManager.createChild(eid, circle);
-        // const children = objectManager.getChildren(eid);
-        // const len = children.length;
-        // for (let i = 0; i < len - 5; i++) {
-        //   (children[i] as Phaser.GameObjects.Graphics).alpha = 0.4;
-        // }
+      if (hidden(eid)) {
+        continue;
       }
-    }
-
-    const exitedTrails = exitTrailQuery(world);
-
-    for (const eid of exitedTrails) {
-      const children = objectManager.getChildren(eid);
-      for (let i = children.length - 1; i > 0; i--) {
-        const c = children[i] as Phaser.GameObjects.Graphics;
-        if (c.alpha === 0.7) {
-          break;
-        } else {
-          c.setAlpha(0.7);
-        }
-      }
+      makeTrail(eid, objectManager, scene);
     }
 
     const updatedProjectiles = projectileQuery(world);
 
     for (const eid of updatedProjectiles) {
+      if (hidden(eid)) {
+        continue;
+      }
       const x = Position.x[eid];
       const y = Position.y[eid];
 
@@ -173,11 +102,13 @@ export const createRenderSystem = (
   });
 };
 
-function getEdgePoint(
+const hidden = (eid: number) => Renderable.hidden[eid] === 1;
+
+const getEdgePoint = (
   rect: Phaser.Geom.Rectangle,
   centerPt: AnyPoint,
   angle: number,
-) {
+) => {
   const dx = Math.cos(angle);
   const dy = Math.sin(angle);
   const centerX = centerPt.x;
@@ -217,4 +148,4 @@ function getEdgePoint(
 
   // Fallback: center of screen
   return new Phaser.Math.Vector2(centerX, centerY);
-}
+};

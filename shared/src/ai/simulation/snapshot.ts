@@ -49,6 +49,7 @@ export const buildSnapshot = (
     // Projectile
     parent: new Uint32Array(n),
     lastCollisionTarget: new Uint32Array(n),
+    active: new Uint8Array(n),
 
     // Velocity
     velX: new Float32Array(n),
@@ -120,6 +121,7 @@ export const buffersOf = (s: SimSnapshot) => [
 
   s.parent.buffer,
   s.lastCollisionTarget.buffer,
+  s.active.buffer,
 
   s.velX.buffer,
   s.velY.buffer,
@@ -150,6 +152,7 @@ export const restoreSnapshot = (snapshot: SimSnapshot, world: GameWorld) => {
   Position.x.set(snapshot.posX.subarray(0, n), ENTITY_START_CURSOR);
   Position.y.set(snapshot.posY.subarray(0, n), ENTITY_START_CURSOR);
   Projectile.parent.set(snapshot.parent.subarray(0, n), ENTITY_START_CURSOR);
+  Projectile.active.set(snapshot.active.subarray(0, n), ENTITY_START_CURSOR);
   Projectile.lastCollisionTarget.set(
     snapshot.lastCollisionTarget.subarray(0, n),
     ENTITY_START_CURSOR,

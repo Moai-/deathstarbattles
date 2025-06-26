@@ -15,6 +15,9 @@ export const createMovementSystem = () => {
       w.movements = w.movements || {};
     }
     for (const eid of entities) {
+      if (Projectile.active[eid] === 0) {
+        continue;
+      }
       const shooter = Projectile.parent[eid];
       w.movements![shooter] = w.movements![shooter] || {
         id: eid,

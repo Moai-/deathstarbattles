@@ -1,5 +1,4 @@
-import { fireProjectile } from '../entities/deathStar';
-import { removeEntity } from 'bitecs';
+import { fireProjectile, removeProjectile } from '../entities/deathStar';
 import { GameWorld } from 'shared/src/ecs/world';
 
 type CleanupCallback = (eid?: number) => void;
@@ -34,12 +33,24 @@ export class ProjectileManager {
   }
 
   removeProjectile(eid: number): void {
-    removeEntity(this.world, eid);
+    removeProjectile({ projEid: eid });
+
     this.onCleaned(eid);
 
     const thisRef = this.getByEid(eid);
     if (thisRef) {
       this.cleanedCount++;
+      console.log(
+        'removed projectile %s (%s of %s)',
+        eid,
+        this.cleanedCount,
+        this.activeProjectiles.length,
+      );
+      if (this.cleanedCount > this.activeProjectiles.length + 10) {
+        throw new Error('Whoa there pardner');
+      }
+    } else {
+      console.log('removed unreferenced projectile %s', eid);
     }
 
     if (this.cleanedCount === this.activeProjectiles.length) {

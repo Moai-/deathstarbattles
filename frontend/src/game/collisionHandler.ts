@@ -5,6 +5,7 @@ import Explosion, {
 } from 'src/render/animations/explosion';
 import { getSoundManager } from './resourceScene';
 import { getPosition, getRadius, getProjectileOwner } from 'shared/src/utils';
+import { removeProjectile } from 'src/entities/deathStar';
 
 type CollisionCallback = (targetEid: number) => void;
 
@@ -43,6 +44,7 @@ export class CollisionHandler {
   }
 
   private destroyProjectile(eid: number) {
+    removeProjectile({ projEid: eid });
     const pos = getPosition(eid);
     const radius = getRadius(eid);
     new Explosion(this.scene, pos, radius * 4, laserCols).play(700);

@@ -23,6 +23,11 @@ export const createCollisionResolverSystem = (
     const projectiles = projectileQuery(world);
 
     for (const projEid of projectiles) {
+      // Inactive projectile
+      if (Projectile.active[projEid] === 0) {
+        continue;
+      }
+
       const parent = Projectile.parent[projEid];
       const target = Projectile.lastCollisionTarget[projEid];
 
@@ -41,7 +46,6 @@ export const createCollisionResolverSystem = (
       if (hasComponent(world, Destructible, target)) {
         const doRemove = onCollision(projEid, target, true, world.time);
         if (doRemove) {
-          removeEntity(world, projEid);
           removeEntity(world, target);
         }
         world.movements[parent].destroyedTarget = target;
@@ -57,10 +61,7 @@ export const createCollisionResolverSystem = (
       }
 
       // Target is not a wormhole, not destructible, but has collision
-      const doRemove = onCollision(projEid, target, false, world.time);
-      if (doRemove) {
-        removeEntity(world, projEid);
-      }
+      onCollision(projEid, target, false, world.time);
     }
 
     return world;

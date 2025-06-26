@@ -44,6 +44,7 @@ export interface SimSnapshot {
   // Projectile
   parent: Uint32Array;
   lastCollisionTarget: Uint32Array;
+  active: Uint8Array;
 
   // Velocity
   velX: Float32Array;
