@@ -1,8 +1,8 @@
 import { defineQuery, defineSystem } from 'bitecs';
-import { Position, Collision, Projectile } from '../components';
+import { Position, Collision, Projectile, Active } from '../components';
 
-const projectileQuery = defineQuery([Position, Collision, Projectile]);
-const targetQuery = defineQuery([Position, Collision]);
+const projectileQuery = defineQuery([Position, Collision, Projectile, Active]);
+const targetQuery = defineQuery([Position, Collision, Active]);
 
 export const createCollisionSystem = () => {
   return defineSystem((world) => {
@@ -11,9 +11,6 @@ export const createCollisionSystem = () => {
 
     for (let i = 0; i < projectiles.length; i++) {
       const eid1 = projectiles[i];
-      if (Projectile.active[eid1] === 0) {
-        continue;
-      }
 
       const pos1 = { x: Position.x[eid1], y: Position.y[eid1] };
       const rad1 = Collision.radius[eid1];

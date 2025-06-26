@@ -44,7 +44,7 @@ export class CollisionHandler {
   }
 
   private destroyProjectile(eid: number) {
-    removeProjectile({ projEid: eid });
+    removeProjectile({ projEid: eid }, this.world);
     const pos = getPosition(eid);
     const radius = getRadius(eid);
     new Explosion(this.scene, pos, radius * 4, laserCols).play(700);

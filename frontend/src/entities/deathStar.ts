@@ -1,4 +1,4 @@
-import { addComponent, addEntity } from 'bitecs';
+import { addComponent, addEntity, entityExists, removeComponent } from 'bitecs';
 import { Position } from 'shared/src/ecs/components/position';
 import { Velocity } from 'shared/src/ecs/components/velocity';
 import { Collision } from 'shared/src/ecs/components/collision';
@@ -15,6 +15,7 @@ import { ObjectInfo } from 'shared/src/ecs/components/objectInfo';
 import { DEFAULT_DEATHBEAM_RADIUS } from 'shared/src/consts';
 import { inputsToShot } from 'shared/src/ai/functions';
 import { Player } from 'shared/src/ecs/components/player';
+import { Active } from 'shared/src/ecs/components';
 
 export const DEFAULT_DEATHSTAR_RADIUS = 16;
 
@@ -31,6 +32,7 @@ export const createDeathStar = (
   addComponent(world, Destructible, eid);
   addComponent(world, ObjectInfo, eid);
   addComponent(world, Player, eid);
+  addComponent(world, Active, eid);
 
   Position.x[eid] = x;
   Position.y[eid] = y;
@@ -69,26 +71,32 @@ export const fireProjectile = (
   power: number,
 ) => {
   const eid = Player.pooledProjectile[parentEid];
-  console.log('fire projectile', eid);
   HasLifetime.createdAt[eid] = Math.floor(world.time);
   Renderable.hidden[eid] = 0;
   Renderable.didVisibilityChange[eid] = 1;
-  Projectile.active[eid] = 1;
   Projectile.lastCollisionTarget[eid] = NULL_ENTITY;
+  addComponent(world, Active, eid);
 
   inputsToShot(parentEid, eid, { angle, power });
 
   return eid;
 };
 
-export const removeProjectile = (removeProp: {
-  parentEid?: number;
-  projEid?: number;
-}) => {
+export const removeProjectile = (
+  removeProp: {
+    parentEid?: number;
+    projEid?: number;
+  },
+  world: GameWorld,
+) => {
   const { parentEid, projEid } = removeProp;
+
   const eid = parentEid ? Player.pooledProjectile[parentEid] : projEid!;
+  if (!entityExists(world, eid)) {
+    return;
+  }
   HasLifetime.createdAt[eid] = 0;
   Renderable.hidden[eid] = 1;
   Renderable.didVisibilityChange[eid] = 1;
-  Projectile.active[eid] = 0;
+  removeComponent(world, Active, eid);
 };

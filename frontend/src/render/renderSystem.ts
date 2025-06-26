@@ -1,20 +1,20 @@
 import { defineQuery, enterQuery, defineSystem, exitQuery } from 'bitecs';
-import { Position } from 'shared/src/ecs/components/position';
 import { Renderable } from './components/renderable';
 import { GameObjectManager } from './objectManager';
 import { LeavesTrail } from './components/leavesTrail';
-import { Projectile } from 'shared/src/ecs/components/projectile';
 import { AnyPoint } from 'shared/src/types';
 import { dimTrail, makeTrail } from './elements/trail';
 import { getPosition } from 'shared/src/utils';
+import { Active, Position, Projectile } from 'shared/src/ecs/components';
 
-const renderQuery = defineQuery([Position, Renderable]);
+const renderQuery = defineQuery([Renderable, Active]);
 const renderQueryEnter = enterQuery(renderQuery);
 const renderQueryExit = exitQuery(renderQuery);
 
-const trailQuery = defineQuery([Position, LeavesTrail]);
+const trailQuery = defineQuery([Position, LeavesTrail, Active]);
+const dimTrailQuery = defineQuery([Position, LeavesTrail]);
 
-const projectileQuery = defineQuery([Projectile]);
+const projectileQuery = defineQuery([Projectile, Active]);
 
 export const createRenderSystem = (
   scene: Phaser.Scene,
@@ -24,9 +24,7 @@ export const createRenderSystem = (
     const enteredEntities = renderQueryEnter(world);
 
     for (const eid of enteredEntities) {
-      if (!hidden(eid)) {
-        objectManager.createObject(eid);
-      }
+      objectManager.createObject(eid);
     }
 
     const exitedEntities = renderQueryExit(world);
@@ -38,40 +36,26 @@ export const createRenderSystem = (
     const updatedEntities = renderQuery(world);
 
     for (const eid of updatedEntities) {
-      if (Renderable.didVisibilityChange[eid]) {
-        if (hidden(eid)) {
-          objectManager.removeObject(eid);
-          if (LeavesTrail.type[eid] !== 0) {
-            dimTrail(eid, objectManager, scene);
-          }
-          continue;
-        } else {
-          objectManager.createObject(eid);
-        }
-        Renderable.didVisibilityChange[eid] = 0;
-      }
-      if (!hidden(eid)) {
-        const x = Position.x[eid];
-        const y = Position.y[eid];
-        objectManager.updateObjectPosition(eid, x, y);
-      }
+      const x = Position.x[eid];
+      const y = Position.y[eid];
+      objectManager.updateObjectPosition(eid, x, y);
     }
 
     const updatedTrails = trailQuery(world);
 
+    const dimmedTrails = dimTrailQuery(world);
+
+    for (const eid of dimmedTrails) {
+      dimTrail(eid, objectManager, scene);
+    }
+
     for (const eid of updatedTrails) {
-      if (hidden(eid)) {
-        continue;
-      }
       makeTrail(eid, objectManager, scene);
     }
 
     const updatedProjectiles = projectileQuery(world);
 
     for (const eid of updatedProjectiles) {
-      if (hidden(eid)) {
-        continue;
-      }
       const x = Position.x[eid];
       const y = Position.y[eid];
 
@@ -101,8 +85,6 @@ export const createRenderSystem = (
     return world;
   });
 };
-
-const hidden = (eid: number) => Renderable.hidden[eid] === 1;
 
 const getEdgePoint = (
   rect: Phaser.Geom.Rectangle,

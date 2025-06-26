@@ -89,7 +89,6 @@ export default class GameManager {
   }
 
   async startGame(conf: GameConfig) {
-    console.log('start game');
     this.active = true;
     this.activePlayerIndex = -1;
     this.turnInputs = [];
@@ -126,11 +125,6 @@ export default class GameManager {
       return;
     }
     const playerInfo = this.players[this.activePlayerIndex];
-    console.log(
-      'start turn of player index %s and id %s',
-      this.activePlayerIndex,
-      playerInfo.id,
-    );
     if (playerInfo) {
       if (!playerInfo.isAlive) {
         return this.endTurn();
@@ -159,7 +153,6 @@ export default class GameManager {
   }
 
   private firePhase() {
-    console.log('fire phase');
     this.indicator.removeIndicator();
     this.objectManager.removeAllChildren();
     this.projectileManager.reset();
@@ -186,7 +179,6 @@ export default class GameManager {
   }
 
   private async postCombatPhase() {
-    console.log('post combat phase');
     this.turnInputs = [];
     getSoundManager(this.scene).stopSound('travelHum');
     if (this.willHyperspace.length) {
@@ -213,11 +205,6 @@ export default class GameManager {
 
   private async endTurn() {
     const playerInfo = this.players[this.activePlayerIndex];
-    console.log(
-      'end turn for player index %s and id %s',
-      this.activePlayerIndex,
-      playerInfo.id,
-    );
     if (playerInfo && playerInfo.isAlive) {
       if (playerInfo.type === PlayerTypes.HUMAN) {
         this.indicator.removeIndicator();

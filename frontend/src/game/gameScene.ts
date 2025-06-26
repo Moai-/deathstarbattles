@@ -6,6 +6,7 @@ import {
   createCollisionSystem,
   createGravitySystem,
   createMovementSystem,
+  createPathTrackerSystem,
 } from 'shared/src/ecs/systems';
 import { createRenderSystem } from '../render/renderSystem';
 import { GameObjectManager } from '../render/objectManager';
@@ -15,13 +16,14 @@ import { gameBus, GameEvents } from 'src/util';
 import { clearBackground } from 'src/render/background';
 import { getSoundManager } from './resourceScene';
 import { makeId } from 'shared/src/utils';
-// import { drawPathListener } from 'src/util/debug';
+import { drawPathListener } from 'src/util/debug';
 
 export class GameScene extends Phaser.Scene {
   private objectManager = new GameObjectManager(this);
   private world = createGameWorld();
   private gameManager = new GameManager(this, this.world, this.objectManager);
   private movementSystem = createMovementSystem();
+  private pathTrackerSystem = createPathTrackerSystem();
   private cleanupSystem = createCleanupSystem(
     this.gameManager.onCleanup.bind(this.gameManager),
   );
@@ -47,13 +49,14 @@ export class GameScene extends Phaser.Scene {
     this.gameManager.create();
     getSoundManager(this).playSound('songLoop');
     gameBus.emit(GameEvents.SCENE_LOADED);
-    // drawPathListener(this);
+    drawPathListener(this);
   }
 
   update(time: number, deltaMs: number) {
     this.world.time = time;
     this.world.delta = deltaMs;
     this.movementSystem(this.world);
+    this.pathTrackerSystem(this.world);
     this.gravitySystem(this.world);
     this.collisionSystem(this.world);
     this.collisionResolverSystem(this.world);

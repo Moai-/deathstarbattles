@@ -1,10 +1,13 @@
 import { addComponent, addEntity, IWorld } from 'bitecs';
-import { Position } from 'shared/src/ecs/components/position';
-import { Collision } from 'shared/src/ecs/components/collision';
-import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { Renderable } from '../render/components/renderable';
-import { ObjectInfo } from 'shared/src/ecs/components/objectInfo';
 import { ObjectTypes } from 'shared/src/types';
+import {
+  Position,
+  HasGravity,
+  ObjectInfo,
+  Active,
+  Collision,
+} from 'shared/src/ecs/components';
 
 export const createCollidingBase = (
   world: IWorld,
@@ -19,6 +22,7 @@ export const createCollidingBase = (
   addComponent(world, Renderable, eid);
   addComponent(world, HasGravity, eid);
   addComponent(world, ObjectInfo, eid);
+  addComponent(world, Active, eid);
 
   Position.x[eid] = x;
   Position.y[eid] = y;

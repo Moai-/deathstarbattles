@@ -1,4 +1,5 @@
 import {
+  Active,
   AffectedByGravity,
   Collision,
   Destructible,
@@ -75,6 +76,7 @@ export const buildSnapshot = (
       (has(AffectedByGravity, src)  ? ComponentTags.AffectedByGravity : 0) | // eslint-disable-line
       (has(Destructible, src)       ? ComponentTags.Destructible      : 0) | // eslint-disable-line
       (has(Projectile, src)         ? ComponentTags.Projectile        : 0) | // eslint-disable-line
+      (has(Active, src)             ? ComponentTags.Active            : 0) | // eslint-disable-line
       (has(Wormhole, src)           ? ComponentTags.Wormhole          : 0);  // eslint-disable-line
 
     snap.radius[i] = Collision.radius[src];
@@ -121,7 +123,6 @@ export const buffersOf = (s: SimSnapshot) => [
 
   s.parent.buffer,
   s.lastCollisionTarget.buffer,
-  s.active.buffer,
 
   s.velX.buffer,
   s.velY.buffer,
@@ -152,7 +153,6 @@ export const restoreSnapshot = (snapshot: SimSnapshot, world: GameWorld) => {
   Position.x.set(snapshot.posX.subarray(0, n), ENTITY_START_CURSOR);
   Position.y.set(snapshot.posY.subarray(0, n), ENTITY_START_CURSOR);
   Projectile.parent.set(snapshot.parent.subarray(0, n), ENTITY_START_CURSOR);
-  Projectile.active.set(snapshot.active.subarray(0, n), ENTITY_START_CURSOR);
   Projectile.lastCollisionTarget.set(
     snapshot.lastCollisionTarget.subarray(0, n),
     ENTITY_START_CURSOR,
@@ -210,6 +210,10 @@ export const restoreSnapshot = (snapshot: SimSnapshot, world: GameWorld) => {
 
     if (tag & ComponentTags.Wormhole) {
       addComponent(world, Wormhole, clonedEid);
+    }
+
+    if (tag & ComponentTags.Active) {
+      addComponent(world, Active, clonedEid);
     }
   }
 

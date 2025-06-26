@@ -8,6 +8,7 @@ import {
   removeEntity,
 } from 'bitecs';
 import {
+  Active,
   AffectedByGravity,
   Collision,
   Destructible,
@@ -23,6 +24,7 @@ import {
   createCollisionSystem,
   createGravitySystem,
   createMovementSystem,
+  createPathTrackerSystem,
 } from 'shared/src/ecs/systems';
 import { TargetCache, TurnInput } from 'shared/src/types';
 import { inputsToShot } from '../functions';
@@ -147,10 +149,10 @@ const fireProjectile = (input: TurnInput) => {
   addComponent(world, Projectile, proj);
   addComponent(world, AffectedByGravity, proj);
   addComponent(world, HasLifetime, proj);
+  addComponent(world, Active, proj);
 
   Collision.radius[proj] = 2;
   Projectile.parent[proj] = input.playerId;
-  Projectile.active[proj] = 1;
   HasLifetime.createdAt[proj] = 0;
   inputsToShot(playerId, proj, input);
   return proj;
@@ -168,10 +170,11 @@ export const buildColliderCache = (): TargetCache =>
 // Create and set up systems, return an updater function that updates all of them at once
 const setupSystems = () => {
   const movementSystem = createMovementSystem();
+  const pathTrackerSystem = createPathTrackerSystem();
   const gravitySystem = createGravitySystem();
   const collisionSystem = createCollisionSystem();
-  const collisionResolverSystem = createCollisionResolverSystem((proj) => {
-    removeEntity(world, proj);
+  const collisionResolverSystem = createCollisionResolverSystem((eid) => {
+    removeEntity(world, eid);
     return false;
   });
   const cleanupSystem = createCleanupSystem((eid) => removeEntity(world, eid));
@@ -180,6 +183,7 @@ const setupSystems = () => {
     world.time = time;
     world.delta = delta;
     movementSystem(world);
+    pathTrackerSystem(world);
     gravitySystem(world);
     collisionSystem(world);
     collisionResolverSystem(world);

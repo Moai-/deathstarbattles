@@ -11,6 +11,7 @@ export enum ComponentTags {
   Projectile       = 1 << 6, // eslint-disable-line
   Velocity         = 1 << 7, // eslint-disable-line
   Wormhole         = 1 << 8, // eslint-disable-line
+  Active           = 1 << 9, // eslint-disable-line
 }
 
 export interface SimSnapshot {

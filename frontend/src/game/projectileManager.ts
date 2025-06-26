@@ -33,24 +33,13 @@ export class ProjectileManager {
   }
 
   removeProjectile(eid: number): void {
-    removeProjectile({ projEid: eid });
+    removeProjectile({ projEid: eid }, this.world);
 
     this.onCleaned(eid);
 
     const thisRef = this.getByEid(eid);
     if (thisRef) {
       this.cleanedCount++;
-      console.log(
-        'removed projectile %s (%s of %s)',
-        eid,
-        this.cleanedCount,
-        this.activeProjectiles.length,
-      );
-      if (this.cleanedCount > this.activeProjectiles.length + 10) {
-        throw new Error('Whoa there pardner');
-      }
-    } else {
-      console.log('removed unreferenced projectile %s', eid);
     }
 
     if (this.cleanedCount === this.activeProjectiles.length) {

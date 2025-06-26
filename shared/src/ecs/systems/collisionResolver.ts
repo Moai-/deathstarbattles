@@ -5,9 +5,9 @@ import { GameWorld, NULL_ENTITY } from '../world';
 import { Destructible } from '../components/destructible';
 import { BASE_HEIGHT, BASE_WIDTH } from 'shared/src/consts';
 import { generateNonOverlappingPositions } from 'shared/src/utils';
-import { Projectile, Position, Collision } from '../components';
+import { Projectile, Position, Collision, Active } from '../components';
 
-const projectileQuery = defineQuery([Projectile, Position, Collision]);
+const projectileQuery = defineQuery([Projectile, Position, Collision, Active]);
 
 export const createCollisionResolverSystem = (
   onCollision: (
@@ -23,11 +23,6 @@ export const createCollisionResolverSystem = (
     const projectiles = projectileQuery(world);
 
     for (const projEid of projectiles) {
-      // Inactive projectile
-      if (Projectile.active[projEid] === 0) {
-        continue;
-      }
-
       const parent = Projectile.parent[projEid];
       const target = Projectile.lastCollisionTarget[projEid];
 
