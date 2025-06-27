@@ -12,6 +12,7 @@ export class ResourceScene extends Phaser.Scene {
   }
 
   preload() {
+    console.time('load resources');
     const keys = Object.keys(audioManifest);
     keys.forEach((key) => {
       this.load.audio(key, audioManifest[key].url);
@@ -34,6 +35,8 @@ export class ResourceScene extends Phaser.Scene {
         }
       },
     );
+    console.timeEnd('load resources');
+
     gameBus.emit(GameEvents.GAME_LOADED);
   }
 

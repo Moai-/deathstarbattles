@@ -76,7 +76,7 @@ const handleWormholeTeleport = (
       BASE_HEIGHT,
       [getRadius(projEid)],
       (a, b) => a + b + 5,
-      world.allObjects,
+      world,
     );
     setPosition(projEid, newPos);
     return;

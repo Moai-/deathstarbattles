@@ -49,6 +49,7 @@ export default class GameManager {
   private turnInputs: Array<TurnInput> = [];
   private willHyperspace: Array<number> = [];
   private active = true;
+  private numTurn = 0;
 
   constructor(
     scene: Phaser.Scene,
@@ -90,22 +91,23 @@ export default class GameManager {
 
   async startGame(conf: GameConfig) {
     this.active = true;
+    this.numTurn = 0;
     this.activePlayerIndex = -1;
     this.turnInputs = [];
-    const { players, objectPlacements } = runGameSetup(
-      this.scene,
-      this.world,
-      conf,
-    );
+    console.time('initial setup');
+    const { players } = runGameSetup(this.scene, this.world, conf);
+    console.timeEnd('initial setup');
 
     this.players = players;
 
-    this.world.allObjects = objectPlacements;
+    console.time('start and init worker');
     await this.simManager.startWorker();
     await this.simManager.initializeWorker(
-      objectPlacements.map((o) => o.eid),
+      getColliders(this.world),
       this.world,
     );
+    console.timeEnd('start and init worker');
+
     this.startTurn();
   }
 
@@ -124,7 +126,7 @@ export default class GameManager {
       );
       return;
     }
-    const playerInfo = this.players[this.activePlayerIndex];
+    const playerInfo = this.getActivePlayer();
     if (playerInfo) {
       if (!playerInfo.isAlive) {
         return this.endTurn();
@@ -152,7 +154,50 @@ export default class GameManager {
     }
   }
 
+  private async endTurn() {
+    const playerInfo = this.getActivePlayer();
+    if (playerInfo.isAlive) {
+      if (playerInfo.type === PlayerTypes.HUMAN) {
+        this.indicator.removeIndicator();
+        this.turnInputs.push({
+          playerId: playerInfo.id,
+          angle: this.inputHandler.getCurrentAngle(),
+          power: this.inputHandler.getCurrentPower(),
+          otherAction: this.inputHandler.getCurrentOtherAction(),
+        });
+        this.inputHandler.resetHyperspace();
+      } else {
+        // console.time('generate turn for ' + playerInfo.id);
+        const thisPlayerInput = await generateTurn(
+          this.world,
+          playerInfo,
+          this.getGameState(),
+          this.getPreviousTurnInput(playerInfo.id),
+          (turnInput) => this.simManager.runSimulation(turnInput),
+        );
+        // console.timeEnd('generate turn for ' + playerInfo.id);
+
+        if (thisPlayerInput.paths) {
+          gameBus.emit(GameEvents.DEBUG_DRAW_PATH, thisPlayerInput.paths);
+        }
+        this.turnInputs.push(thisPlayerInput);
+      }
+    }
+
+    const len = this.players.length;
+
+    if (this.activePlayerIndex === len - 1) {
+      this.activePlayerIndex = -1;
+      this.firePhase();
+    } else {
+      this.activePlayerIndex = this.activePlayerIndex + 1;
+      this.startTurn();
+    }
+  }
+
   private firePhase() {
+    this.numTurn = this.numTurn + 1;
+    console.log('turn', this.numTurn);
     this.indicator.removeIndicator();
     this.objectManager.removeAllChildren();
     this.projectileManager.reset();
@@ -182,16 +227,29 @@ export default class GameManager {
     this.turnInputs = [];
     getSoundManager(this.scene).stopSound('travelHum');
     if (this.willHyperspace.length) {
-      this.willHyperspace.forEach((playerId) => this.useHyperspace(playerId));
+      // filter out dead players
+      const actualHyperspace = this.willHyperspace.filter((eid) =>
+        this.isPlayerAlive(eid),
+      );
+      console.log(
+        'will perform hyperspace for these players',
+        actualHyperspace.join(', '),
+      );
+      if (actualHyperspace.length) {
+        await Promise.all(actualHyperspace.map(this.useHyperspace.bind(this)));
+      }
       this.willHyperspace = [];
     }
     const beforeRestart = Date.now();
+    // console.time('restart worker in post-combat');
     this.simManager.shutdownWorker();
     await this.simManager.startWorker();
     await this.simManager.initializeWorker(
       getColliders(this.world),
       this.world,
     );
+    // console.timeEnd('restart worker in post-combat');
+
     const remaining = Date.now() - beforeRestart;
     setTimeout(
       () => {
@@ -199,89 +257,46 @@ export default class GameManager {
           this.startTurn();
         }
       },
-      Math.max(2000 - remaining, 0),
+      Math.max(1000 - remaining, 0),
     );
   }
 
-  private async endTurn() {
-    const playerInfo = this.players[this.activePlayerIndex];
-    if (playerInfo && playerInfo.isAlive) {
-      if (playerInfo.type === PlayerTypes.HUMAN) {
-        this.indicator.removeIndicator();
-        this.turnInputs.push({
-          playerId: playerInfo.id,
-          angle: this.inputHandler.getCurrentAngle(),
-          power: this.inputHandler.getCurrentPower(),
-          otherAction: this.inputHandler.getCurrentOtherAction(),
-        });
-        this.inputHandler.resetHyperspace();
-      } else {
-        const thisPlayerInput = await generateTurn(
-          this.world,
-          playerInfo,
-          this.getGameState(),
-          this.getPreviousTurnInput(playerInfo.id),
-          (turnInput) => this.simManager.runSimulation(turnInput),
-        );
-        if (thisPlayerInput.paths) {
-          gameBus.emit(GameEvents.DEBUG_DRAW_PATH, thisPlayerInput.paths);
-        }
-        this.turnInputs.push(thisPlayerInput);
+  private async useHyperspace(eid: number) {
+    return new Promise<void>((resolve) => {
+      const playerInfo = this.getPlayerInfo(eid);
+
+      if (!playerInfo || !playerInfo?.isAlive) {
+        return resolve();
       }
-    }
+      // console.log(
+      //   'teleporting player %s (%s)',
+      //   eid,
+      //   Renderable.col[eid],
+      //   playerInfo,
+      // );
 
-    const len = this.players.length;
-
-    if (this.activePlayerIndex === len - 1) {
-      this.activePlayerIndex = -1;
-      this.firePhase();
-    } else {
-      this.activePlayerIndex = this.activePlayerIndex + 1;
-      this.startTurn();
-    }
-  }
-
-  private useHyperspace(eid: number) {
-    const playerInfo = this.getPlayerInfo(eid);
-
-    if (!playerInfo || !playerInfo?.isAlive) {
-      return;
-    }
-    // console.log(
-    //   'teleporting player %s (%s)',
-    //   eid,
-    //   Renderable.col[eid],
-    //   playerInfo,
-    // );
-
-    const { width, height } = this.scene.scale;
-    const radius = getRadius(eid);
-    const [newPosition] = generateNonOverlappingPositions(
-      width,
-      height,
-      [radius],
-      objectClearance,
-      this.world.allObjects,
-    );
-    const { x, y } = newPosition;
-    const oldPos = getPosition(eid);
-    new Hyperspace(this.scene, oldPos, radius, true).play(
-      () => {
-        setPosition(eid, -20, -20);
-      },
-      () => {
-        new Hyperspace(this.scene, newPosition, radius, false).play(() => {
-          setPosition(eid, newPosition);
-          const thisObject = this.world.allObjects.find(
-            (obj) => obj.eid === eid,
-          );
-          if (thisObject) {
-            thisObject.x = x;
-            thisObject.y = y;
-          }
-        });
-      },
-    );
+      const { width, height } = this.scene.scale;
+      const radius = getRadius(eid);
+      const [newPosition] = generateNonOverlappingPositions(
+        width,
+        height,
+        [radius],
+        objectClearance,
+        this.world,
+      );
+      const oldPos = getPosition(eid);
+      new Hyperspace(this.scene, oldPos, radius, true).play(
+        () => {
+          setPosition(eid, -20, -20);
+        },
+        () => {
+          new Hyperspace(this.scene, newPosition, radius, false).play(() => {
+            setPosition(eid, newPosition);
+            resolve();
+          });
+        },
+      );
+    });
   }
 
   private syncAnglePower(angle: number = 0, power: number = 20) {
@@ -293,8 +308,16 @@ export default class GameManager {
     return this.players.find(({ id }) => id === eid);
   }
 
+  private getActivePlayer() {
+    return this.players[this.activePlayerIndex];
+  }
+
   private getLivingPlayers() {
     return this.players.filter(({ isAlive }) => isAlive);
+  }
+
+  private isPlayerAlive(eid: number) {
+    return this.getPlayerInfo(eid)?.isAlive;
   }
 
   private getPreviousTurnInput(eid: number) {
@@ -311,7 +334,11 @@ export default class GameManager {
   }
 
   private setUpListeners() {
-    this.projectileManager.setCleanupCallback(() => this.postCombatPhase());
+    // Set a tiny delay on post combat phase to allow collision manager
+    // to properly resolve all destroyed stations
+    this.projectileManager.setCleanupCallback(() =>
+      setTimeout(() => this.postCombatPhase(), 10),
+    );
     this.projectileManager.setSingleCleanupCallback((eid) =>
       this.objectManager.removeBoundaryIndicator(eid!),
     );
@@ -344,7 +371,6 @@ export default class GameManager {
   getGameState() {
     return {
       lastTurnShots: this.world.movements,
-      objectInfo: this.world.allObjects,
     } as GameState;
   }
 }

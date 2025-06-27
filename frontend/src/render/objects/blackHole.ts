@@ -10,10 +10,10 @@ const renderBlackHole: RenderObject = (scene, eid) => {
   const container = scene.add.container(x, y);
   container.add(circle);
   // Temp indicator
-  // const nonInterfere = scene.add
-  //   .circle(0, 0, 120, 0, 0)
-  //   .setStrokeStyle(1, 0xff0000, 1);
-  // container.add(nonInterfere);
+  const nonInterfere = scene.add
+    .circle(0, 0, 120, 0, 0)
+    .setStrokeStyle(1, 0xff0000, 1);
+  container.add(nonInterfere);
   return container;
 };
 

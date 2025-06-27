@@ -1,4 +1,6 @@
+import { GameWorld } from '../ecs/world';
 import { ClearanceFunction, GameObject } from '../types';
+import { getAllObjects } from './entity';
 import { getRandomBetween } from './random';
 
 export function getRandomEdgePosition(
@@ -44,9 +46,12 @@ export function generateNonOverlappingPositions(
   height: number,
   radii: number[],
   clearanceFn: ClearanceFunction,
-  existing: GameObject[] = [],
+  worldOrPlaced: GameWorld | Array<GameObject>,
 ): GameObject[] {
   const placed: GameObject[] = [];
+  const existing = Array.isArray(worldOrPlaced)
+    ? (worldOrPlaced as Array<GameObject>)
+    : getAllObjects(worldOrPlaced as GameWorld);
 
   // console.log(
   //   'check against existing',
@@ -143,4 +148,19 @@ export const generateSupergiantStarPosition = (
   }
 
   return { x, y, side };
+};
+
+export const circlesDoOverlap = (
+  x1: number,
+  y1: number,
+  r1: number,
+  x2: number,
+  y2: number,
+  r2: number,
+): boolean => {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const distSq = dx * dx + dy * dy;
+  const radSum = r1 + r2;
+  return distSq < radSum * radSum;
 };

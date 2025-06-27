@@ -2,7 +2,7 @@ import { defineQuery, defineSystem } from 'bitecs';
 import { GameWorld } from '../world';
 import { Active, Position, Velocity } from '../components';
 
-const slow = 1 / 400;
+const slow = 1 / 300;
 const movingQuery = defineQuery([Position, Velocity, Active]);
 
 export const createMovementSystem = () => {

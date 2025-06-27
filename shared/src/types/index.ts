@@ -76,7 +76,6 @@ export type ObjectMovements = {
 };
 
 export type GameState = {
-  objectInfo: Array<GameObject>;
   lastTurnShots: ObjectMovements | null;
 };
 
@@ -114,12 +113,14 @@ export type GameConfig = {
   items?: Array<ScenarioItem>;
   itemRules?: Array<ScenarioItemRule>;
   maxItems?: number;
+  numItems?: number;
 };
 
 export type TargetCacheEntry = {
   x: number;
   y: number;
   eid: number;
+  r: number;
   r2: number;
   breaks: boolean;
 };

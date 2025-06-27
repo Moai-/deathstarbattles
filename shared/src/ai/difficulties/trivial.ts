@@ -12,7 +12,7 @@ import {
  * – Aiming is randomized within a quadrant of where the target is
  * – Hyperspace 1/4 of the time (also randomly)
  */
-const generateTrivialTurn: TurnGenerator = (world, playerInfo, gameState) => {
+const generateTrivialTurn: TurnGenerator = async (world, playerInfo) => {
   const playerId = playerInfo.id;
 
   // 1. Bail 1/4 of the time
@@ -22,11 +22,7 @@ const generateTrivialTurn: TurnGenerator = (world, playerInfo, gameState) => {
 
   // 2. Shoot randomly only in the vaguest direction of the target
   const ownPoint = getPosition(playerInfo.id);
-  const closestEid = getClosestDestructible(
-    world,
-    playerInfo.id,
-    gameState.objectInfo,
-  );
+  const closestEid = getClosestDestructible(world, playerInfo.id);
   const target = getPosition(closestEid);
   const angleToTarget = getAngleBetween(ownPoint, target);
   const quadrant = Math.floor(angleToTarget / 90) * 90;

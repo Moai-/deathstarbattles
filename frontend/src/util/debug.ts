@@ -20,7 +20,7 @@ export const drawPathListener = (scene: Phaser.Scene) => {
       }
       setTimeout(() => {
         lines.forEach((line) => line.destroy(true));
-      }, 2500);
+      }, 5000);
     }
   });
 };

@@ -1,4 +1,4 @@
-import { ShotInfo, TurnGenerator } from 'shared/src/types';
+import { ShotInfo, TurnGenerator, TurnInput } from 'shared/src/types';
 import { oneIn } from 'shared/src/utils';
 import {
   buildTargetCache,
@@ -8,9 +8,9 @@ import {
   hyperspaceTurn,
   getClosestDestructible,
   computeFirstShot,
-  addError,
+  // addError,
   correctFromLastShot,
-  isStuck,
+  // isStuck,
   explore,
 } from '../functions';
 
@@ -31,7 +31,7 @@ export const generateHardTurn: TurnGenerator = async (
 ) => {
   const playerId = playerInfo.id;
 
-  const targetCache = buildTargetCache(playerId, world, gameState.objectInfo);
+  const targetCache = buildTargetCache(playerId, world);
 
   // 1. Analyze last shot for stations that teleported onto it
   // Fire if you find any of these stations
@@ -43,6 +43,7 @@ export const generateHardTurn: TurnGenerator = async (
     );
 
     if (shotInfo.willHit) {
+      console.log('player %s performs last shot as it will hit', playerId);
       return shotTurn(playerId, lastTurnInput);
     }
   }
@@ -60,111 +61,78 @@ export const generateHardTurn: TurnGenerator = async (
     return hyperspaceTurn(playerId);
   }
 
-  // 4. Fire 3 blasts, pick either the one that hits, or the closest one
-  const targetEid = getClosestDestructible(
-    world,
-    playerId,
-    gameState.objectInfo,
-  );
+  // 4. Identify closest target and try the naive approach first
+  const targetEid = getClosestDestructible(world, playerId);
 
-  const needFreshAim =
-    !lastTurnInput || // first turn
-    !shotInfo || // no trace (edge-case)
-    shotInfo.closest !== targetEid; // our original target warped away
-
-  const input1 = needFreshAim
-    ? computeFirstShot({ ownEid: playerId, targetEid })
-    : correctFromLastShot(
-        { ownEid: playerId, targetEid },
-        lastTurnInput,
-        shotInfo!,
-      );
-
-  const sim1 = await simulateShot({ playerId, ...input1 });
+  const targetData = { ownEid: playerId, targetEid };
+  const naiveShot = computeFirstShot(targetData);
+  const sim1 = await simulateShot({ playerId, ...naiveShot });
 
   if (sim1.didHit) {
-    // console.log('player %s hit on sim 1', playerId);
-    return shotTurn(playerId, input1);
+    return shotTurn(playerId, naiveShot);
   }
 
-  // Missed. Correct and try again
-  const target2 =
-    sim1.closestEid === 0 || sim1.closestEid === playerId
-      ? targetEid
-      : sim1.closestEid;
-
-  const lastInput = {
-    ...lastTurnInput,
+  // 5. Missed. Try again, carefully correct shot
+  const input2: TurnInput = {
     playerId,
-    ...input1,
+    ...naiveShot,
   };
 
-  const input2 = correctFromLastShot(
-    { ownEid: playerId, targetEid: target2 },
-    lastInput,
-    { ...shotInfo, dist2: sim1.closestDist2 },
-  );
+  const target2 = sim1.closestEid === playerId ? targetEid : sim1.closestEid;
+  targetData.targetEid = target2;
 
-  const sim2 = await simulateShot({ playerId, ...input2 });
+  const correctedShot = correctFromLastShot(targetData, input2, {
+    dist2: sim1.closestDist2,
+  });
 
+  const sim2 = await simulateShot({ playerId, ...correctedShot });
   if (sim2.didHit) {
-    // console.log('player %s hit on sim 2', playerId);
-
-    return shotTurn(playerId, input2);
+    return shotTurn(playerId, correctedShot, [sim1.shotTrail]);
   }
 
-  // Missed again, try one more time
-  const target3 =
-    sim2.closestEid === 0 || sim2.closestEid === playerId
-      ? targetEid
-      : sim2.closestEid;
+  // 6. Missed again. Try to correct some more
+  const target3 = sim2.closestEid === playerId ? target2 : sim2.closestEid;
+  targetData.targetEid = target3;
+  const input3 = {
+    ...input2,
+    ...correctedShot,
+  };
 
-  const input3 = correctFromLastShot(
-    { ownEid: playerId, targetEid: target3 },
-    { ...lastInput, ...input2 },
-    { ...shotInfo, dist2: sim2.closestDist2 },
-  );
+  const adjustedShot = correctFromLastShot(targetData, input3, {
+    dist2: sim2.closestDist2,
+  });
 
-  const sim3 = await simulateShot({ playerId, ...input3 });
+  const sim3 = await simulateShot({ playerId, ...adjustedShot });
 
   if (sim3.didHit) {
-    // console.log('player %s hit on sim 3', playerId);
-
-    return shotTurn(playerId, input3);
+    return shotTurn(playerId, adjustedShot, [sim1.shotTrail, sim2.shotTrail]);
   }
 
-  // Missed for the third time. Try exploring
+  // 7. Missed, let's try an exploratory shot
+  const exploratoryShot = explore(adjustedShot);
+  const sim4 = await simulateShot({ playerId, ...exploratoryShot });
 
-  const stuck = isStuck(sim2, sim3);
-  if (stuck) {
-    const probeInput = explore(input3);
-    const probeSim = await simulateShot({ playerId, ...probeInput });
-
-    if (
-      probeSim.didHit ||
-      probeSim.closestDist2 <
-        Math.min(sim1.closestDist2, sim2.closestDist2, sim3.closestDist2)
-    ) {
-      return shotTurn(playerId, probeInput, [probeSim.shotTrail]);
-    }
+  if (sim4.didHit) {
+    return shotTurn(playerId, exploratoryShot, [
+      sim1.shotTrail,
+      sim2.shotTrail,
+      sim3.shotTrail,
+    ]);
   }
 
-  // Shoot at the target that our shot came closest to with a little noise.
-  // Maybe we'll get it, maybe next turn we'll figure it out.
-  const closestSim = [sim1, sim2, sim3].sort(
-    (a, b) => b.closestDist2 - a.closestDist2,
-  )[0];
+  // 8. Aaaand one more correction from the exploratory, maybe we almost struck gold
+  const target4 = sim3.closestEid === playerId ? target3 : sim3.closestEid;
+  const input4 = { ...input3, ...exploratoryShot };
+  targetData.targetEid = target4;
+  const adjustedExploratory = correctFromLastShot(targetData, input4, {
+    dist2: sim4.closestDist2,
+  });
+  console.log('%s missed all sim shots', playerId);
 
-  const finalInput = correctFromLastShot(
-    { ownEid: playerId, targetEid: closestSim.closestEid },
-    { ...lastInput, ...closestSim.input },
-    { ...shotInfo, dist2: closestSim.closestDist2 },
-  );
-  // console.log('player %s missed after sim 3', playerId);
-
-  return shotTurn(playerId, addError(finalInput, 2, 1), [
+  return shotTurn(playerId, adjustedExploratory, [
     sim1.shotTrail,
     sim2.shotTrail,
     sim3.shotTrail,
+    sim4.shotTrail,
   ]);
 };

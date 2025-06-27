@@ -5,7 +5,8 @@ import { Position } from '../ecs/components/position';
 import { Projectile } from '../ecs/components/projectile';
 import { ExitTypes, Wormhole } from '../ecs/components/wormhole';
 import { GameWorld } from '../ecs/world';
-import { AnyPoint, ObjectTypes } from '../types';
+import { AnyPoint, GameObject, ObjectTypes } from '../types';
+import { Active, Destructible } from '../ecs/components';
 
 export const getRadius = (eid: number) => Collision.radius[eid];
 
@@ -45,5 +46,16 @@ export const scrambleWormhole = (eid: number) => {
   Wormhole.teleportTarget[eid] = 0;
 };
 
-const colliderQuery = defineQuery([Collision]);
+const colliderQuery = defineQuery([Collision, Position, Active]);
 export const getColliders = (world: GameWorld) => colliderQuery(world);
+
+const targetQuery = defineQuery([Collision, Position, Destructible, Active]);
+export const getTargets = (world: GameWorld) => targetQuery(world);
+
+export const getAllObjects: (world: GameWorld) => Array<GameObject> = (world) =>
+  getColliders(world).map((eid) => ({
+    x: Position.x[eid],
+    y: Position.y[eid],
+    radius: Collision.radius[eid],
+    eid,
+  }));

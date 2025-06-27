@@ -1,7 +1,6 @@
 import { ShotInfo, TurnGenerator } from 'shared/src/types';
 import { oneIn } from 'shared/src/utils';
 import {
-  buildTargetCache,
   analyzeLastShot,
   shotTurn,
   checkDangerousShots,
@@ -10,6 +9,7 @@ import {
   computeFirstShot,
   addError,
   correctFromLastShot,
+  buildTargetCache,
 } from '../functions';
 
 /**
@@ -21,7 +21,7 @@ import {
  * – If we stay put, nudge aim half-way toward the ideal angle/power,
  *   with a tiny bit of noise so it doesn’t look robotic
  */
-export const generateMediumTurn: TurnGenerator = (
+export const generateMediumTurn: TurnGenerator = async (
   world,
   playerInfo,
   gameState,
@@ -29,7 +29,7 @@ export const generateMediumTurn: TurnGenerator = (
 ) => {
   const playerId = playerInfo.id;
 
-  const targetCache = buildTargetCache(playerId, world, gameState.objectInfo);
+  const targetCache = buildTargetCache(playerId, world);
 
   // 1. Analyze last shot for stations that teleported onto it
   // Fire if you find any of these stations
@@ -59,11 +59,7 @@ export const generateMediumTurn: TurnGenerator = (
   }
 
   // 4. If we need fresh aim (target teleported, first shot), do this
-  const targetEid = getClosestDestructible(
-    world,
-    playerId,
-    gameState.objectInfo,
-  );
+  const targetEid = getClosestDestructible(world, playerId);
 
   const needFreshAim =
     !lastTurnInput || // first turn

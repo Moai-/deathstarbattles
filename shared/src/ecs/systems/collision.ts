@@ -1,5 +1,6 @@
 import { defineQuery, defineSystem } from 'bitecs';
 import { Position, Collision, Projectile, Active } from '../components';
+import { circlesDoOverlap } from 'shared/src/utils';
 
 const projectileQuery = defineQuery([Position, Collision, Projectile, Active]);
 const targetQuery = defineQuery([Position, Collision, Active]);
@@ -30,19 +31,4 @@ export const createCollisionSystem = () => {
 
     return world;
   });
-};
-
-const circlesDoOverlap = (
-  x1: number,
-  y1: number,
-  r1: number,
-  x2: number,
-  y2: number,
-  r2: number,
-): boolean => {
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const distSq = dx * dx + dy * dy;
-  const radSum = r1 + r2;
-  return distSq < radSum * radSum;
 };
