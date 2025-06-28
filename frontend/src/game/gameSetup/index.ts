@@ -14,14 +14,15 @@ export const runGameSetup = (
 ) => {
   const { width, height } = scene.scale;
   // 0. Generate scene background
-  console.time('bg stars');
+  // console.time('bg stars');
   generateBackgroundStars(scene);
-  console.timeEnd('bg stars');
+  // console.timeEnd('bg stars');
 
   // 1. If all bots, randomize
   if (config.justBots) {
     const bots = generateRandomBots(world);
     const scenario = randomFromArray<ScenarioType>(getScenarioTypes());
+    // const scenario = getScenarioTypes()[18];
     const num = Phaser.Math.Between(15, 30);
     const objects = generateScenarioItems(world, scenario.items, {
       num,
@@ -49,7 +50,6 @@ export const runGameSetup = (
 
   // 4. Place everything
   const objectPlacements = placeEntities(width, height, items, playerIds);
-
   return {
     players,
     objectPlacements,

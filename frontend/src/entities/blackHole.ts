@@ -4,7 +4,7 @@ import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { ObjectTypes } from 'shared/src/types';
 import { createCollidingBase } from './bases';
 
-export const BLACK_HOLE_RAD = 4;
+export const BLACK_HOLE_RAD = 15;
 
 export const createBlackHole = (world: IWorld, x: number, y: number) => {
   const eid = createCollidingBase(

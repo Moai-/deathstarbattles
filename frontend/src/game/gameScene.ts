@@ -11,16 +11,20 @@ import {
 import { createRenderSystem } from '../render/renderSystem';
 import { GameObjectManager } from '../render/objectManager';
 import GameManager from './gameManager';
-import { resetWorld } from 'bitecs';
 import { gameBus, GameEvents } from 'src/util';
 import { clearBackground } from 'src/render/background';
 import { getSoundManager } from './resourceScene';
 import { makeId } from 'shared/src/utils';
 import { drawPathListener } from 'src/util/debug';
+import { resetWorld } from 'bitecs';
+import { FxManager } from './fxManager';
 
 export class GameScene extends Phaser.Scene {
+  public world = createGameWorld();
+  public debug = false;
+  public fxManager = new FxManager(this);
+
   private objectManager = new GameObjectManager(this);
-  private world = createGameWorld();
   private gameManager = new GameManager(this, this.world, this.objectManager);
   private movementSystem = createMovementSystem();
   private pathTrackerSystem = createPathTrackerSystem();
@@ -33,9 +37,7 @@ export class GameScene extends Phaser.Scene {
     this.gameManager.onCollision.bind(this.gameManager),
   );
   private renderSystem = createRenderSystem(this, this.objectManager);
-
   private unique = makeId();
-  public debug = false;
 
   constructor() {
     super({ key: 'GameScene', active: false });
@@ -48,6 +50,7 @@ export class GameScene extends Phaser.Scene {
       console.log('starting game', this.unique);
       this.gameManager.startGame(config);
     });
+    this.fxManager.create();
     this.gameManager.create();
     getSoundManager(this).playSound('songLoop');
     gameBus.emit(GameEvents.SCENE_LOADED);
@@ -70,6 +73,7 @@ export class GameScene extends Phaser.Scene {
     // flushRemovedEntities(this.world);
     getSoundManager(this).stopAllSounds('effects');
     resetWorld(this.world);
+    this.fxManager.destroy();
     this.gameManager.destroy();
     this.objectManager.destroy();
     clearBackground(this);

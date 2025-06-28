@@ -93,12 +93,12 @@ const runSimulation = (
 
   // console.log('min buffer at', minBuffer);
   const proj = fireProjectile(turnInfo);
-  let numSteps = 0;
-  const start = Date.now();
+  // let numSteps = 0;
+  // const start = Date.now();
 
   for (let t = 0; t < MAX_MS; t += MS_STEP) {
     // console.log('stepping at', dynamicStep);
-    numSteps++;
+    // numSteps++;
     let stepClosestd2 = Infinity;
 
     updateSystems(world, t, MS_STEP);
@@ -124,12 +124,12 @@ const runSimulation = (
         hitsEid = trg.eid;
         collisionT = t;
         if (trg.breaks) {
-          console.log(
-            'sim %s: found target in %s steps and %s ms',
-            playerId,
-            numSteps,
-            Date.now() - start,
-          );
+          // console.log(
+          //   'sim %s: found target in %s steps and %s ms',
+          //   playerId,
+          //   numSteps,
+          //   Date.now() - start,
+          // );
           closestDestructible = trg.eid;
         }
         break;

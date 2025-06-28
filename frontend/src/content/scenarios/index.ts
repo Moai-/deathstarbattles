@@ -23,10 +23,10 @@ const oneOf = (...args: Array<ScenarioItemRule>) =>
 
 const rareGoodies = () =>
   oneOf(
-    blackHole(rare),
+    blackHole({ max: 2, ...rare }),
     wormhole({ min: 2, ...rare }),
-    whiteHole(rare),
-    whiteDwarf(rare),
+    whiteHole({ max: 3, ...rare }),
+    whiteDwarf({ max: 3, ...rare }),
   );
 
 // prettier-ignore

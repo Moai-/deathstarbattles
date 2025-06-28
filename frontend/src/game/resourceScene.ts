@@ -17,6 +17,8 @@ export class ResourceScene extends Phaser.Scene {
     keys.forEach((key) => {
       this.load.audio(key, audioManifest[key].url);
     });
+    this.load.text('gravityShaderFragment', 'src/shaders/gravity.frag');
+    this.load.text('blackHoleFragment', 'src/shaders/blackHole.frag');
   }
 
   create() {
