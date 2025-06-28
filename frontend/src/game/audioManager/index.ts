@@ -1,3 +1,4 @@
+import { gameBus, GameEvents } from 'src/util';
 import { AudioCategory, audioManifest } from './manifest';
 
 export { audioManifest };
@@ -11,6 +12,11 @@ export class AudioManager {
   constructor(private scene: Phaser.Scene) {}
 
   create() {
+    gameBus.on(GameEvents.SET_VOLUME, (gameVolume) => {
+      if (gameVolume.mute !== undefined) {
+        this.muted = gameVolume.mute;
+      }
+    });
     Object.keys(audioManifest).forEach((audioKey) => {
       const { rp, vol } = audioManifest[audioKey];
       const sound = this.scene.sound.add(audioKey, {
@@ -29,6 +35,7 @@ export class AudioManager {
       sound.destroy();
     });
     this.allSounds.clear();
+    gameBus.off(GameEvents.SET_VOLUME);
   }
 
   setMuted(mute: boolean) {

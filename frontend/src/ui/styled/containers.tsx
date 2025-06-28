@@ -69,10 +69,22 @@ export const SideButtonColumn = styled.div`
   gap: 10px;
 `;
 
+export const TopLeftButton = styled.div`
+  position: absolute;
+  top: 10px;
+  left: 10px;
+`;
+
 export const TopRightButton = styled.div`
   position: absolute;
   top: 10px;
   right: 10px;
+`;
+
+export const MuteButton = styled.div`
+  position: absolute;
+  top: 10px;
+  right: 60px;
 `;
 
 export const WinnerScreen = styled.div`
