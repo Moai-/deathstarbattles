@@ -102,9 +102,13 @@ export function generateNonOverlappingPositions(
     }
 
     if (!found) {
-      throw new Error(
+      // throw new Error(
+      //   `Failed to place object with radius ${radius} after 1000 attempts.`,
+      // );
+      console.log(
         `Failed to place object with radius ${radius} after 1000 attempts.`,
       );
+      placed.push({ x: 10, y: 10, radius, eid: -1 });
     }
   }
 

@@ -29,7 +29,7 @@ export const createWormhole = (
   Position.x[eid] = x;
   Position.y[eid] = y;
   Collision.radius[eid] = radius;
-  HasGravity.strength[eid] = radius * 50;
+  HasGravity.strength[eid] = radius * 90;
   Renderable.col[eid] = generateWormholeColWithBias(bias, timeSeed);
 
   return eid;

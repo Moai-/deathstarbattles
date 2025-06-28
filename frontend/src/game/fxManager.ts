@@ -3,6 +3,7 @@ import { GameScene } from './gameScene';
 import { buildColliderCache } from 'shared/src/ai/functions';
 import { ObjectTypes } from 'shared/src/types';
 import { getType } from 'shared/src/utils';
+import { FXAAPipeline } from 'src/shaders/fxaa.pipeline';
 
 export class FxManager {
   constructor(private scene: GameScene) {}
@@ -11,7 +12,9 @@ export class FxManager {
     const renderer = this.getRenderer();
     if (renderer) {
       renderer.pipelines.addPostPipeline('BlackHoleFX', BlackHolePipeline);
+      renderer.pipelines.addPostPipeline('FXAA', FXAAPipeline);
       this.scene.cameras.main.setPostPipeline('BlackHoleFX');
+      // .setPostPipeline('FXAA');
     }
   }
 
@@ -30,11 +33,13 @@ export class FxManager {
   }
 
   destroy() {
-    const pipeline = this.getPipeline('BlackHoleFX');
-    if (pipeline) {
-      this.getRenderer()!.pipelines.removePostPipeline(
-        pipeline as BlackHolePipeline,
-      );
+    const bh = this.getPipeline('BlackHoleFX');
+    if (bh) {
+      this.getRenderer()!.pipelines.removePostPipeline(bh as BlackHolePipeline);
+    }
+    const fxaa = this.getPipeline('FXAA');
+    if (fxaa) {
+      this.getRenderer()!.pipelines.removePostPipeline(fxaa as FXAAPipeline);
     }
   }
 

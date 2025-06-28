@@ -16,7 +16,7 @@ export const createPlanet = (
   const eid = createCollidingBase(world, x, y, radius, ObjectTypes.PLANET);
 
   Collision.radius[eid] = radius;
-  HasGravity.strength[eid] = radius * 40;
+  HasGravity.strength[eid] = radius * 90;
 
   return eid;
 };

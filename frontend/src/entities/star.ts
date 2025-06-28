@@ -15,7 +15,7 @@ export const createStar = (
   radius: number,
 ) => {
   const eid = createCollidingBase(world, x, y, radius, ObjectTypes.STAR);
-  HasGravity.strength[eid] = radius * 50;
+  HasGravity.strength[eid] = radius * 100;
   Renderable.col[eid] = generateRandomCol(
     { r: 254, g: 250, b: 100 },
     { r: 2, g: 6, b: 156 },

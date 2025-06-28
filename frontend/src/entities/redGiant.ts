@@ -16,7 +16,7 @@ export const createRedGiant = (
 ) => {
   const eid = createCollidingBase(world, x, y, radius, ObjectTypes.RED_GIANT);
 
-  HasGravity.strength[eid] = radius * 50;
+  HasGravity.strength[eid] = radius * 80;
   Renderable.col[eid] = generateRandomCol(
     { r: 230, g: 70, b: 40 },
     { r: 25, g: 10, b: 10 },

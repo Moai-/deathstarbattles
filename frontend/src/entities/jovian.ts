@@ -16,7 +16,7 @@ export const createJovian = (
 ) => {
   const eid = createCollidingBase(world, x, y, radius, ObjectTypes.JOVIAN);
 
-  HasGravity.strength[eid] = radius * 50;
+  HasGravity.strength[eid] = radius * 80;
   Renderable.col[eid] = generateRandomCol(
     { r: 140, g: 0, b: 0 },
     { r: 111, g: 121, b: 51 },
