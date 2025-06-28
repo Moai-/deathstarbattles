@@ -1,7 +1,7 @@
 import { GameWorld } from 'shared/src/ecs/world';
 import { ObjectTypes, ScenarioItemRule } from 'shared/src/types';
+import { scenarioItems } from 'src/content/scenarios';
 import { createRandom } from 'src/entities';
-import { scenarioItems } from 'src/ui/content/scenarioSetup';
 
 export function generateScenarioItems(
   world: GameWorld,
@@ -32,7 +32,7 @@ export function generateScenarioItems(
     // Figure out minimum amount of items required first
     let minNum = 0;
     rules.forEach((rule) => {
-      if (rule.min) {
+      if (rule.min && canGenerate.get(rule.type)) {
         minNum = minNum + rule.min;
       }
     });
@@ -72,9 +72,10 @@ export function generateScenarioItems(
       }
 
       // Generate from this rule, ignoring probability, if we don't have enough of this item
+      // (and this item is allowed to be generated)
       const notEnoughMin = min && countOfThis < min;
       const notEnoughN = n && countOfThis < n;
-      if (notEnoughMin || notEnoughN) {
+      if (canGenerate.get(type) && (notEnoughMin || notEnoughN)) {
         items.push(createRandom[type](world));
         generated.set(type, countOfThis + 1);
         continue;

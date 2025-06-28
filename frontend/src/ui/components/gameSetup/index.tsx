@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HelpTargets, helpMessages } from 'src/ui/content/helpMessages';
+import { HelpTargets, helpMessages } from 'src/content/helpMessages';
 import {
   SetupScreenContainer,
   SetupContent,

@@ -2,9 +2,10 @@ import { GameWorld } from 'shared/src/ecs/world';
 import { generateBackgroundStars } from 'src/render/background/stars';
 import { generateRandomBots, generatePlayers } from './genPlayers';
 import { generateScenarioItems } from './genObjects';
-import { scenarioTypes } from 'src/ui/content/scenarioSetup';
 import { placeEntities } from './placeEntities';
-import { GameConfig } from 'shared/src/types';
+import { GameConfig, ScenarioType } from 'shared/src/types';
+import { getScenarioTypes } from 'src/content/scenarios';
+import { randomFromArray } from 'shared/src/utils';
 
 export const runGameSetup = (
   scene: Phaser.Scene,
@@ -20,8 +21,10 @@ export const runGameSetup = (
   // 1. If all bots, randomize
   if (config.justBots) {
     const bots = generateRandomBots(world);
-    const objects = generateScenarioItems(world, scenarioTypes[3].items, {
-      num: 20,
+    const scenario = randomFromArray<ScenarioType>(getScenarioTypes());
+    const num = Phaser.Math.Between(15, 30);
+    const objects = generateScenarioItems(world, scenario.items, {
+      num,
     });
     return {
       players: bots,

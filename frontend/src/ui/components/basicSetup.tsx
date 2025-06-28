@@ -3,11 +3,11 @@ import { SetupScreenContainer, SimpleSetup } from 'src/ui/styled/containers';
 import { SetupHeader } from 'src/ui/styled/text';
 import styled from 'styled-components';
 import { NeonButton } from '../styled';
-import { scenarioTypes } from '../content/scenarioSetup';
 import { startGameWithConfig } from '../functions/gameManagement';
 import { PlayerSetup } from 'shared/src/types';
 import { GameState, useGameState } from './context';
 import { playerCols } from 'shared/src/utils';
+import { getScenarioTypes } from 'src/content/scenarios';
 
 export const DropdownRow = styled.div`
   display: flex;
@@ -40,6 +40,7 @@ export const SetupScreen: React.FC = () => {
   const [objectCount, setObjectCount] = useState('10');
   const [scenario, setScenario] = useState('0');
   const { setGameState } = useGameState();
+  const types = getScenarioTypes();
 
   const start = () => {
     const players: Array<PlayerSetup> = [];
@@ -60,7 +61,7 @@ export const SetupScreen: React.FC = () => {
       justBots: false,
       players,
       maxItems,
-      itemRules: scenarioTypes[scenarioIdx].items,
+      itemRules: types[scenarioIdx].items,
     });
     setGameState(GameState.INGAME);
   };
@@ -121,7 +122,7 @@ export const SetupScreen: React.FC = () => {
             value={scenario}
             onChange={(e) => setScenario(e.target.value)}
           >
-            {scenarioTypes.map(({ name }, idx) => (
+            {types.map(({ name }, idx) => (
               <option key={name} value={idx}>
                 {name}
               </option>

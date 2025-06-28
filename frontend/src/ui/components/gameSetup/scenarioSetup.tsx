@@ -5,7 +5,7 @@ import { AddPlayerButton } from 'src/ui/styled/controls';
 import { ScenarioItemRow } from './scenarioItemRow';
 import { useScenario } from './scenarioContext';
 import { ObjectAmounts } from 'src/ui/types';
-import { scenarioTypes } from 'src/ui/content/scenarioSetup';
+import { getScenarioTypes } from 'src/content/scenarios';
 
 export const ScenarioSetup: React.FC = () => {
   const { items, addItem, amount, setAmount, scenario, setScenario } =
@@ -22,7 +22,7 @@ export const ScenarioSetup: React.FC = () => {
           value={scenario}
           onChange={(evt) => setScenario(parseInt(evt.target.value))}
         >
-          {scenarioTypes.map((t, idx) => (
+          {getScenarioTypes().map((t, idx) => (
             <option value={idx} key={t.name}>
               {t.name}
             </option>

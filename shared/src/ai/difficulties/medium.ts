@@ -7,8 +7,8 @@ import {
   getClosestDestructible,
   computeFirstShot,
   addError,
-  correctFromLastShot,
   analyzeShot,
+  correctShot,
 } from '../functions';
 
 /**
@@ -69,7 +69,7 @@ const generateMediumTurn: TurnGenerator = async (
   }
 
   // 5. Otherwise, try to correct your aim based on your last shot
-  const inputs = correctFromLastShot(
+  const inputs = correctShot(
     { ownEid: playerId, targetEid },
     lastTurnInput,
     shotInfo!,

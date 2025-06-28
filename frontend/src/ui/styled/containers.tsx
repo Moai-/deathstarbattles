@@ -81,7 +81,14 @@ export const WinnerScreen = styled.div`
   left: 0;
   right: 0;
   position: absolute;
-  size: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+export const WinnerContent = styled.div`
+  flex-direction: column;
+  display: flex;
 `;
 
 export const SetupScreenContainer = styled(OverlayContainer)`

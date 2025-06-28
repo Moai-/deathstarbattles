@@ -1,7 +1,7 @@
 import React from 'react';
 import { useScenario } from '././scenarioContext';
-import { scenarioItems } from 'src/ui/content/scenarioSetup';
 import { RemovePlayerButton } from 'src/ui/styled/controls';
+import { scenarioItems } from 'src/content/scenarios';
 
 export const ScenarioItemRow: React.FC<{
   item: { id: number; type: number; amount: number };

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
-import { scenarioItems } from 'src/ui/content/scenarioSetup';
-import { ObjectAmounts, ScenarioItem } from 'src/ui/types';
+import { ScenarioItem } from 'shared/src/types';
+import { scenarioItems } from 'src/content/scenarios';
+import { ObjectAmounts } from 'src/ui/types';
 
 interface ScenarioContextProps {
   items: ScenarioItem[];

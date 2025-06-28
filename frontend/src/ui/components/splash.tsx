@@ -8,7 +8,7 @@ import {
   MiniButton,
 } from '../styled';
 import { TopRightButton } from '../styled/containers';
-import instructions from '../content/instructions';
+import instructions from '../../content/instructions';
 import { SubBlock } from '../styled/text';
 import pkg from '../../../../package.json';
 import { GameState, useGameState } from './context';

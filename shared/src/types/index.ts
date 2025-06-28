@@ -138,3 +138,8 @@ export type TargetCacheEntry = {
 };
 
 export type TargetCache = Array<TargetCacheEntry>;
+
+export type ScenarioType = {
+  name: string;
+  items: Array<ScenarioItemRule>;
+};
