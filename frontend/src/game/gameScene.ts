@@ -35,9 +35,11 @@ export class GameScene extends Phaser.Scene {
   private renderSystem = createRenderSystem(this, this.objectManager);
 
   private unique = makeId();
+  public debug = true;
 
   constructor() {
     super({ key: 'GameScene', active: false });
+    this.world.debug = this.debug;
     console.log('game %s created', this.unique);
   }
 

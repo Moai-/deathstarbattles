@@ -24,15 +24,14 @@ export const generatePlayers = (
 };
 
 export const generateRandomBots = (world: GameWorld) => {
-  const numPlayers = 8;
-  // const numPlayers = Phaser.Math.Between(4, 12);
+  const numPlayers = Phaser.Math.Between(4, 12);
   const rawPlayers: Array<PlayerSetup> = [];
   for (let i = 0; i < numPlayers; i++) {
     rawPlayers.push({
       id: i,
       type: 1,
       col: playerCols[i],
-      difficulty: 4,
+      difficulty: Phaser.Math.Between(1, 5),
     });
   }
   return generatePlayers(world, rawPlayers);

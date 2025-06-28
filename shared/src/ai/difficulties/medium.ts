@@ -20,7 +20,7 @@ import {
  * – If we stay put, nudge aim half-way toward the ideal angle/power,
  *   with a tiny bit of noise so it doesn’t look robotic
  */
-export const generateMediumTurn: TurnGenerator = async (
+const generateMediumTurn: TurnGenerator = async (
   world,
   playerInfo,
   gameState,
@@ -76,3 +76,5 @@ export const generateMediumTurn: TurnGenerator = async (
   );
   return shotTurn(playerId, addError(inputs, 2, 1));
 };
+
+export default generateMediumTurn;

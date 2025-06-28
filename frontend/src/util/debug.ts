@@ -1,8 +1,12 @@
 import { Depths } from 'src/render/types';
 import { gameBus, GameEvents } from './event';
+import { GameScene } from 'src/game/gameScene';
 
-export const drawPathListener = (scene: Phaser.Scene) => {
+export const drawPathListener = (scene: GameScene) => {
   gameBus.on(GameEvents.DEBUG_DRAW_PATH, (debugInfo) => {
+    if (!scene.debug) {
+      return;
+    }
     const { colour, paths } = debugInfo;
     for (let pathIdx = 0; pathIdx < paths.length; pathIdx++) {
       const path = paths[pathIdx];

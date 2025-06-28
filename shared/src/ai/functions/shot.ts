@@ -5,6 +5,7 @@ import {
   ObjectMovements,
   TargetCache,
   RawTurn,
+  SimShotResult,
 } from 'shared/src/types';
 import { getPosition, getRadius, getRandomBetween } from 'shared/src/utils';
 import { getAngleBetween, getSquaredDistance } from './numeric';
@@ -70,7 +71,7 @@ export const analyzeShot = (
   };
 };
 
-type TargetInfo = {
+export type TargetInfo = {
   ownEid: number;
   targetEid: number;
 };
@@ -140,82 +141,107 @@ export const correctFromLastShot = (
   return { angle, power } as RawTurn;
 };
 
-/** Small helpers --------------------------------------------------------- */
+/* ---------------- helpers ------------------------------------------------ */
 const clamp = (v: number, lo: number, hi: number) =>
   Math.min(Math.max(v, lo), hi);
-const toUnit = (v: AnyPoint) => {
-  const len = Math.hypot(v.x, v.y);
-  return len === 0 ? { x: 0, y: 0 } : { x: v.x / len, y: v.y / len };
-};
+const toDeg = (rad: number) => (rad * 180) / Math.PI;
+const dist2 = (a: AnyPoint, b: AnyPoint) => (a.x - b.x) ** 2 + (a.y - b.y) ** 2;
 const dot = (a: AnyPoint, b: AnyPoint) => a.x * b.x + a.y * b.y;
-const perp = (v: AnyPoint) => ({ x: -v.y, y: v.x }); // left-hand 90° turn
+const perpZ = (a: AnyPoint, b: AnyPoint) => a.x * b.y - a.y * b.x; // 2-D cross product “z” term
 
-/** ---------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------ */
 export const correctShot = (
   targetInfo: TargetInfo,
   lastInput: TurnInput,
   shotInfo: ShotInfo,
 ): RawTurn => {
+  const shooter = getPosition(targetInfo.ownEid);
+  const target = getPosition(targetInfo.targetEid);
+
   /* ---------------------------------------------------------------------
-     Basic geometry
+     STEP 0  –  OBSTACLE AVOIDANCE
+     ---------------------------------------------------------------
+     Triggered when the last shell collided with a non-destructible
+     body that is *closer to us than to the real target*.
   --------------------------------------------------------------------- */
-  const ownPos = getPosition(targetInfo.ownEid);
-  const targetPos = getPosition(targetInfo.targetEid);
+  const obstacleHit =
+    shotInfo.hitsEid !== 0 &&
+    !shotInfo.destructible &&
+    dist2(shooter, getPosition(shotInfo.hitsEid)) < dist2(shooter, target);
 
-  // Axis from shooter ➜ target (“target axis”)
-  const axis = { x: targetPos.x - ownPos.x, y: targetPos.y - ownPos.y };
-  const L = Math.hypot(axis.x, axis.y); // length
-  const uAxis = toUnit(axis); // unit axis
-  const uPerp = perp(uAxis); // unit perpendicular (also unit-length)
+  if (obstacleHit) {
+    const obstacle = getPosition(shotInfo.hitsEid);
+    const rObst = getRadius(shotInfo.hitsEid);
+    const vSO = { x: obstacle.x - shooter.x, y: obstacle.y - shooter.y };
+    const dSO2 = vSO.x * vSO.x + vSO.y * vSO.y;
+    const dSO = Math.sqrt(dSO2);
 
-  // Vector from shooter to the point of closest approach returned by the sim
+    /* Shooter sits *inside* obstacle – very rare, bail out */
+    if (dSO <= rObst) {
+      return { angle: lastInput.angle, power: lastInput.power };
+    }
+
+    /* Angle between shooter→obstacle axis and its tangents  */
+    const deltaRad = Math.asin(rObst / dSO); // tangent deflection
+    const safetyDeg = 3; // add 3° buffer
+    const deltaDeg = toDeg(deltaRad) + safetyDeg;
+
+    /* Decide which side (sign) puts us on the same side as the target */
+    const cross = perpZ(vSO, {
+      x: target.x - shooter.x,
+      y: target.y - shooter.y,
+    });
+    const sideSign = Math.sign(cross) || 1; //  0 ⇒ pick CCW by default
+
+    const axisDeg = toDeg(Math.atan2(vSO.y, vSO.x)); //  shooter → obstacle
+    const newAngle = axisDeg + sideSign * deltaDeg;
+
+    /* Extra juice so gravity can bend it round the planet */
+    const newPower = clamp(lastInput.power + 12, 20, 100);
+
+    return {
+      angle: clamp(newAngle + (Math.random() * 4 - 2), -180, 180),
+      power: clamp(newPower + getRandomBetween(-1, 1), 20, 100),
+    };
+  }
+
+  /* ---------------------------------------------------------------------
+     STEP 1  –  NORMAL “EIGHT-WAY” CORRECTION (unchanged)
+  --------------------------------------------------------------------- */
+  const axis = { x: target.x - shooter.x, y: target.y - shooter.y };
+  const L = Math.hypot(axis.x, axis.y);
+  const uAxis = { x: axis.x / L, y: axis.y / L };
+  const uPerp = { x: -uAxis.y, y: uAxis.x };
+
   const vCP = {
-    x: shotInfo.closestPoint.x - ownPos.x,
-    y: shotInfo.closestPoint.y - ownPos.y,
+    x: shotInfo.closestPoint.x - shooter.x,
+    y: shotInfo.closestPoint.y - shooter.y,
   };
 
-  /** ------------------------------------------------------------------
-      Classify miss: along-axis component (front / behind)  + 
-                     perpendicular component (above / below)
-  ------------------------------------------------------------------ */
-  // Signed distance along the axis
-  const t = dot(vCP, uAxis); //  < L  → front (undershoot)
-  //  > L  → behind (overshoot)
+  const t = dot(vCP, uAxis); // along-axis component
+  const perpAtTarget =
+    (shotInfo.closestPoint.x - target.x) * uPerp.x +
+    (shotInfo.closestPoint.y - target.y) * uPerp.y;
 
-  // Signed perpendicular distance at the target’s position
-  const perpAtTarget = dot(
-    {
-      x: shotInfo.closestPoint.x - targetPos.x,
-      y: shotInfo.closestPoint.y - targetPos.y,
-    },
-    uPerp,
-  ); // +  → above,  – → below
+  const thresh = getRadius(targetInfo.targetEid) * 0.25;
 
-  // Thresholds (in *world* units) – tweak to taste
-  const frontBackThresh = getRadius(targetInfo.targetEid) * 0.25; // within ¼ r counts as “on”
-  const upDownThresh = frontBackThresh;
-
-  /* ---------------------------------------------------------------------
-     Start with previous settings; we’ll nudge them.
-  --------------------------------------------------------------------- */
   let angle = lastInput.angle;
   let power = lastInput.power;
 
-  /* ----------------- 1) POWER adjustments ---------------------------- */
-  if (Math.abs(t - L) > frontBackThresh) {
-    power += (t < L ? +1 : -1) * 10; // ±10-power shove
+  /* power: front / behind */
+  if (Math.abs(t - L) > thresh) {
+    power += (t < L ? +1 : -1) * 10;
   }
 
-  /* ----------------- 2) ANGLE adjustments ---------------------------- */
-  if (Math.abs(perpAtTarget) > upDownThresh) {
-    angle -= (perpAtTarget > 0 ? +1 : -1) * 6; // ±6 degrees nudge
+  /* angle: above / below  (fixed-sign logic) */
+  const signPerp = Math.sign(perpAtTarget);
+  if (Math.abs(perpAtTarget) > thresh) {
+    angle -= signPerp * 6;
   }
 
-  /* ----------------- 3) Clamp & add “human” jitter ------------------- */
-  // angle = clamp(angle + (Math.random() * 4 - 2), -180, 180);
-  // power = clamp(power + getRandomBetween(-1, 1), 20, 100);
-  angle = clamp(angle, -180, 180);
-  power = clamp(power, 20, 100);
+  /* polish */
+  angle = clamp(angle + (Math.random() * 4 - 2), -180, 180);
+  power = clamp(power + getRandomBetween(-1, 1), 20, 100);
 
   return { angle, power };
 };
@@ -264,12 +290,55 @@ export const inputsToShot = (
 export const explore = (lastInput: RawTurn) =>
   addError(lastInput, 40, 1.2 + Math.random() * 0.3);
 
-// export const isStuck = (sim: SimResult, sim2: SimResult): boolean => {
-//   // no collision on at least one sim, so as far as we know, we're not stuck
-//   if (sim.firstCollisionEid === 0) {
-//     return false;
-//   }
-//   const sameHit = sim.firstCollisionEid === sim2.firstCollisionEid;
-//   const sameTime = Math.abs(sim.firstCollisionT - sim2.firstCollisionT) < 300;
-//   return sameHit && sameTime;
-// };
+type SequencerResult = {
+  sim: SimShotResult;
+  paths: Array<Array<AnyPoint>>;
+};
+
+export const shotSequencer = async (
+  targetData: TargetInfo,
+  turnInput: TurnInput,
+  simulateShot: (t: TurnInput) => Promise<SimShotResult>,
+  sequenceAmount: number,
+  previousResults?: Array<SimShotResult>,
+): Promise<SequencerResult> => {
+  const closest = previousResults
+    ? previousResults.sort((a, b) => a.closestDist2 - b.closestDist2)[0]
+    : null;
+
+  const targetEid =
+    closest !== null
+      ? closest.hitsSelf
+        ? targetData.targetEid
+        : closest.closestDestructible
+      : targetData.targetEid;
+
+  const target = { ...targetData, targetEid };
+
+  const inputs = closest
+    ? { ...turnInput, ...correctShot(target, turnInput, closest) }
+    : turnInput;
+
+  const sim = await simulateShot(inputs);
+
+  const paths = previousResults
+    ? [...previousResults.map((r) => r.shotTrail), sim.shotTrail]
+    : [sim.shotTrail];
+
+  if (sim.willHit && !sim.hitsSelf) {
+    return {
+      sim,
+      paths,
+    };
+  }
+
+  const nextSequence = sequenceAmount - 1;
+  if (nextSequence < 0) {
+    return {
+      sim: closest && closest.closestDist2 < sim.closestDist2 ? closest : sim,
+      paths,
+    };
+  }
+  const previous = previousResults ? [...previousResults, sim] : [sim];
+  return shotSequencer(target, inputs, simulateShot, nextSequence, previous);
+};

@@ -12,6 +12,7 @@ export interface GameWorld extends IWorld {
   time: number;
   delta: number;
   movements: ObjectMovements | null;
+  debug: boolean;
 }
 
 export const createGameWorld = () => {
