@@ -17,24 +17,21 @@ export default class Explosion extends Phaser.GameObjects.Container {
     this.x = x;
     this.y = y;
 
-    // Store the circle GameObjects
     this.circles = [];
 
-    // Create and add concentric circles
     const totalCircles = colors.length;
     for (let i = 0; i < totalCircles; i++) {
       const circle = scene.add.circle(0, 0, innerRadius, colors[i]);
-      circle.setAlpha(1); // Start fully visible
-      circle.setScale(1); // Start at base scale
+      circle.setAlpha(1);
+      circle.setScale(1);
       this.add(circle);
       this.circles.push(circle);
     }
 
-    // Add this container to the scene
     scene.add.existing(this);
   }
 
-  play(duration = 1000) {
+  playLaser(duration = 1000) {
     const totalCircles = this.circles.length;
     const timelineSteps: Array<Phaser.Types.Time.TimelineEventConfig> = [];
 
@@ -45,9 +42,8 @@ export default class Explosion extends Phaser.GameObjects.Container {
         duration * (0.4 + (0.6 * (index + 1)) / totalCircles);
       const shrinkDuration = (duration * 0.5 * (index + 1)) / totalCircles;
 
-      // Add expand step
       timelineSteps.push({
-        at: 0, // All tweens can start at 0 if overlapping is desired
+        at: 0,
         tween: {
           targets: circle,
           scale: expandScale,
@@ -56,7 +52,6 @@ export default class Explosion extends Phaser.GameObjects.Container {
         },
       });
 
-      // Add shrink and fade step (offset a bit for overlap)
       timelineSteps.push({
         at: expandDuration * 0.5, // Overlap with the expansion phase
         tween: {
@@ -69,13 +64,61 @@ export default class Explosion extends Phaser.GameObjects.Container {
       });
     });
 
-    // Create the timeline with steps
     const timeline = this.scene.add.timeline(timelineSteps);
 
-    // Cleanup after complete
-    timeline.on('complete', () => this.destroy());
+    timeline.on('complete', () => {
+      this.destroy();
+    });
 
     timeline.play();
+  }
+
+  play(duration = 1000) {
+    const total = this.circles.length;
+
+    // ①  --- timing proportions (feel free to tweak)
+    const expandFrac = 0.55; // % of `duration` spent expanding
+    const staggerFrac = 0.25; // % used to stagger circle starts
+    const expandDur = duration * expandFrac;
+    const stagger = duration * staggerFrac;
+    const delayStep = total > 1 ? stagger / (total - 1) : 0;
+
+    const timelineSteps: Phaser.Types.Time.TimelineEventConfig[] = [];
+
+    this.circles.forEach((circle, i) => {
+      const delay = delayStep * i; // when this circle starts
+      const expandScale = 3 - (1.5 * i) / (total - 1); // 3 → 1.5 linearly
+      const shrinkScale = expandScale * 0.5; // optional: tweak as desired
+
+      // expansion
+      timelineSteps.push({
+        at: delay,
+        tween: {
+          targets: circle,
+          scale: expandScale,
+          ease: 'Sine.easeOut',
+          duration: expandDur,
+        },
+      });
+
+      // fade / collapse so that **every** circle finishes exactly at `duration`
+      const shrinkStart = delay + expandDur * 0.8; // overlap a bit
+      const shrinkDur = duration - shrinkStart; // auto-fit
+      timelineSteps.push({
+        at: shrinkStart,
+        tween: {
+          targets: circle,
+          scale: shrinkScale,
+          alpha: 0,
+          ease: 'Sine.easeIn',
+          duration: shrinkDur,
+        },
+      });
+    });
+
+    const tl = this.scene.add.timeline(timelineSteps);
+    tl.once('complete', () => this.destroy());
+    tl.play();
   }
 }
 
