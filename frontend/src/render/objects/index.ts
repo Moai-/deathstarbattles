@@ -13,6 +13,7 @@ import renderWormhole from './wormhole';
 import renderBigWormhole from './bigWormhole';
 import renderWhiteHole from './whiteHole';
 import { ObjectTypes } from 'shared/src/types';
+import renderAnomaly from './anomaly';
 
 const renderMap: Record<ObjectTypes, RenderObject> = {
   [ObjectTypes.NONE]: renderBlackHole,
@@ -29,6 +30,7 @@ const renderMap: Record<ObjectTypes, RenderObject> = {
   [ObjectTypes.WORMHOLE]: renderWormhole,
   [ObjectTypes.BIG_WORMHOLE]: renderBigWormhole,
   [ObjectTypes.WHITE_HOLE]: renderWhiteHole,
+  [ObjectTypes.ANOMALY]: renderAnomaly,
 };
 
 export default renderMap;

@@ -4,8 +4,6 @@ import {
   generateSupergiantStarPosition,
   getRadius,
   getType,
-  pairWormholes,
-  scrambleWormhole,
   setPosition,
 } from 'shared/src/utils';
 
@@ -107,33 +105,9 @@ export const placeEntities: (
     placed.push({ ...obj, x, y });
   }
 
-  const wormholes: Array<number> = [];
-
   placed.forEach((obj) => {
     setPosition(obj.eid, obj);
-    const type = getType(obj.eid);
-    if (type === ObjectTypes.WORMHOLE || type === ObjectTypes.BIG_WORMHOLE) {
-      wormholes.push(obj.eid);
-    }
   });
-
-  for (let i = 0; i < wormholes.length; ) {
-    const remaining = wormholes.length - i;
-
-    if (remaining === 1) {
-      scrambleWormhole(wormholes[i]);
-      i += 1;
-    } else {
-      const roll = Math.random();
-      if (roll < 1 / 6) {
-        scrambleWormhole(wormholes[i]);
-        i += 1;
-      } else {
-        pairWormholes(wormholes[i], wormholes[i + 1]);
-        i += 2;
-      }
-    }
-  }
 
   return placed;
 };

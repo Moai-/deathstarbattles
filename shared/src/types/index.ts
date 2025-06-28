@@ -29,6 +29,7 @@ export enum ObjectTypes {
   WORMHOLE,
   BIG_WORMHOLE,
   WHITE_HOLE,
+  ANOMALY,
 }
 
 export type PlayerSetup = {

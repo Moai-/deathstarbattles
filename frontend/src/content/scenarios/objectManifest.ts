@@ -13,6 +13,7 @@ export const scenarioItems = [
   { key: ObjectTypes.WORMHOLE, label: 'Wormhole', maxAmount: 20 },
   { key: ObjectTypes.BIG_WORMHOLE, label: 'Big wormhole', maxAmount: 2 },
   { key: ObjectTypes.WHITE_HOLE, label: 'Big wormhole', maxAmount: 20 },
+  { key: ObjectTypes.ANOMALY, label: 'Space-time Anomaly', maxAmount: 30 },
 ];
 
 export const planet = generateObject(ObjectTypes.PLANET);
@@ -26,3 +27,4 @@ export const whiteDwarf = generateObject(ObjectTypes.WHITE_DWARF);
 export const wormhole = generateObject(ObjectTypes.WORMHOLE);
 export const bigWormhole = generateObject(ObjectTypes.BIG_WORMHOLE);
 export const whiteHole = generateObject(ObjectTypes.WHITE_HOLE);
+export const anomaly = generateObject(ObjectTypes.ANOMALY);

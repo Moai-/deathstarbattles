@@ -1,5 +1,6 @@
 import { ScenarioItemRule, ScenarioType } from 'shared/src/types';
 import {
+  anomaly,
   asteroid,
   bigWormhole,
   blackHole,
@@ -49,8 +50,8 @@ export const getScenarioTypes = (): Array<ScenarioType> => [
   { name: 'Wormholes', items: [wormhole({min: 2, max: 20})] },
   { name: 'Big Wormhole', items: [bigWormhole({min: 1, max: 2}), asteroid(), rareGoodies()] },
   { name: 'Black Hole', items: [blackHole({min: 1}), asteroid(), planet(rare), jovian(rare)] },
-  { name: 'Black holes', items: [blackHole({min: 2}), whiteHole({max: 3, ...rare})] },
+  { name: 'Black holes', items: [blackHole({min: 2}), whiteHole({max: 3, ...rare}), anomaly({max: 3, ...rare})] },
   { name: 'White Hole', items: [whiteHole({n: 1}), asteroid(), planet(rare), jovian(rare)] },
   { name: 'White Holes', items: [whiteHole({min: 1})] },
-  { name: 'Hyperspace', items: [] },
+  { name: 'Hyperspace', items: [anomaly(), blackHole({ max: 2, ...rare }), wormhole({ min: 2, max: 6, ...rare })] },
 ];

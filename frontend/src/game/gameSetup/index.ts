@@ -6,6 +6,7 @@ import { placeEntities } from './placeEntities';
 import { GameConfig, ScenarioType } from 'shared/src/types';
 import { getScenarioTypes } from 'src/content/scenarios';
 import { randomFromArray } from 'shared/src/utils';
+import { finalizeSetup } from './finalize';
 
 export const runGameSetup = (
   scene: Phaser.Scene,
@@ -21,12 +22,13 @@ export const runGameSetup = (
   // 1. If all bots, randomize
   if (config.justBots) {
     const bots = generateRandomBots(world);
-    const scenario = randomFromArray<ScenarioType>(getScenarioTypes());
-    // const scenario = getScenarioTypes()[18];
+    // const scenario = randomFromArray<ScenarioType>(getScenarioTypes());
+    const scenario = getScenarioTypes()[21];
     const num = Phaser.Math.Between(15, 30);
     const objects = generateScenarioItems(world, scenario.items, {
       num,
     });
+    finalizeSetup(world);
     return {
       players: bots,
       objectPlacements: placeEntities(
@@ -50,6 +52,10 @@ export const runGameSetup = (
 
   // 4. Place everything
   const objectPlacements = placeEntities(width, height, items, playerIds);
+
+  // 5. Finalize (currently, tie wormholes together)
+  finalizeSetup(world);
+
   return {
     players,
     objectPlacements,

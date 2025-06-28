@@ -11,6 +11,7 @@ import { createRandomWhiteDwarf } from './whiteDwarf';
 import { createRandomWormhole } from './wormhole';
 import { createRandomBigWormhole } from './bigWormhole';
 import { createRandomWhiteHole } from './whiteHole';
+import { createRandomAnomaly } from './anomaly';
 
 const none = () => NULL_ENTITY;
 
@@ -31,4 +32,5 @@ export const createRandom: Record<ObjectTypes, (world: GameWorld) => number> = {
   [ObjectTypes.WORMHOLE]: createRandomWormhole,
   [ObjectTypes.BIG_WORMHOLE]: createRandomBigWormhole,
   [ObjectTypes.WHITE_HOLE]: createRandomWhiteHole,
+  [ObjectTypes.ANOMALY]: createRandomAnomaly,
 };
