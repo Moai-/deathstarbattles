@@ -24,6 +24,11 @@ type GameVolume = {
   mute?: boolean;
 };
 
+type DebugPath = {
+  paths: Array<Array<AnyPoint>>;
+  colour: number;
+};
+
 type EventData = {
   [GameEvents.END_TURN]: void;
   [GameEvents.ANGLE_POWER_UI]: { angle: number; power: number };
@@ -36,7 +41,7 @@ type EventData = {
   [GameEvents.GAME_REMOVED]: void;
   [GameEvents.GAME_LOADED]: void;
   [GameEvents.SET_VOLUME]: GameVolume;
-  [GameEvents.DEBUG_DRAW_PATH]: Array<Array<AnyPoint>>;
+  [GameEvents.DEBUG_DRAW_PATH]: DebugPath;
 };
 
 export const gameBus = mitt<EventData>();

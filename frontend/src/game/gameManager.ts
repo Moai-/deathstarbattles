@@ -178,7 +178,10 @@ export default class GameManager {
         // console.timeEnd('generate turn for ' + playerInfo.id);
 
         if (thisPlayerInput.paths) {
-          gameBus.emit(GameEvents.DEBUG_DRAW_PATH, thisPlayerInput.paths);
+          gameBus.emit(GameEvents.DEBUG_DRAW_PATH, {
+            colour: Renderable.col[thisPlayerInput.playerId],
+            paths: thisPlayerInput.paths,
+          });
         }
         this.turnInputs.push(thisPlayerInput);
       }
@@ -227,17 +230,7 @@ export default class GameManager {
     this.turnInputs = [];
     getSoundManager(this.scene).stopSound('travelHum');
     if (this.willHyperspace.length) {
-      // filter out dead players
-      const actualHyperspace = this.willHyperspace.filter((eid) =>
-        this.isPlayerAlive(eid),
-      );
-      console.log(
-        'will perform hyperspace for these players',
-        actualHyperspace.join(', '),
-      );
-      if (actualHyperspace.length) {
-        await Promise.all(actualHyperspace.map(this.useHyperspace.bind(this)));
-      }
+      await Promise.all(this.willHyperspace.map(this.useHyperspace.bind(this)));
       this.willHyperspace = [];
     }
     const beforeRestart = Date.now();

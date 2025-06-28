@@ -1,5 +1,4 @@
-import { AnyPoint, TurnInput } from 'shared/src/types';
-import { RawTurn } from '../functions';
+import { TurnInput, SimShotResult } from 'shared/src/types';
 
 export enum ComponentTags {
   AffectedByGravity= 1 << 0, // eslint-disable-line
@@ -67,17 +66,6 @@ export enum SimMessageType {
 export type SimMessage = {
   snapshot?: SimSnapshot;
   type: SimMessageType;
-  result?: SimResult;
+  result?: SimShotResult;
   turnInput?: TurnInput;
-};
-
-export type SimResult = {
-  didHit: boolean;
-  hitEid: number;
-  shotTrail: Array<AnyPoint>;
-  closestEid: number;
-  closestDist2: number; // squared pixels
-  input: RawTurn;
-  firstCollisionEid: number;
-  firstCollisionT: number;
 };

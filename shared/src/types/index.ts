@@ -1,4 +1,3 @@
-import { SimResult } from '../ai/simulation/types';
 import { GameWorld } from '../ecs/world';
 
 export enum OtherActions {
@@ -84,14 +83,27 @@ export type TurnGenerator = (
   playerInfo: PlayerInfo,
   gameState: GameState,
   lastTurnInput: TurnInput | null,
-  simulator: (t: TurnInput) => Promise<SimResult>,
+  simulator: (t: TurnInput) => Promise<SimShotResult>,
 ) => Promise<TurnInput>;
 
 export type ShotInfo = {
+  hitsEid: number;
+  destructible: boolean;
   willHit: boolean;
-  closest: number | null;
-  dist2: number;
+  closestDestructible: number;
+  closestPoint: AnyPoint;
+  closestDist2: number;
+  shotDist2: number;
 };
+
+export type SimShotResult = ShotInfo & {
+  collisionT: number | null;
+  input: RawTurn;
+  shotTrail: Array<AnyPoint>;
+  hitsSelf: boolean;
+};
+
+export type RawTurn = Pick<TurnInput, 'angle' | 'power'>;
 
 export interface ScenarioItem {
   id: number;

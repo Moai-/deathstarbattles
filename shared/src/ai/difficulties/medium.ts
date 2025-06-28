@@ -1,7 +1,6 @@
 import { ShotInfo, TurnGenerator } from 'shared/src/types';
 import { oneIn } from 'shared/src/utils';
 import {
-  analyzeLastShot,
   shotTurn,
   checkDangerousShots,
   hyperspaceTurn,
@@ -9,7 +8,7 @@ import {
   computeFirstShot,
   addError,
   correctFromLastShot,
-  buildTargetCache,
+  analyzeShot,
 } from '../functions';
 
 /**
@@ -29,15 +28,13 @@ export const generateMediumTurn: TurnGenerator = async (
 ) => {
   const playerId = playerInfo.id;
 
-  const targetCache = buildTargetCache(playerId, world);
-
   // 1. Analyze last shot for stations that teleported onto it
   // Fire if you find any of these stations
   let shotInfo: ShotInfo | null = null;
   if (lastTurnInput && gameState.lastTurnShots?.[playerId]) {
-    shotInfo = analyzeLastShot(
+    shotInfo = analyzeShot(
       gameState.lastTurnShots[playerId].movementTrace,
-      targetCache,
+      world,
     );
 
     if (shotInfo.willHit) {
@@ -64,7 +61,7 @@ export const generateMediumTurn: TurnGenerator = async (
   const needFreshAim =
     !lastTurnInput || // first turn
     !shotInfo || // no trace (edge-case)
-    shotInfo.closest !== targetEid; // our original target warped away
+    shotInfo.closestDestructible !== targetEid; // our original target warped away
 
   if (needFreshAim) {
     const inputs = computeFirstShot({ ownEid: playerId, targetEid });

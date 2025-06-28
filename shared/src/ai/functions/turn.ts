@@ -1,7 +1,5 @@
-import { AnyPoint, OtherActions, TurnInput } from 'shared/src/types';
+import { AnyPoint, OtherActions, RawTurn, TurnInput } from 'shared/src/types';
 import { getRandomBetween } from 'shared/src/utils';
-
-export type RawTurn = Pick<TurnInput, 'angle' | 'power'>;
 
 export const addError = (turn: RawTurn, angleError = 10, powerError = 3) =>
   ({

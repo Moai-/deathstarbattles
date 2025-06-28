@@ -1,7 +1,7 @@
 import { GameWorld } from 'shared/src/ecs/world';
-import { SimMessage, SimMessageType, SimResult } from './types';
+import { SimMessage, SimMessageType } from './types';
 import { buffersOf, buildSnapshot } from './snapshot';
-import { TurnInput } from 'shared/src/types';
+import { SimShotResult, TurnInput } from 'shared/src/types';
 
 export class SimManager {
   private worker: Worker | null = null;
@@ -68,7 +68,7 @@ export class SimManager {
   }
 
   async runSimulation(turnInput: TurnInput) {
-    return new Promise<SimResult>((resolve, reject) => {
+    return new Promise<SimShotResult>((resolve, reject) => {
       if (!this.isReady || !this.worker) {
         return reject('SimManager: worker does not exist or is not ready');
       }

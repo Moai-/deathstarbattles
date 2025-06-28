@@ -1,6 +1,6 @@
 import { GameWorld } from '../ecs/world';
 import { ClearanceFunction, GameObject } from '../types';
-import { getAllObjects } from './entity';
+import { getAllObjects, getPosition, getRadius } from './entity';
 import { getRandomBetween } from './random';
 
 export function getRandomEdgePosition(
@@ -150,7 +150,7 @@ export const generateSupergiantStarPosition = (
   return { x, y, side };
 };
 
-export const circlesDoOverlap = (
+export const doCirclesOverlap = (
   x1: number,
   y1: number,
   r1: number,
@@ -163,4 +163,12 @@ export const circlesDoOverlap = (
   const distSq = dx * dx + dy * dy;
   const radSum = r1 + r2;
   return distSq < radSum * radSum;
+};
+
+export const doObjectsOverlap = (eid1: number, eid2: number) => {
+  const { x: x1, y: y1 } = getPosition(eid1);
+  const r1 = getRadius(eid1);
+  const { x: x2, y: y2 } = getPosition(eid2);
+  const r2 = getRadius(eid2);
+  return doCirclesOverlap(x1, y1, r1, x2, y2, r2);
 };

@@ -1,10 +1,17 @@
 import { createGameWorld, GameWorld } from 'shared/src/ecs/world';
-import { SimMessage, SimMessageType, SimResult } from './types';
-import { addComponent, addEntity, entityExists, removeEntity } from 'bitecs';
+import { SimMessage, SimMessageType } from './types';
+import {
+  addComponent,
+  addEntity,
+  entityExists,
+  hasComponent,
+  removeEntity,
+} from 'bitecs';
 import {
   Active,
   AffectedByGravity,
   Collision,
+  Destructible,
   HasLifetime,
   ObjectInfo,
   Position,
@@ -19,19 +26,19 @@ import {
   createMovementSystem,
   createPathTrackerSystem,
 } from 'shared/src/ecs/systems';
-import { TargetCache, TurnInput } from 'shared/src/types';
-import { buildColliderCache, inputsToShot } from '../functions';
+import { SimShotResult, TargetCache, TurnInput } from 'shared/src/types';
+import {
+  buildColliderCache,
+  getSquaredDistance,
+  inputsToShot,
+} from '../functions';
 import { getPosition, getRadius } from 'shared/src/utils';
 import { restoreSnapshot } from './snapshot';
 
 type Updater = (world: GameWorld, time: number, delta: number) => void;
 
 const MAX_MS = 10000;
-const MS_STEP = 80;
-const MIN_MS_STEP = 10;
-const DYNAMIC_DECREASE_RADIUS_MULTIPLIER = 5;
-
-const stepVariance = MS_STEP - MIN_MS_STEP;
+const MS_STEP = 8;
 
 const world = createGameWorld();
 
@@ -57,9 +64,8 @@ self.onmessage = (ev: MessageEvent<SimMessage>) => {
       const simRes = runSimulation(ipt, colliders, updater);
       const result = {
         ...simRes,
-        hitEid: ObjectInfo.cloneOf[simRes.hitEid],
-        closestEid: ObjectInfo.cloneOf[simRes.closestEid],
-        firstCollisionEid: ObjectInfo.cloneOf[simRes.firstCollisionEid],
+        hitsEid: ObjectInfo.cloneOf[simRes.hitsEid],
+        closestDestructible: ObjectInfo.cloneOf[simRes.closestDestructible],
       };
       self.postMessage({ type: SimMessageType.SIMULATE_DONE, result });
       break;
@@ -73,37 +79,37 @@ const runSimulation = (
   turnInfo: TurnInput,
   colliderCache: TargetCache,
   updateSystems: Updater,
-): SimResult => {
+): SimShotResult => {
   const { playerId } = turnInfo;
 
   const targets = colliderCache.filter((t) => t.eid !== playerId);
 
-  let closestEid: number = 0;
-  let closestDist2 = Infinity;
-  let hitEid: number = 0;
-  let firstCollisionEid = 0;
-  let firstCollisionT = 0;
+  let closestDestructible = 0;
+  let hitsEid = 0;
+  let collisionT: number | null = null;
 
-  let dynamicStep = MS_STEP;
-  const ownRad = getRadius(turnInfo.playerId);
-  const minBuffer = Math.pow(ownRad * DYNAMIC_DECREASE_RADIUS_MULTIPLIER, 2);
+  let bestDist2 = Infinity;
+  let closestPoint = { x: 0, y: 0 };
+
   // console.log('min buffer at', minBuffer);
   const proj = fireProjectile(turnInfo);
   let numSteps = 0;
+  const start = Date.now();
 
-  for (let t = 0; t < MAX_MS; t += dynamicStep) {
+  for (let t = 0; t < MAX_MS; t += MS_STEP) {
     // console.log('stepping at', dynamicStep);
     numSteps++;
     let stepClosestd2 = Infinity;
 
-    updateSystems(world, t, dynamicStep);
+    updateSystems(world, t, MS_STEP);
 
     // A system may have removed / cleaned up the projectile
     if (!entityExists(world, proj)) break;
 
-    // Track closest approach to any destructible
+    // Track closest approach to any colliding object
     for (const trg of targets) {
-      const { x: x1, y: y1 } = getPosition(proj);
+      const projPoint = getPosition(proj);
+      const { x: x1, y: y1 } = projPoint;
       const r1 = getRadius(proj);
       const { x: x2, y: y2 } = trg;
       const r2 = getRadius(trg.eid);
@@ -115,25 +121,30 @@ const runSimulation = (
       const hasOverlap = d2 < radSum * radSum;
 
       if (hasOverlap) {
+        hitsEid = trg.eid;
+        collisionT = t;
         if (trg.breaks) {
-          console.log('sim %s: found target in %s steps', playerId, numSteps);
-          hitEid = trg.eid;
-        } else {
-          firstCollisionEid = trg.eid;
-          firstCollisionT = t;
+          console.log(
+            'sim %s: found target in %s steps and %s ms',
+            playerId,
+            numSteps,
+            Date.now() - start,
+          );
+          closestDestructible = trg.eid;
         }
         break;
       }
       if (d2 < stepClosestd2) {
         stepClosestd2 = d2;
       }
-      if (trg.breaks && d2 < closestDist2) {
-        closestDist2 = d2;
-        closestEid = trg.eid;
+      if (trg.breaks && d2 < bestDist2) {
+        bestDist2 = d2;
+        closestDestructible = trg.eid;
+        closestPoint = projPoint;
       }
     }
 
-    if (hitEid || firstCollisionEid) {
+    if (hitsEid) {
       removeEntity(world, proj);
       break;
     }
@@ -144,12 +155,15 @@ const runSimulation = (
     //   Math.floor(ownRad * ownRad),
     //   stepClosestd2,
     // );
-
-    if (stepClosestd2 < minBuffer) {
-      dynamicStep = MIN_MS_STEP + (stepClosestd2 / minBuffer) * stepVariance;
-    } else {
-      dynamicStep = MS_STEP;
-    }
+  }
+  const willHit = hitsEid === closestDestructible;
+  if (!willHit) {
+    // console.log(
+    //   'sim %s: missed after %s steps and %s ms',
+    //   playerId,
+    //   numSteps,
+    //   Date.now() - start,
+    // );
   }
   const shotTrail =
     (world.movements && [...world.movements[playerId].movementTrace]) || [];
@@ -160,28 +174,27 @@ const runSimulation = (
     power: turnInfo.power,
   };
 
-  const result = {
-    didHit: hitEid > 0,
-    hitEid,
-    shotTrail,
-    closestEid,
-    closestDist2,
+  const destructible = !!(
+    hitsEid && hasComponent(world, Destructible, hitsEid)
+  );
+
+  return {
+    hitsEid,
+    hitsSelf: hitsEid === playerId,
+    destructible,
+    willHit,
+    closestDestructible,
+    closestPoint,
+    closestDist2: bestDist2,
+    shotDist2: getSquaredDistance(
+      shotTrail[0],
+      shotTrail[shotTrail.length - 1],
+    ),
+
+    collisionT,
     input,
-    firstCollisionEid,
-    firstCollisionT,
+    shotTrail,
   };
-
-  // console.log(
-  //   'sim for player %s (%s): didHit %s, hitEid %s, closestEid %s, firstCollisionEid %s',
-  //   colNames[playerId - 1],
-  //   playerId,
-  //   hitEid > 0,
-  //   hitEid,
-  //   closestEid,
-  //   firstCollisionEid,
-  // );
-
-  return result;
 };
 
 // Spawn a projectile and fire it
