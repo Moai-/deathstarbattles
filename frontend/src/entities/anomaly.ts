@@ -5,7 +5,7 @@ import {
 } from 'shared/src/ecs/components/hasGravity';
 import { Renderable } from '../render/components/renderable';
 import { ObjectTypes } from 'shared/src/types';
-import { generateRandomCol, randomFromArray } from 'shared/src/utils';
+import { generateRandomCol, oneIn, randomFromArray } from 'shared/src/utils';
 import { createCollidingBase } from './bases';
 import { Wormhole } from 'shared/src/ecs/components';
 
@@ -36,6 +36,10 @@ export const createAnomaly = (
   return eid;
 };
 
+export const createRandomAnomaly = (world: IWorld) => {
+  return createAnomaly(world, 0, 0, ANOMALY_RAD);
+};
+
 const addRandomAnomalyEffect = (eid: number, world: IWorld) => {
   randomFromArray<(eid: number) => void>([
     (eid) => {
@@ -45,32 +49,46 @@ const addRandomAnomalyEffect = (eid: number, world: IWorld) => {
     (eid) => {
       // White dwarf
       HasGravity.strength[eid] = (ANOMALY_RAD + 20) * 1500;
-    },
-    (eid) => {
-      // Wormhole
-      HasGravity.strength[eid] = NORMAL_GRAV;
-      addComponent(world, Wormhole, eid);
-    },
-    (eid) => {
-      // Supergiant
-      HasGravity.strength[eid] = Phaser.Math.Between(50, 150);
-      HasGravity.falloffType[eid] = GravityFalloffType.LINEAR;
-    },
-    (eid) => {
-      // Normal object
-      HasGravity.strength[eid] = NORMAL_GRAV;
+      maybeHole(eid, world);
     },
     (eid) => {
       // Heavy object
       HasGravity.strength[eid] = NORMAL_GRAV * 3;
+      maybeHole(eid, world);
+    },
+    (eid) => {
+      // Normal object
+      HasGravity.strength[eid] = NORMAL_GRAV;
+      maybeHole(eid, world);
     },
     (eid) => {
       // Light object
       HasGravity.strength[eid] = NORMAL_GRAV / 3;
+      maybeHole(eid, world);
+    },
+    (eid) => {
+      // Linear acceleration
+      HasGravity.strength[eid] = Phaser.Math.Between(50, 150);
+      HasGravity.falloffType[eid] = GravityFalloffType.LINEAR;
+      maybeHole(eid, world);
+    },
+    (eid) => {
+      // Heavy object inverse
+      HasGravity.strength[eid] = -NORMAL_GRAV * 3;
+    },
+    (eid) => {
+      // Normal object inverse
+      HasGravity.strength[eid] = -NORMAL_GRAV;
+    },
+    (eid) => {
+      // Light object inverse
+      HasGravity.strength[eid] = -NORMAL_GRAV / 3;
     },
   ])(eid);
 };
 
-export const createRandomAnomaly = (world: IWorld) => {
-  return createAnomaly(world, 0, 0, ANOMALY_RAD);
+const maybeHole = (eid: number, world: IWorld) => {
+  if (oneIn(2)) {
+    addComponent(world, Wormhole, eid);
+  }
 };

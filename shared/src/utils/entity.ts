@@ -6,7 +6,7 @@ import { Projectile } from '../ecs/components/projectile';
 import { ExitTypes, Wormhole } from '../ecs/components/wormhole';
 import { GameWorld } from '../ecs/world';
 import { AnyPoint, GameObject, ObjectTypes } from '../types';
-import { Active, Destructible } from '../ecs/components';
+import { Active, Destructible, HyperLocus } from '../ecs/components';
 
 export const getRadius = (eid: number) => Collision.radius[eid];
 
@@ -59,3 +59,13 @@ export const getAllObjects: (world: GameWorld) => Array<GameObject> = (world) =>
     radius: Collision.radius[eid],
     eid,
   }));
+
+const locusQuery = defineQuery([HyperLocus, Active]);
+
+export const getHyperLocus = (world: GameWorld) => {
+  const [locus] = locusQuery(world);
+  if (locus) {
+    return locus;
+  }
+  return null;
+};

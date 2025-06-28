@@ -26,6 +26,7 @@ import {
   generateNonOverlappingPositions,
   noop,
   getColliders,
+  getHyperLocus,
 } from 'shared/src/utils';
 import { SimManager } from 'shared/src/ai/simulation/manager';
 import { GameScene } from './gameScene';
@@ -51,6 +52,7 @@ export default class GameManager {
   private willHyperspace: Array<number> = [];
   private active = true;
   private numTurn = 0;
+  private isHyperspace = false;
 
   constructor(
     scene: GameScene,
@@ -98,7 +100,7 @@ export default class GameManager {
     // console.time('initial setup');
     const { players } = runGameSetup(this.scene, this.world, conf)!;
     this.scene.fxManager.update();
-
+    this.isHyperspace = getHyperLocus(this.world) !== null;
     // console.timeEnd('initial setup');
 
     this.players = players;
@@ -171,11 +173,14 @@ export default class GameManager {
         this.inputHandler.resetHyperspace();
       } else {
         // console.time('generate turn for ' + playerInfo.id);
+        const lastTurn = this.isHyperspace
+          ? null
+          : this.getPreviousTurnInput(playerInfo.id);
         const thisPlayerInput = await generateTurn(
           this.world,
           playerInfo,
           this.getGameState(),
-          this.getPreviousTurnInput(playerInfo.id),
+          lastTurn,
           (turnInput) => this.simManager.runSimulation(turnInput),
         );
         // console.timeEnd('generate turn for ' + playerInfo.id);
@@ -232,8 +237,13 @@ export default class GameManager {
   private async postCombatPhase() {
     this.turnInputs = [];
     getSoundManager(this.scene).stopSound('travelHum');
-    if (this.willHyperspace.length) {
-      await Promise.all(this.willHyperspace.map(this.useHyperspace.bind(this)));
+    const shouldHyperspace = this.isHyperspace
+      ? this.players
+          .filter((p) => !this.willHyperspace.includes(p.id))
+          .map((p) => p.id)
+      : this.willHyperspace;
+    if (shouldHyperspace.length) {
+      await Promise.all(shouldHyperspace.map(this.useHyperspace.bind(this)));
       this.willHyperspace = [];
     }
     const beforeRestart = Date.now();

@@ -30,6 +30,8 @@ export enum ObjectTypes {
   BIG_WORMHOLE,
   WHITE_HOLE,
   ANOMALY,
+  LOCUS,
+  TUNNEL_LOCUS,
 }
 
 export type PlayerSetup = {
@@ -125,6 +127,7 @@ export type GameConfig = {
   players?: Array<PlayerSetup>;
   items?: Array<ScenarioItem>;
   itemRules?: Array<ScenarioItemRule>;
+  background?: Backgrounds;
   maxItems?: number;
   numItems?: number;
 };
@@ -143,4 +146,11 @@ export type TargetCache = Array<TargetCacheEntry>;
 export type ScenarioType = {
   name: string;
   items: Array<ScenarioItemRule>;
+  background?: Backgrounds;
 };
+
+export enum Backgrounds {
+  NONE,
+  STARS,
+  SHARDS,
+}

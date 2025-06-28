@@ -7,7 +7,6 @@ export const generateBackgroundStars = (
   const width = scene.scale.width;
   const height = scene.scale.height;
 
-  // Create a RenderTexture
   const renderTexture = scene.make
     .renderTexture({
       width: width,
@@ -15,11 +14,7 @@ export const generateBackgroundStars = (
     })
     .setVisible(false);
 
-  // Use a temporary Graphics object for drawing
   const graphics = scene.add.graphics();
-
-  // graphics.setX(scene.scale.width);
-  // graphics.setY(scene.scale.height);
 
   for (let i = 0; i < starCount; i++) {
     const x = Phaser.Math.Between(0, width);
@@ -47,11 +42,9 @@ export const generateBackgroundStars = (
     graphics.fillCircle(x, y, radius);
   }
 
-  // Draw the graphics onto the RenderTexture
   renderTexture.draw(graphics);
-  graphics.destroy(); // Clean up the temporary Graphics object
+  graphics.destroy();
 
-  // Save the texture under a key
   renderTexture.saveTexture(BG_TEXTURE);
 
   const bg = scene.add.image(0, 0, BG_TEXTURE).setOrigin(0, 0);

@@ -14,6 +14,8 @@ export const scenarioItems = [
   { key: ObjectTypes.BIG_WORMHOLE, label: 'Big wormhole', maxAmount: 2 },
   { key: ObjectTypes.WHITE_HOLE, label: 'Big wormhole', maxAmount: 20 },
   { key: ObjectTypes.ANOMALY, label: 'Space-time Anomaly', maxAmount: 30 },
+  { key: ObjectTypes.LOCUS, label: 'Hyperspace Locus', maxAmount: 1 },
+  { key: ObjectTypes.TUNNEL_LOCUS, label: 'Tunnel Locus', maxAmount: 1 },
 ];
 
 export const planet = generateObject(ObjectTypes.PLANET);
@@ -28,3 +30,5 @@ export const wormhole = generateObject(ObjectTypes.WORMHOLE);
 export const bigWormhole = generateObject(ObjectTypes.BIG_WORMHOLE);
 export const whiteHole = generateObject(ObjectTypes.WHITE_HOLE);
 export const anomaly = generateObject(ObjectTypes.ANOMALY);
+export const locus = generateObject(ObjectTypes.LOCUS);
+export const tunnelLocus = generateObject(ObjectTypes.TUNNEL_LOCUS);

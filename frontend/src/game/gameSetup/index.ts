@@ -1,9 +1,8 @@
 import { GameWorld } from 'shared/src/ecs/world';
-import { generateBackgroundStars } from 'src/render/background/stars';
 import { generateRandomBots, generatePlayers } from './genPlayers';
 import { generateScenarioItems } from './genObjects';
 import { placeEntities } from './placeEntities';
-import { GameConfig, ScenarioType } from 'shared/src/types';
+import { Backgrounds, GameConfig, ScenarioType } from 'shared/src/types';
 import { getScenarioTypes } from 'src/content/scenarios';
 import { randomFromArray } from 'shared/src/utils';
 import { finalizeSetup } from './finalize';
@@ -14,29 +13,30 @@ export const runGameSetup = (
   config: GameConfig,
 ) => {
   const { width, height } = scene.scale;
-  // 0. Generate scene background
-  // console.time('bg stars');
-  generateBackgroundStars(scene);
-  // console.timeEnd('bg stars');
-
   // 1. If all bots, randomize
   if (config.justBots) {
     const bots = generateRandomBots(world);
-    // const scenario = randomFromArray<ScenarioType>(getScenarioTypes());
-    const scenario = getScenarioTypes()[21];
+    const scenario = randomFromArray<ScenarioType>(getScenarioTypes());
+    // const scenario = getScenarioTypes()[22];
     const num = Phaser.Math.Between(15, 30);
+    const bg =
+      scenario.background === undefined
+        ? Backgrounds.STARS
+        : scenario.background;
     const objects = generateScenarioItems(world, scenario.items, {
       num,
     });
-    finalizeSetup(world);
+    const placements = placeEntities(
+      width,
+      height,
+      objects,
+      bots.map((b) => b.id),
+    );
+    console.log('entities placed');
+    finalizeSetup(world, scene, bg);
     return {
       players: bots,
-      objectPlacements: placeEntities(
-        width,
-        height,
-        objects,
-        bots.map((b) => b.id),
-      ),
+      objectPlacements: placements,
     };
   }
 
@@ -53,8 +53,12 @@ export const runGameSetup = (
   // 4. Place everything
   const objectPlacements = placeEntities(width, height, items, playerIds);
 
-  // 5. Finalize (currently, tie wormholes together)
-  finalizeSetup(world);
+  // 5. Background generation
+  const bg =
+    config.background === undefined ? Backgrounds.STARS : config.background;
+
+  // 6. Finalize
+  finalizeSetup(world, scene, bg);
 
   return {
     players,

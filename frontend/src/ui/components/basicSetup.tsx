@@ -57,11 +57,13 @@ export const SetupScreen: React.FC = () => {
         col: playerCols[i + 1],
       });
     }
+    const scenarioSetup = types[scenarioIdx];
     startGameWithConfig({
       justBots: false,
       players,
       maxItems,
-      itemRules: types[scenarioIdx].items,
+      background: scenarioSetup.background,
+      itemRules: scenarioSetup.items,
     });
     setGameState(GameState.INGAME);
   };

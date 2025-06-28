@@ -2,9 +2,23 @@ import { hasComponent } from 'bitecs';
 import { buildColliderCache } from 'shared/src/ai/functions';
 import { Wormhole } from 'shared/src/ecs/components';
 import { GameWorld } from 'shared/src/ecs/world';
-import { scrambleWormhole, pairWormholes } from 'shared/src/utils';
+import { Backgrounds, ObjectTypes } from 'shared/src/types';
+import {
+  scrambleWormhole,
+  pairWormholes,
+  getHyperLocus,
+  getPosition,
+  getType,
+} from 'shared/src/utils';
+import { generateBackground } from 'src/render/background';
+import { generateBackgroundShards } from 'src/render/background/shardTunnel';
+import { Renderable } from 'src/render/components/renderable';
 
-export const finalizeSetup = (world: GameWorld) => {
+export const finalizeSetup = (
+  world: GameWorld,
+  scene: Phaser.Scene,
+  bg: Backgrounds,
+) => {
   const objectsInWorld = buildColliderCache(world);
   const wormholes = objectsInWorld
     .filter((o) => hasComponent(world, Wormhole, o.eid))
@@ -25,6 +39,20 @@ export const finalizeSetup = (world: GameWorld) => {
         pairWormholes(wormholes[i], wormholes[i + 1]);
         i += 2;
       }
+    }
+  }
+
+  const locus = getHyperLocus(world);
+  if (bg !== Backgrounds.SHARDS) {
+    generateBackground(bg, scene);
+  } else {
+    if (locus) {
+      const pos = getPosition(locus);
+      generateBackgroundShards(scene, 300, pos);
+      objectsInWorld
+        .filter((o) => getType(o.eid) === ObjectTypes.ANOMALY)
+        .map((o) => o.eid)
+        .forEach((eid) => (Renderable.variant[eid] = 1));
     }
   }
 };

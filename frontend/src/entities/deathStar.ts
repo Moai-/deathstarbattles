@@ -58,7 +58,6 @@ export const createDeathStar = (
   ObjectInfo.type[projEid] = ObjectTypes.DEATHBEAM;
   ObjectInfo.type[projEid] = ObjectTypes.DEATHBEAM;
   Renderable.col[projEid] = Renderable.col[eid];
-  Renderable.hidden[projEid] = 1;
   LeavesTrail.col[projEid] = Renderable.col[eid];
   LeavesTrail.type[projEid] = TrailType.BEADS_ON_A_STRING;
   return eid;
@@ -72,8 +71,6 @@ export const fireProjectile = (
 ) => {
   const eid = Player.pooledProjectile[parentEid];
   HasLifetime.createdAt[eid] = Math.floor(world.time);
-  Renderable.hidden[eid] = 0;
-  Renderable.didVisibilityChange[eid] = 1;
   Projectile.lastCollisionTarget[eid] = NULL_ENTITY;
   addComponent(world, Active, eid);
 
@@ -96,7 +93,5 @@ export const removeProjectile = (
     return;
   }
   HasLifetime.createdAt[eid] = 0;
-  Renderable.hidden[eid] = 1;
-  Renderable.didVisibilityChange[eid] = 1;
   removeComponent(world, Active, eid);
 };

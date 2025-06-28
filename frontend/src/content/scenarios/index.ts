@@ -1,15 +1,17 @@
-import { ScenarioItemRule, ScenarioType } from 'shared/src/types';
+import { Backgrounds, ScenarioItemRule, ScenarioType } from 'shared/src/types';
 import {
   anomaly,
   asteroid,
   bigWormhole,
   blackHole,
   jovian,
+  locus,
   planet,
   redGiant,
   scenarioItems,
   star,
   supergiant,
+  tunnelLocus,
   whiteDwarf,
   whiteHole,
   wormhole,
@@ -53,5 +55,6 @@ export const getScenarioTypes = (): Array<ScenarioType> => [
   { name: 'Black holes', items: [blackHole({min: 2}), whiteHole({max: 3, ...rare}), anomaly({max: 3, ...rare})] },
   { name: 'White Hole', items: [whiteHole({n: 1}), asteroid(), planet(rare), jovian(rare)] },
   { name: 'White Holes', items: [whiteHole({min: 1})] },
-  { name: 'Hyperspace', items: [anomaly(), blackHole({ max: 2, ...rare }), wormhole({ min: 2, max: 6, ...rare })] },
+  { name: 'Hyperspace Classic', items: [locus(), anomaly(), blackHole({ max: 2, ...rare }), wormhole({ min: 2, max: 6, ...rare })], background: Backgrounds.NONE },
+  { name: 'Hyperspace Redux', items: [tunnelLocus(), anomaly()], background: Backgrounds.SHARDS },
 ];

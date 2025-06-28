@@ -4,6 +4,7 @@ export { Destructible } from './destructible';
 export { HasGravity } from './hasGravity';
 export { HasLifetime } from './hasLifetime';
 export { ObjectInfo } from './objectInfo';
+export { HyperLocus } from './hyperLocus';
 export { Position } from './position';
 export { Projectile } from './projectile';
 export { Velocity } from './velocity';

@@ -47,3 +47,14 @@ export const nailToContainer = (
     },
   });
 };
+
+export const rotateToward = <
+  T extends Phaser.GameObjects.Components.Transform & { rotation: number },
+>(
+  obj: T,
+  tx: number,
+  ty: number,
+  leadAngle = Math.PI / 2,
+): void => {
+  obj.rotation = Phaser.Math.Angle.Between(obj.x, obj.y, tx, ty) + leadAngle;
+};
