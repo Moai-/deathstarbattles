@@ -47,6 +47,14 @@ export const ToggleButton = styled(NeonButton)`
   padding: 6px 8px;
 `;
 
+export const EndTurnButton = styled(NeonButton)`
+  position: absolute;
+  right: -30px;
+  top: 105px;
+  border-radius: 0 5px 5px 0;
+  padding: 6px 8px;
+`;
+
 export const StyledSlider = styled.input.attrs({ type: 'range' })`
   -webkit-appearance: none;
   width: 100%;

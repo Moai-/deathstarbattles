@@ -17,7 +17,7 @@ import { inputsToShot } from 'shared/src/ai/functions';
 import { Player } from 'shared/src/ecs/components/player';
 import { Active } from 'shared/src/ecs/components';
 
-export const DEFAULT_DEATHSTAR_RADIUS = 16;
+export const DEFAULT_DEATHSTAR_RADIUS = 8;
 
 export const createDeathStar = (
   world: GameWorld,
@@ -72,6 +72,7 @@ export const fireProjectile = (
   const eid = Player.pooledProjectile[parentEid];
   HasLifetime.createdAt[eid] = Math.floor(world.time);
   Projectile.lastCollisionTarget[eid] = NULL_ENTITY;
+  Collision.radius[eid] = Collision.radius[parentEid] / 8;
   addComponent(world, Active, eid);
 
   inputsToShot(parentEid, eid, { angle, power });

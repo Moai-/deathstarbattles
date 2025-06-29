@@ -34,10 +34,26 @@ export const StyledSelect = styled.select`
   }
 `;
 
+// eslint-disable-next-line prettier/prettier
+const sizes = ['Tiny', 'Small', 'Large', 'That\'s no moon'];
+
+const amounts: Array<{ label: string; amount: number; isMax: boolean }> = [
+  { label: '5', amount: 5, isMax: false },
+  { label: '10', amount: 10, isMax: false },
+  { label: '15', amount: 15, isMax: false },
+  { label: '20', amount: 20, isMax: false },
+  { label: '25', amount: 25, isMax: false },
+  { label: '30', amount: 30, isMax: false },
+  { label: 'Up to 10', amount: 10, isMax: true },
+  { label: 'Up to 20', amount: 20, isMax: true },
+  { label: 'Up to 30', amount: 30, isMax: true },
+];
+
 export const SetupScreen: React.FC = () => {
   const [botCount, setBotCount] = useState('7');
   const [difficulty, setDifficulty] = useState('3');
   const [objectCount, setObjectCount] = useState('10');
+  const [stationSize, setStationSize] = useState('2');
   const [scenario, setScenario] = useState('0');
   const { setGameState } = useGameState();
   const types = getScenarioTypes();
@@ -46,8 +62,11 @@ export const SetupScreen: React.FC = () => {
     const players: Array<PlayerSetup> = [];
     const maxBots = parseInt(botCount, 10);
     const diff = parseInt(difficulty, 10);
-    const maxItems = parseInt(objectCount, 10);
+    const [amountRaw, isMaxRaw] = objectCount.split('|');
+    const amount = parseInt(amountRaw, 10);
+    const isMax = isMaxRaw === 'true';
     const scenarioIdx = parseInt(scenario, 10);
+    const size = parseInt(stationSize);
     players.push({ id: 0, type: 0, difficulty: 0, col: playerCols[0] });
     for (let i = 0; i < maxBots; i++) {
       players.push({
@@ -61,9 +80,11 @@ export const SetupScreen: React.FC = () => {
     startGameWithConfig({
       justBots: false,
       players,
-      maxItems,
+      maxItems: isMax ? amount : undefined,
+      numItems: !isMax ? amount : undefined,
       background: scenarioSetup.background,
       itemRules: scenarioSetup.items,
+      stationSize: size,
     });
     setGameState(GameState.INGAME);
   };
@@ -79,7 +100,7 @@ export const SetupScreen: React.FC = () => {
             value={botCount}
             onChange={(e) => setBotCount(e.target.value)}
           >
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((n) => (
               <option key={n} value={n}>
                 {n}
               </option>
@@ -94,7 +115,15 @@ export const SetupScreen: React.FC = () => {
             value={difficulty}
             onChange={(e) => setDifficulty(e.target.value)}
           >
-            {['Trivial', 'Easy', 'Medium', 'Hard', 'Very Hard'].map((n, i) => (
+            {[
+              'Failbot',
+              'Aimbot',
+              'Cleverbot',
+              'Superbot',
+              'Megabot',
+              'All Random',
+              'Per-Bot Random',
+            ].map((n, i) => (
               <option key={n} value={i - 0 + 1}>
                 {n}
               </option>
@@ -109,8 +138,23 @@ export const SetupScreen: React.FC = () => {
             value={objectCount}
             onChange={(e) => setObjectCount(e.target.value)}
           >
-            {[5, 10, 15, 20].map((n) => (
-              <option key={n} value={n}>
+            {amounts.map(({ label, amount, isMax }) => (
+              <option key={label} value={`${amount}|${isMax}`}>
+                {label}
+              </option>
+            ))}
+          </StyledSelect>
+        </DropdownRow>
+
+        <DropdownRow>
+          <StyledLabel htmlFor="stationSize">Station Size</StyledLabel>
+          <StyledSelect
+            id="stationSize"
+            value={stationSize}
+            onChange={(e) => setStationSize(e.target.value)}
+          >
+            {sizes.map((n, i) => (
+              <option key={n} value={i - 0 + 1}>
                 {n}
               </option>
             ))}

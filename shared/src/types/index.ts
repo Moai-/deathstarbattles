@@ -128,6 +128,7 @@ export type GameConfig = {
   items?: Array<ScenarioItem>;
   itemRules?: Array<ScenarioItemRule>;
   background?: Backgrounds;
+  stationSize?: number;
   maxItems?: number;
   numItems?: number;
 };

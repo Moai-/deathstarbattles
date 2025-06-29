@@ -62,7 +62,7 @@ export function generateScenarioItems(
       const countOfThis = generated.get(type) || 0;
 
       // Do not generate from this rule if we have enough of this item
-      if (countOfThis !== undefined) {
+      if (countOfThis > 0) {
         if (max && countOfThis === max) {
           continue;
         }

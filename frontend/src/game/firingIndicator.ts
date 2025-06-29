@@ -6,7 +6,6 @@ import { gameBus, GameEvents } from 'src/util';
 
 export class FiringIndicator {
   private scene: Phaser.Scene;
-  private radius: number;
   private circle?: Phaser.GameObjects.Arc;
   private line?: Phaser.GameObjects.Line;
   private square?: Phaser.GameObjects.Rectangle;
@@ -14,6 +13,8 @@ export class FiringIndicator {
   private onAnglePowerUpdate: (angle: number, power: number) => void = () => {};
   private isUsingHyperspace = false;
   private isDragging = false;
+
+  public radius: number;
 
   constructor(scene: Phaser.Scene, radius: number = 60) {
     this.scene = scene;

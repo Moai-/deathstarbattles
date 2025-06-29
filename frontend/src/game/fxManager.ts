@@ -47,7 +47,9 @@ export class FxManager {
     if (this.getRenderer()) {
       switch (name) {
         case 'BlackHoleFX':
-          return this.scene.cameras.main.getPostPipeline('BlackHoleFX');
+          return (
+            this.scene.cameras?.main?.getPostPipeline('BlackHoleFX') || null
+          );
         default:
           return null;
       }

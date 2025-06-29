@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaExpand, FaSignOutAlt } from 'react-icons/fa';
+import { FaCheck, FaExpand, FaSignOutAlt } from 'react-icons/fa';
 import {
   ControlPanelContainer,
   ToggleButton,
@@ -18,6 +18,7 @@ import { gameBus, GameEvents } from 'src/util';
 import { OtherActions } from 'shared/src/types';
 import { GameState, useGameState } from './context';
 import { stopMainScene } from 'src/game';
+import { EndTurnButton } from '../styled/controls';
 
 const ControlPanel: React.FC = () => {
   const [angle, setAngle] = useState(90);
@@ -91,9 +92,8 @@ const ControlPanel: React.FC = () => {
 
   return (
     <ControlPanelContainer collapsed={collapsed}>
-      {/* Side Buttons */}
       <SideButtonColumn>
-        <MiniButton onClick={toggleFullscreen}>
+        <MiniButton onClick={() => toggleFullscreen()}>
           <FaExpand />
         </MiniButton>
         <MiniButton onClick={backToMenu}>
@@ -101,12 +101,16 @@ const ControlPanel: React.FC = () => {
         </MiniButton>
       </SideButtonColumn>
 
-      {/* Toggle Button */}
       <ToggleButton onClick={() => setCollapsed(!collapsed)}>
         {collapsed ? '▶' : '◀'}
       </ToggleButton>
 
-      {/* Sliders Row */}
+      {collapsed && (
+        <EndTurnButton onClick={() => endTurn()}>
+          <FaCheck />
+        </EndTurnButton>
+      )}
+
       <ControlRow>
         <SliderContainer>
           <FineButton

@@ -10,22 +10,35 @@ import {
   analyzeShot,
   correctShot,
 } from '../functions';
+import generateVeryHardTurn from './veryHard';
 
 /**
  * Medium ("cleverbot")
+ * - 1 in 10 times, behave like a very hard opponent -trollface.png-
  * – If ANY station is now sitting on our previous trajectory: re-fire previous shot
  * – Otherwise, we MAY hyperspace:
  *     - only run the danger-zone scan 1/3 of the time
  *     - if that scan says "safe", there’s still a flat 1/8 chance to jump away anyway
- * – If we stay put, nudge aim half-way toward the ideal angle/power,
- *   with a tiny bit of noise so it doesn’t look robotic
+ * – If we stay put, nudge aim half-way toward the ideal angle/power with a small error
  */
 const generateMediumTurn: TurnGenerator = async (
   world,
   playerInfo,
   gameState,
   lastTurnInput,
+  simulateShot,
 ) => {
+  // 0. -trollface.png-
+  if (oneIn(10)) {
+    return generateVeryHardTurn(
+      world,
+      playerInfo,
+      gameState,
+      lastTurnInput,
+      simulateShot,
+    );
+  }
+
   const playerId = playerInfo.id;
 
   // 1. Analyze last shot for stations that teleported onto it

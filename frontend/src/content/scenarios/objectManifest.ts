@@ -2,10 +2,10 @@ import { ObjectTypes } from 'shared/src/types';
 import { generateObject } from './utils';
 
 export const scenarioItems = [
-  { key: ObjectTypes.ASTEROID, label: 'Asteroid', maxAmount: 16 },
-  { key: ObjectTypes.PLANET, label: 'Planet', maxAmount: 10 },
+  { key: ObjectTypes.ASTEROID, label: 'Asteroid', maxAmount: 30 },
+  { key: ObjectTypes.PLANET, label: 'Planet', maxAmount: 20 },
   { key: ObjectTypes.JOVIAN, label: 'Jovian', maxAmount: 2 },
-  { key: ObjectTypes.STAR, label: 'Star', maxAmount: 4 },
+  { key: ObjectTypes.STAR, label: 'Star', maxAmount: 5 },
   { key: ObjectTypes.SUPERGIANT, label: 'Supergiant', maxAmount: 2 },
   { key: ObjectTypes.BLACK_HOLE, label: 'Black hole', maxAmount: 6 },
   { key: ObjectTypes.RED_GIANT, label: 'Red giant', maxAmount: 2 },

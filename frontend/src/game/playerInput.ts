@@ -5,6 +5,7 @@ export class PlayerInputHandler {
   private angle: number = 0;
   private power: number = 20;
   private currentOtherAction: OtherActions | null = null;
+  private acceptInput = true;
 
   private onEndTurn: () => void = () => {};
 
@@ -19,13 +20,16 @@ export class PlayerInputHandler {
 
   private initListeners() {
     gameBus.on(GameEvents.ANGLE_POWER_UI, ({ angle, power }) => {
-      this.angle = angle;
-      this.power = power;
+      if (this.acceptInput) {
+        this.angle = angle;
+        this.power = power;
+      }
     });
-    gameBus.on(GameEvents.END_TURN, () => this.onEndTurn());
+    gameBus.on(GameEvents.END_TURN, () => this.acceptInput && this.onEndTurn());
     gameBus.on(
       GameEvents.OTHER_ACTION_UI,
-      (otherAction) => (this.currentOtherAction = otherAction),
+      (otherAction) =>
+        this.acceptInput && (this.currentOtherAction = otherAction),
     );
   }
 
@@ -58,6 +62,10 @@ export class PlayerInputHandler {
 
   public getCurrentOtherAction() {
     return this.currentOtherAction;
+  }
+
+  public toggleAcceptInput(accept: boolean) {
+    this.acceptInput = accept;
   }
 
   destroy() {

@@ -1,6 +1,6 @@
 import { hasComponent } from 'bitecs';
 import { buildColliderCache } from 'shared/src/ai/functions';
-import { Wormhole } from 'shared/src/ecs/components';
+import { Collision, Wormhole } from 'shared/src/ecs/components';
 import { GameWorld } from 'shared/src/ecs/world';
 import { Backgrounds, ObjectTypes } from 'shared/src/types';
 import {
@@ -18,6 +18,7 @@ export const finalizeSetup = (
   world: GameWorld,
   scene: Phaser.Scene,
   bg: Backgrounds,
+  stationSize: number,
 ) => {
   const objectsInWorld = buildColliderCache(world);
   const wormholes = objectsInWorld
@@ -54,5 +55,15 @@ export const finalizeSetup = (
         .map((o) => o.eid)
         .forEach((eid) => (Renderable.variant[eid] = 1));
     }
+  }
+
+  // INFLATE
+  if (stationSize > 1) {
+    objectsInWorld
+      .filter((o) => getType(o.eid) === ObjectTypes.DEATHSTAR)
+      .map((o) => o.eid)
+      .forEach((eid) => {
+        Collision.radius[eid] = Collision.radius[eid] * stationSize;
+      });
   }
 };

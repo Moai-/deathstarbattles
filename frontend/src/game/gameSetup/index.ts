@@ -32,8 +32,8 @@ export const runGameSetup = (
       objects,
       bots.map((b) => b.id),
     );
-    console.log('entities placed');
-    finalizeSetup(world, scene, bg);
+    const size = Phaser.Math.Between(1, 3);
+    finalizeSetup(world, scene, bg, size);
     return {
       players: bots,
       objectPlacements: placements,
@@ -58,7 +58,8 @@ export const runGameSetup = (
     config.background === undefined ? Backgrounds.STARS : config.background;
 
   // 6. Finalize
-  finalizeSetup(world, scene, bg);
+  const size = config.stationSize === undefined ? 2 : config.stationSize;
+  finalizeSetup(world, scene, bg, size);
 
   return {
     players,

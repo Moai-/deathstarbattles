@@ -8,7 +8,7 @@ import {
 } from '../functions';
 
 /**
- * Trivial ("randbot")
+ * Trivial ("failbot")
  * – Aiming is randomized within a quadrant of where the target is
  * – Hyperspace 1/4 of the time (also randomly)
  */

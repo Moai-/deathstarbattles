@@ -16,10 +16,14 @@ import {
 /**
  * Very hard ("megabot")
  * – If ANY station is now sitting on our previous trajectory: re-fire previous shot
- * – Otherwise, we MAY hyperspace:
- *     - teleport away if in danger 1/2 of the time
- *     - teleport away 1/2 of the time if all of our shots miss
- * – Simulate 8 shots and pick the one that hits
+ * - Check right next to you ("naive shot"). If you can hit someone there, do it
+ * - If a miss, then -- if we had a previous shot -- check if naive shot or previous shot is closer
+ * - Fire a volley at whichever target was chosen above
+ * - If we had a miss, try an exploratory shot.
+ * - If this shot misses, we teleport away 1/3 of the time if we're in danger
+ * - If we're still there: compare shots from first volley and exploratory shot
+ * - Fire a second volley at whichever target is closest to whichever shot from above
+ * - If EVERYTHING missed, teleport away 1/2 of the time
  */
 const generateVeryHardTurn: TurnGenerator = async (
   world,
@@ -40,7 +44,7 @@ const generateVeryHardTurn: TurnGenerator = async (
     );
 
     if (shotInfo.willHit && shotInfo.destructible) {
-      console.log('player %s performs last shot as it will hit', playerId);
+      // console.log('player %s performs last shot as it will hit', playerId);
       return shotTurn(playerId, lastTurnInput);
     }
   }

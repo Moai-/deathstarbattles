@@ -30,6 +30,7 @@ import {
 } from 'shared/src/utils';
 import { SimManager } from 'shared/src/ai/simulation/manager';
 import { GameScene } from './gameScene';
+import { Collision } from 'shared/src/ecs/components';
 
 export default class GameManager {
   // globals
@@ -140,6 +141,8 @@ export default class GameManager {
         return this.endTurn();
       }
     }
+    this.inputHandler.toggleAcceptInput(true);
+    this.indicator.radius = 30 * (Collision.radius[playerInfo.id] / 8);
 
     this.indicator.drawIndicator();
     this.syncAnglePower();
@@ -152,7 +155,7 @@ export default class GameManager {
       this.syncAnglePower(angle, power);
       if (thisPlayerInput.otherAction !== OtherActions.HYPERSPACE) {
         const parent = this.projectileManager.getByPlayerId(playerInfo.id);
-        if (parent) {
+        if (parent && !this.isHyperspace) {
           this.objectManager.showChildren(parent.ownId);
         }
       }
@@ -160,10 +163,11 @@ export default class GameManager {
   }
 
   private async endTurn() {
+    this.inputHandler.toggleAcceptInput(false);
+    this.indicator.removeIndicator();
     const playerInfo = this.getActivePlayer();
     if (playerInfo.isAlive) {
       if (playerInfo.type === PlayerTypes.HUMAN) {
-        this.indicator.removeIndicator();
         this.turnInputs.push({
           playerId: playerInfo.id,
           angle: this.inputHandler.getCurrentAngle(),

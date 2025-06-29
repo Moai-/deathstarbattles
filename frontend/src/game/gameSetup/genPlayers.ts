@@ -8,11 +8,19 @@ export const generatePlayers = (
   playerSetup: Array<PlayerSetup>,
 ) => {
   const parsedPlayers: Array<PlayerInfo> = [];
+  const allRandom = playerSetup.find((p) => p.difficulty === 6);
+  const allDifficulties = Phaser.Math.Between(1, 5);
   for (let i = 0; i < playerSetup.length; i++) {
     const { type, difficulty, col } = playerSetup[i];
     let parsedType = 0;
     if (type > 0) {
-      parsedType = difficulty;
+      if (allRandom) {
+        parsedType = allDifficulties;
+      } else if (difficulty === 7) {
+        parsedType = Phaser.Math.Between(1, 5);
+      } else {
+        parsedType = difficulty;
+      }
     }
     parsedPlayers.push({
       type: parsedType,

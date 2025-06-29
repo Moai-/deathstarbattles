@@ -43,13 +43,14 @@ export class GameScene extends Phaser.Scene {
     super({ key: 'GameScene', active: false });
     this.world.debug = this.debug;
     this.unique = makeId();
-    console.log('game %s created', this.unique);
+    // console.log('game %s created', this.unique);
   }
 
   create() {
     gameBus.on(GameEvents.START_GAME, (config) => {
       this.unique = makeId();
       console.log('starting game', this.unique);
+      console.log(config);
       this.gameManager.startGame(config);
     });
     this.fxManager.create();

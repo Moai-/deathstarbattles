@@ -209,7 +209,7 @@ const fireProjectile = (input: TurnInput) => {
   addComponent(world, HasLifetime, proj);
   addComponent(world, Active, proj);
 
-  Collision.radius[proj] = 2;
+  Collision.radius[proj] = Collision.radius[input.playerId] / 8;
   Projectile.parent[proj] = input.playerId;
   HasLifetime.createdAt[proj] = 0;
   inputsToShot(playerId, proj, input);
