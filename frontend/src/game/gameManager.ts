@@ -234,13 +234,13 @@ export default class GameManager {
     } else {
       const sm = getSoundManager(this.scene);
       sm.playSound('laserShot');
-      sm.playSound('travelHum');
+      sm.playSound('elecTravelHum');
     }
   }
 
   private async postCombatPhase() {
     this.turnInputs = [];
-    getSoundManager(this.scene).stopSound('travelHum');
+    getSoundManager(this.scene).stopSound('elecTravelHum');
     const shouldHyperspace = this.isHyperspace
       ? this.players
           .filter((p) => !this.willHyperspace.includes(p.id))

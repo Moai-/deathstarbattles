@@ -41,4 +41,5 @@ export const audioManifest: AudioManifest = {
   stationHit: makeManifestItem('stationHit'),
   laserShot: makeManifestItem('laserShot'),
   travelHum: makeManifestItem('travelHum', { rp: true }),
+  elecTravelHum: makeManifestItem('elecTravelHum', { rp: true }),
 };
