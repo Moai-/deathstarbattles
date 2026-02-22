@@ -12,13 +12,10 @@ export class ResourceScene extends Phaser.Scene {
   }
 
   preload() {
-    // console.time('load resources');
     const keys = Object.keys(audioManifest);
     keys.forEach((key) => {
       this.load.audio(key, audioManifest[key].url);
     });
-    // this.load.text('gravityShaderFragment', 'src/shaders/gravity.frag');
-    // this.load.text('blackHoleFragment', 'src/shaders/blackHole.frag');
   }
 
   create() {
@@ -37,7 +34,6 @@ export class ResourceScene extends Phaser.Scene {
         }
       },
     );
-    // console.timeEnd('load resources');
 
     gameBus.emit(GameEvents.GAME_LOADED);
   }

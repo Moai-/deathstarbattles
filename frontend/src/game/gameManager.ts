@@ -98,21 +98,17 @@ export default class GameManager {
     this.numTurn = 0;
     this.activePlayerIndex = -1;
     this.turnInputs = [];
-    // console.time('initial setup');
     const { players } = runGameSetup(this.scene, this.world, conf)!;
     this.scene.fxManager.update();
     this.isHyperspace = getHyperLocus(this.world) !== null;
-    // console.timeEnd('initial setup');
 
     this.players = players;
 
-    // console.time('start and init worker');
     await this.simManager.startWorker();
     await this.simManager.initializeWorker(
       getColliders(this.world),
       this.world,
     );
-    // console.timeEnd('start and init worker');
 
     this.startTurn();
   }
@@ -212,7 +208,6 @@ export default class GameManager {
 
   private firePhase() {
     this.numTurn = this.numTurn + 1;
-    // console.log('turn', this.numTurn);
     this.indicator.removeIndicator();
     this.objectManager.removeAllChildren();
     this.projectileManager.reset();
@@ -251,14 +246,12 @@ export default class GameManager {
       this.willHyperspace = [];
     }
     const beforeRestart = Date.now();
-    // console.time('restart worker in post-combat');
     this.simManager.shutdownWorker();
     await this.simManager.startWorker();
     await this.simManager.initializeWorker(
       getColliders(this.world),
       this.world,
     );
-    // console.timeEnd('restart worker in post-combat');
 
     const remaining = Date.now() - beforeRestart;
     setTimeout(
@@ -278,12 +271,6 @@ export default class GameManager {
       if (!playerInfo || !playerInfo?.isAlive) {
         return resolve();
       }
-      // console.log(
-      //   'teleporting player %s (%s)',
-      //   eid,
-      //   Renderable.col[eid],
-      //   playerInfo,
-      // );
 
       const { width, height } = this.scene.scale;
       const radius = getRadius(eid);

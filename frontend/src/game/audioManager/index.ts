@@ -7,7 +7,7 @@ export class AudioManager {
   private allSounds: Map<string, Phaser.Sound.BaseSound> = new Map();
   private effectsVolume = 1;
   private musicVolume = 1;
-  private muted = false;
+  private muted = true;
 
   constructor(private scene: Phaser.Scene) {}
 

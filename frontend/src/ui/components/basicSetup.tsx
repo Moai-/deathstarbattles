@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SetupScreenContainer, SimpleSetup } from 'src/ui/styled/containers';
+import { DropdownGroup, SetupScreenContainer, SimpleSetup } from 'src/ui/styled/containers';
 import { SetupHeader } from 'src/ui/styled/text';
 import styled from 'styled-components';
 import { NeonButton } from '../styled';
@@ -93,88 +93,98 @@ export const SetupScreen: React.FC = () => {
     <SetupScreenContainer>
       <SetupHeader>Game Setup</SetupHeader>
       <SimpleSetup>
-        <DropdownRow>
-          <StyledLabel htmlFor="botCount">Number of Bots</StyledLabel>
-          <StyledSelect
-            id="botCount"
-            value={botCount}
-            onChange={(e) => setBotCount(e.target.value)}
-          >
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </StyledSelect>
-        </DropdownRow>
+        <DropdownGroup>
+          <DropdownRow>
+            <StyledLabel htmlFor="botCount">Number of Bots</StyledLabel>
+            <StyledSelect
+              id="botCount"
+              value={botCount}
+              onChange={(e) => setBotCount(e.target.value)}
+            >
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </StyledSelect>
+          </DropdownRow>
+          <DropdownRow>
+            <StyledLabel htmlFor="difficulty">Bot Difficulty</StyledLabel>
+            <StyledSelect
+              id="difficulty"
+              value={difficulty}
+              onChange={(e) => setDifficulty(e.target.value)}
+            >
+              {[
+                'Failbot',
+                'Aimbot',
+                'Cleverbot',
+                'Superbot',
+                'Megabot',
+                'All Random',
+                'Per-Bot Random',
+              ].map((n, i) => (
+                <option key={n} value={i - 0 + 1}>
+                  {n}
+                </option>
+              ))}
+            </StyledSelect>
+          </DropdownRow>
+        </DropdownGroup>
+        <DropdownGroup>
+          <DropdownRow>
+            <StyledLabel htmlFor="scenario">Scenario</StyledLabel>
+            <StyledSelect
+              id="scenario"
+              value={scenario}
+              onChange={(e) => setScenario(e.target.value)}
+            >
+              {types.map(({ name }, idx) => (
+                <option key={name} value={idx}>
+                  {name}
+                </option>
+              ))}
+            </StyledSelect>
+          </DropdownRow>
+          <DropdownRow>
+            <StyledLabel htmlFor="objectCount">Number of Objects</StyledLabel>
+            <StyledSelect
+              id="objectCount"
+              value={objectCount}
+              onChange={(e) => setObjectCount(e.target.value)}
+            >
+              {amounts.map(({ label, amount, isMax }) => (
+                <option key={label} value={`${amount}|${isMax}`}>
+                  {label}
+                </option>
+              ))}
+            </StyledSelect>
+          </DropdownRow>
+        </DropdownGroup>
 
-        <DropdownRow>
-          <StyledLabel htmlFor="difficulty">Bot Difficulty</StyledLabel>
-          <StyledSelect
-            id="difficulty"
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value)}
-          >
-            {[
-              'Failbot',
-              'Aimbot',
-              'Cleverbot',
-              'Superbot',
-              'Megabot',
-              'All Random',
-              'Per-Bot Random',
-            ].map((n, i) => (
-              <option key={n} value={i - 0 + 1}>
-                {n}
-              </option>
-            ))}
-          </StyledSelect>
-        </DropdownRow>
+        <DropdownGroup>
+          <DropdownRow>
+            <StyledLabel htmlFor="stationSize">Station Size</StyledLabel>
+            <StyledSelect
+              id="stationSize"
+              value={stationSize}
+              onChange={(e) => setStationSize(e.target.value)}
+            >
+              {sizes.map((n, i) => (
+                <option key={n} value={i - 0 + 1}>
+                  {n}
+                </option>
+              ))}
+            </StyledSelect>
+          </DropdownRow>
+        </DropdownGroup>
 
-        <DropdownRow>
-          <StyledLabel htmlFor="objectCount">Number of Objects</StyledLabel>
-          <StyledSelect
-            id="objectCount"
-            value={objectCount}
-            onChange={(e) => setObjectCount(e.target.value)}
-          >
-            {amounts.map(({ label, amount, isMax }) => (
-              <option key={label} value={`${amount}|${isMax}`}>
-                {label}
-              </option>
-            ))}
-          </StyledSelect>
-        </DropdownRow>
 
-        <DropdownRow>
-          <StyledLabel htmlFor="stationSize">Station Size</StyledLabel>
-          <StyledSelect
-            id="stationSize"
-            value={stationSize}
-            onChange={(e) => setStationSize(e.target.value)}
-          >
-            {sizes.map((n, i) => (
-              <option key={n} value={i - 0 + 1}>
-                {n}
-              </option>
-            ))}
-          </StyledSelect>
-        </DropdownRow>
 
-        <DropdownRow>
-          <StyledLabel htmlFor="scenario">Scenario</StyledLabel>
-          <StyledSelect
-            id="scenario"
-            value={scenario}
-            onChange={(e) => setScenario(e.target.value)}
-          >
-            {types.map(({ name }, idx) => (
-              <option key={name} value={idx}>
-                {name}
-              </option>
-            ))}
-          </StyledSelect>
-        </DropdownRow>
+
+
+
+
       </SimpleSetup>
 
       <NeonButton style={{ marginTop: '30px' }} onClick={start}>

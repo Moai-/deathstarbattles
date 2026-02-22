@@ -46,7 +46,7 @@ const Splash: React.FC = () => {
   }
 
   return (
-    <OverlayContainer>
+    <OverlayContainer style={{padding: '50px 0'}}>
       <TopRightButton>
         <MiniButton onClick={toggleScreensaver}>
           <ScreensaverIcon />

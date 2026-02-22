@@ -27,14 +27,10 @@ const drawGravityVisualizer = (scene: Phaser.Scene, eid: number) => {
     hardness: { type: '1f', value: 1.0 },
   });
 
-  const gravityShader = scene.add
+  scene.add
     .shader(base, 0, 0, scene.scale.width, scene.scale.height)
     .setOrigin(0, 0);
 
-  // gravityShader.setUniform('center.value', [0.0, 0.0]); // local center in the quad
-  // gravityShader.setUniform('radius.value', 90.0);
-
-  console.log(gravityShader.uniforms);
 };
 
 export default drawGravityVisualizer;

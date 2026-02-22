@@ -5,15 +5,15 @@ const MAX_BH = 30;
 const frag = `
 precision mediump float;
 
-#define MAX_BH 30           // same as in JS
-uniform int     bhCount;   // actual number this frame
-uniform vec2    bhCenters[MAX_BH];
-uniform float   bhRadius [MAX_BH];
-uniform float   bhStrength[MAX_BH];
+#define MAX_BH 30
+uniform int       bhCount;
+uniform vec2      bhCenters[MAX_BH];
+uniform float     bhRadius [MAX_BH];
+uniform float     bhStrength[MAX_BH];
 
-uniform vec2    resolution;
-uniform sampler2D uMainSampler;   // provided automatically by PostFX
-varying vec2    outTexCoord;      
+uniform vec2      resolution;
+uniform sampler2D uMainSampler;
+varying vec2      outTexCoord;      
 
 void main () {
     vec2 uv = outTexCoord;            // 0-1

@@ -14,7 +14,6 @@ import GameManager from './gameManager';
 import { gameBus, GameEvents } from 'src/util';
 import { clearBackground } from 'src/render/background';
 import { getSoundManager } from './resourceScene';
-import { makeId } from 'shared/src/utils';
 import { drawPathListener } from 'src/util/debug';
 import { resetWorld } from 'bitecs';
 import { FxManager } from './fxManager';
@@ -37,20 +36,14 @@ export class GameScene extends Phaser.Scene {
     this.gameManager.onCollision.bind(this.gameManager),
   );
   private renderSystem = createRenderSystem(this, this.objectManager);
-  private unique = makeId();
 
   constructor() {
     super({ key: 'GameScene', active: false });
     this.world.debug = this.debug;
-    this.unique = makeId();
-    // console.log('game %s created', this.unique);
   }
 
   create() {
     gameBus.on(GameEvents.START_GAME, (config) => {
-      this.unique = makeId();
-      console.log('starting game', this.unique);
-      console.log(config);
       this.gameManager.startGame(config);
     });
     this.fxManager.create();

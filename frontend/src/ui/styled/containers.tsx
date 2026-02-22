@@ -2,8 +2,8 @@ import styled from 'styled-components';
 
 export const OverlayContainer = styled.div`
   position: fixed;
-  width: 500px;
-  height: 500px;
+  max-width: 500px;
+  max-height: 500px;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -12,8 +12,8 @@ export const OverlayContainer = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border-radius: 20px; /* Optional: rounded edges */
-  z-index: 100; /* Ensure it overlays everything else */
+  border-radius: 20px;
+  z-index: 100;
 `;
 
 interface ControlPanelProps {
@@ -24,7 +24,7 @@ export const ControlPanelContainer = styled(
   OverlayContainer,
 )<ControlPanelProps>`
   width: 500px;
-  height: 150px; /* Increased height to accommodate the new layout */
+  height: 150px;
   bottom: 10px;
   left: ${({ collapsed }) => (collapsed ? '-510px' : '10px')};
   top: auto;
@@ -104,8 +104,8 @@ export const WinnerContent = styled.div`
 `;
 
 export const SetupScreenContainer = styled(OverlayContainer)`
-  width: 800px;
-  height: 912px;
+  max-width: 800px;
+  max-height: 912px;
   flex-direction: column;
   justify-content: flex-start;
   padding: 20px;
@@ -153,7 +153,7 @@ export const PlayerRow = styled.div`
 
 export const SimpleSetup = styled.div`
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 10px;
 `;
 
@@ -177,3 +177,9 @@ export const InfoBox = styled.div`
   font-size: 14px;
   overflow-y: auto;
 `;
+
+export const DropdownGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`

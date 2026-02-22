@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { gameBus, GameEvents } from 'src/util';
 
 export const useSound = () => {
-  const [muted, setMuted] = useState(false);
+  const [muted, setMuted] = useState(true);
 
   const setMute = (mute: boolean) => {
     setMuted(mute);

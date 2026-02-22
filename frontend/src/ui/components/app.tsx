@@ -5,8 +5,10 @@ import { GameState } from '../types';
 import WinrarScreen from './winrar';
 import { SetupScreen } from './basicSetup';
 import { GameStateProvider, useGameState } from './context';
+import { useUiInsets } from '../hooks/useUiInsets';
 
 const App: React.FC = () => {
+  useUiInsets();
   const { gameState } = useGameState();
 
   const displayBg = [GameState.MAIN_MENU, GameState.CONFIG_GAME].includes(

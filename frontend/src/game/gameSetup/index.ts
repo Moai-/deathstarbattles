@@ -17,7 +17,6 @@ export const runGameSetup = (
   if (config.justBots) {
     const bots = generateRandomBots(world);
     const scenario = randomFromArray<ScenarioType>(getScenarioTypes());
-    // const scenario = getScenarioTypes()[22];
     const num = Phaser.Math.Between(15, 30);
     const bg =
       scenario.background === undefined

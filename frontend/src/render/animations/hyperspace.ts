@@ -24,7 +24,6 @@ export default class Hyperspace extends Phaser.GameObjects.Container {
     this.circle.setAlpha(isIn ? 0 : 0); // Start transparent for both
     this.add(this.circle);
 
-    // Add this container to the scene
     scene.add.existing(this);
   }
 
@@ -35,9 +34,6 @@ export default class Hyperspace extends Phaser.GameObjects.Container {
   ) {
     const fadeInDuration = duration * 0.3; // Quick fade in
     const fadeOutDuration = duration * 0.7; // Slow fade out
-
-    // const fadeInAlpha = this.isIn ? 1 : 0;
-    // const fadeOutAlpha = this.isIn ? 0 : 1;
 
     const timelineSteps: Phaser.Types.Time.TimelineEventConfig[] = [];
 

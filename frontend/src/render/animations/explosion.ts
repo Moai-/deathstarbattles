@@ -76,7 +76,7 @@ export default class Explosion extends Phaser.GameObjects.Container {
   play(duration = 1000) {
     const total = this.circles.length;
 
-    // ①  --- timing proportions (feel free to tweak)
+    // timing proportions
     const expandFrac = 0.55; // % of `duration` spent expanding
     const staggerFrac = 0.25; // % used to stagger circle starts
     const expandDur = duration * expandFrac;
