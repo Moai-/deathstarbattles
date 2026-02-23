@@ -3,6 +3,7 @@ import { Position } from 'shared/src/ecs/components/position';
 import { Velocity } from 'shared/src/ecs/components/velocity';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { AffectedByGravity } from 'shared/src/ecs/components/affectedByGravity';
+import { AffectedByJets } from 'shared/src/ecs/components/affectedByJets';
 import { Projectile } from 'shared/src/ecs/components/projectile';
 import { HasLifetime } from 'shared/src/ecs/components/hasLifetime';
 import { Destructible } from 'shared/src/ecs/components/destructible';
@@ -48,6 +49,7 @@ export const createDeathStar = (
   addComponent(world, LeavesTrail, projEid);
   addComponent(world, Projectile, projEid);
   addComponent(world, AffectedByGravity, projEid);
+  addComponent(world, AffectedByJets, projEid)
   addComponent(world, HasLifetime, projEid);
   addComponent(world, ObjectInfo, projEid);
 

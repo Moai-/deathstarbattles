@@ -1,3 +1,4 @@
+import { Collision } from 'shared/src/ecs/components';
 import { TargetCache } from 'shared/src/types';
 
 const MAX_BH = 30;
@@ -54,7 +55,7 @@ export class BlackHolePipeline extends Phaser.Renderer.WebGL.Pipelines
     for (let i = 0; i < count; i++) {
       this.centers[i * 2] = holes[i].x;
       this.centers[i * 2 + 1] = this.renderer.height - holes[i].y;
-      this.radii[i] = 30;
+      this.radii[i] = Collision.radius[holes[i].eid];
       this.strengths[i] = 20000;
     }
     this.set1i('bhCount', count);

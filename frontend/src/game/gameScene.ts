@@ -7,6 +7,7 @@ import {
   createGravitySystem,
   createMovementSystem,
   createPathTrackerSystem,
+  createPolarJetSystem,
 } from 'shared/src/ecs/systems';
 import { createRenderSystem } from '../render/renderSystem';
 import { GameObjectManager } from '../render/objectManager';
@@ -31,6 +32,7 @@ export class GameScene extends Phaser.Scene {
     this.gameManager.onCleanup.bind(this.gameManager),
   );
   private gravitySystem = createGravitySystem();
+  private polarJetSystem = createPolarJetSystem();
   private collisionSystem = createCollisionSystem();
   private collisionResolverSystem = createCollisionResolverSystem(
     this.gameManager.onCollision.bind(this.gameManager),
@@ -59,6 +61,7 @@ export class GameScene extends Phaser.Scene {
     this.movementSystem(this.world);
     this.pathTrackerSystem(this.world);
     this.gravitySystem(this.world);
+    this.polarJetSystem(this.world);
     this.collisionSystem(this.world);
     this.collisionResolverSystem(this.world);
     this.cleanupSystem(this.world);

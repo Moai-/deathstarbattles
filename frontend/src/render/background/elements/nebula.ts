@@ -162,7 +162,7 @@ export const drawNebula = (g: Phaser.GameObjects.Graphics, opts: NebulaOptions) 
     g.fillStyle(tint, a);
     g.fillCircle(x, y, dustR);
 
-    // sometimes add a sharper “bite”
+    // sometimes add a sharper "bite"
     if (rnd() < 0.35) {
       g.fillStyle(0x000000, a * 0.55);
       g.fillCircle(x + (rnd() - 0.5) * dustR * 0.35, y + (rnd() - 0.5) * dustR * 0.35, dustR * 0.6);

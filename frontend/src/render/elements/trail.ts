@@ -61,15 +61,12 @@ const beadsOnAStringTrail: MakeTrail = (projEid, manager, scene) => {
   circle.setDepth(Depths.PROJECTILES);
   const lastChild = manager.getLastChild(projEid) as Phaser.GameObjects.Arc;
   const bead = lastChild || manager.getObject(Projectile.parent[projEid]);
-  // const bead = lastChild as Phaser.GameObjects.Arc;
   if (bead) {
     const sqDist = getSquaredDistance(circle, bead);
     const line = scene.add.graphics();
     const sizeRatio = sqDist / MAX_STRING_DIST_SQ;
-    // console.log('sizeRatio', sizeRatio);
     const max = radius * 2.5;
     const size = lastChild ? max / sizeRatio : max;
-    // circle.radius = Math.min(radius, radius / sizeRatio);
     line.lineStyle(Math.min(max, size), col);
     line.lineBetween(bead.x, bead.y, x, y);
     line.setDepth(Depths.PROJECTILES);

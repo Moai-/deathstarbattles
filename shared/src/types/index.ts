@@ -32,6 +32,8 @@ export enum ObjectTypes {
   ANOMALY,
   LOCUS,
   TUNNEL_LOCUS,
+  NEUTRON_STAR,
+  JET_BLACK_HOLE,
 }
 
 export type PlayerSetup = {

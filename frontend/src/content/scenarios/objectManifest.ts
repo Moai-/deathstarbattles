@@ -16,6 +16,8 @@ export const scenarioItems = [
   { key: ObjectTypes.ANOMALY, label: 'Space-time Anomaly', maxAmount: 30 },
   { key: ObjectTypes.LOCUS, label: 'Hyperspace Locus', maxAmount: 1 },
   { key: ObjectTypes.TUNNEL_LOCUS, label: 'Tunnel Locus', maxAmount: 1 },
+  { key: ObjectTypes.NEUTRON_STAR, label: 'Neutron Star', maxAmount: 2 },
+  { key: ObjectTypes.JET_BLACK_HOLE, label: 'Jet Black Hole', maxAmount: 2 }
 ];
 
 export const planet = generateObject(ObjectTypes.PLANET);
@@ -32,3 +34,5 @@ export const whiteHole = generateObject(ObjectTypes.WHITE_HOLE);
 export const anomaly = generateObject(ObjectTypes.ANOMALY);
 export const locus = generateObject(ObjectTypes.LOCUS);
 export const tunnelLocus = generateObject(ObjectTypes.TUNNEL_LOCUS);
+export const neutronStar = generateObject(ObjectTypes.NEUTRON_STAR);
+export const jetBlackHole = generateObject(ObjectTypes.JET_BLACK_HOLE);

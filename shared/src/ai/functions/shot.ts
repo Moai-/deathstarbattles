@@ -92,64 +92,47 @@ export const correctFromLastShot = (
 ) => {
   const { ownEid, targetEid } = targetInfo;
 
-  /* ---------- geometry helpers ---------- */
   const ownPos = getPosition(ownEid);
   const targetPos = getPosition(targetEid);
 
   const idealAngle = getAngleBetween(ownPos, targetPos);
   const idealPower = 100;
 
-  /* delta values */
   const dAngle = idealAngle - lastInput.angle;
   const dPower = idealPower - lastInput.power;
 
   let angle = lastInput.angle;
   let power = lastInput.power;
 
-  /* ------------------------------------------------------
-     1) If we were already pointing roughly at the target
-        (≤ 8 °) → fix POWER first.
-  ------------------------------------------------------ */
+  // 1. If we were already pointing roughly at the target, fix POWER first
   if (Math.abs(dAngle) <= 8) {
-    /* move at least 60 % toward the ideal power,
-       but scale further by “how close we were”        */
     const targetRad = getRadius(targetEid);
     const closeness = Math.sqrt(shotInfo.closestDist2) / targetRad; // 0 = graze
     const factor = Math.min(0.6 + (1 - Math.min(closeness, 2)) * 0.2, 0.9);
     power += dPower * factor;
   }
 
-  /* ------------------------------------------------------
-     2) Always correct ANGLE — aggressively.
-        Go 70 % of the remaining way.
-  ------------------------------------------------------ */
-  angle += dAngle * 0.7;
+  // 2. Always correct ANGLE, go 70 % of the remaining way
 
-  /* ------------------------------------------------------
-     3) Secondary power tweak when angle changed a lot
-  ------------------------------------------------------ */
+  // 3. Secondary power tweak when angle changed a lot
   if (Math.abs(dAngle) > 8) {
     power += dPower * 0.25; // mild nudge keeps arcs aligned
   }
 
-  /* ------------------------------------------------------
-     4) Clamp & add tiny human-like jitter
-  ------------------------------------------------------ */
+  // 4. Clamp & add tiny human-like jitter
   angle = Math.min(Math.max(angle + (Math.random() * 4 - 2), -180), 180);
   power = Math.min(Math.max(power + getRandomBetween(-1, 1), 20), 100);
 
   return { angle, power } as RawTurn;
 };
 
-/* ---------------- helpers ------------------------------------------------ */
 const clamp = (v: number, lo: number, hi: number) =>
   Math.min(Math.max(v, lo), hi);
 const toDeg = (rad: number) => (rad * 180) / Math.PI;
 const dist2 = (a: AnyPoint, b: AnyPoint) => (a.x - b.x) ** 2 + (a.y - b.y) ** 2;
 const dot = (a: AnyPoint, b: AnyPoint) => a.x * b.x + a.y * b.y;
-const perpZ = (a: AnyPoint, b: AnyPoint) => a.x * b.y - a.y * b.x; // 2-D cross product “z” term
+const perpZ = (a: AnyPoint, b: AnyPoint) => a.x * b.y - a.y * b.x; // 2-D cross product z term
 
-/* ------------------------------------------------------------------------ */
 export const correctShot = (
   targetInfo: TargetInfo,
   lastInput: TurnInput,
@@ -158,12 +141,7 @@ export const correctShot = (
   const shooter = getPosition(targetInfo.ownEid);
   const target = getPosition(targetInfo.targetEid);
 
-  /* ---------------------------------------------------------------------
-     STEP 0  –  OBSTACLE AVOIDANCE
-     ---------------------------------------------------------------
-     Triggered when the last shell collided with a non-destructible
-     body that is *closer to us than to the real target*.
-  --------------------------------------------------------------------- */
+  // 0. Obstacle avoidance - Triggered when the last shell collided with a non-destructible body that is *closer to us than to the real target*
   const obstacleHit =
     shotInfo.hitsEid !== 0 &&
     !shotInfo.destructible &&
@@ -176,27 +154,27 @@ export const correctShot = (
     const dSO2 = vSO.x * vSO.x + vSO.y * vSO.y;
     const dSO = Math.sqrt(dSO2);
 
-    /* Shooter sits *inside* obstacle – very rare, bail out */
+    // Shooter sits *inside* obstacle - bail
     if (dSO <= rObst) {
       return { angle: lastInput.angle, power: lastInput.power };
     }
 
-    /* Angle between shooter→obstacle axis and its tangents  */
+    // Angle between shooter/obstacle axis and its tangents
     const deltaRad = Math.asin(rObst / dSO); // tangent deflection
     const safetyDeg = 3; // add 3° buffer
     const deltaDeg = toDeg(deltaRad) + safetyDeg;
 
-    /* Decide which side (sign) puts us on the same side as the target */
+    // Decide which side (sign) puts us on the same side as the target
     const cross = perpZ(vSO, {
       x: target.x - shooter.x,
       y: target.y - shooter.y,
     });
-    const sideSign = Math.sign(cross) || 1; //  0 ⇒ pick CCW by default
+    const sideSign = Math.sign(cross) || 1;
 
-    const axisDeg = toDeg(Math.atan2(vSO.y, vSO.x)); //  shooter → obstacle
+    const axisDeg = toDeg(Math.atan2(vSO.y, vSO.x));
     const newAngle = axisDeg + sideSign * deltaDeg;
 
-    /* Extra juice so gravity can bend it round the planet */
+    // Extra juice so gravity can bend it round the planet
     const newPower = clamp(lastInput.power + 12, 20, 100);
 
     return {
@@ -205,9 +183,7 @@ export const correctShot = (
     };
   }
 
-  /* ---------------------------------------------------------------------
-     STEP 1  –  NORMAL “EIGHT-WAY” CORRECTION (unchanged)
-  --------------------------------------------------------------------- */
+  // 1. Normal 8-way correction
   const axis = { x: target.x - shooter.x, y: target.y - shooter.y };
   const L = Math.hypot(axis.x, axis.y);
   const uAxis = { x: axis.x / L, y: axis.y / L };
@@ -228,18 +204,17 @@ export const correctShot = (
   let angle = lastInput.angle;
   let power = lastInput.power;
 
-  /* power: front / behind */
+  // power: target in front / behind last shot
   if (Math.abs(t - L) > thresh) {
     power += (t < L ? +1 : -1) * 10;
   }
 
-  /* angle: above / below  (fixed-sign logic) */
+  // angle: target above / below last shot
   const signPerp = Math.sign(perpAtTarget);
   if (Math.abs(perpAtTarget) > thresh) {
     angle -= signPerp * 6;
   }
 
-  /* polish */
   angle = clamp(angle + (Math.random() * 4 - 2), -180, 180);
   power = clamp(power + getRandomBetween(-1, 1), 20, 100);
 

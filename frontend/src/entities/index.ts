@@ -14,6 +14,8 @@ import { createRandomWhiteHole } from './whiteHole';
 import { createRandomAnomaly } from './anomaly';
 import { createLocus } from './hyperLocus';
 import { createRandomTunnelLocus } from './tunnelLocus';
+import { createRandomNeutronStar } from './neutronStar';
+import { createRandomJetBlackHole } from './jetBlackHole';
 
 const none = () => NULL_ENTITY;
 
@@ -37,4 +39,6 @@ export const createRandom: Record<ObjectTypes, (world: GameWorld) => number> = {
   [ObjectTypes.ANOMALY]: createRandomAnomaly,
   [ObjectTypes.LOCUS]: createLocus,
   [ObjectTypes.TUNNEL_LOCUS]: createRandomTunnelLocus,
+  [ObjectTypes.NEUTRON_STAR]: createRandomNeutronStar,
+  [ObjectTypes.JET_BLACK_HOLE]: createRandomJetBlackHole,
 };

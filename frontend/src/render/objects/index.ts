@@ -15,6 +15,8 @@ import renderBigWormhole from './bigWormhole';
 import renderWhiteHole from './whiteHole';
 import renderAnomaly from './anomaly';
 import renderLocus from './locus';
+import renderNeutronStar from './neutronStar';
+import renderJetBlackHole from './jetBlackHole';
 
 const renderMap: Record<ObjectTypes, RenderObject> = {
   [ObjectTypes.NONE]: renderBlackHole,
@@ -34,6 +36,8 @@ const renderMap: Record<ObjectTypes, RenderObject> = {
   [ObjectTypes.ANOMALY]: renderAnomaly,
   [ObjectTypes.LOCUS]: renderLocus,
   [ObjectTypes.TUNNEL_LOCUS]: renderWhiteHole,
+  [ObjectTypes.NEUTRON_STAR]: renderNeutronStar,
+  [ObjectTypes.JET_BLACK_HOLE]: renderJetBlackHole,
 };
 
 export default renderMap;

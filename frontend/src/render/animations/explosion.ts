@@ -87,8 +87,8 @@ export default class Explosion extends Phaser.GameObjects.Container {
 
     this.circles.forEach((circle, i) => {
       const delay = delayStep * i; // when this circle starts
-      const expandScale = 3 - (1.5 * i) / (total - 1); // 3 → 1.5 linearly
-      const shrinkScale = expandScale * 0.5; // optional: tweak as desired
+      const expandScale = 3 - (1.5 * i) / (total - 1); 
+      const shrinkScale = expandScale * 0.5; 
 
       // expansion
       timelineSteps.push({
@@ -101,7 +101,6 @@ export default class Explosion extends Phaser.GameObjects.Container {
         },
       });
 
-      // fade / collapse so that **every** circle finishes exactly at `duration`
       const shrinkStart = delay + expandDur * 0.8; // overlap a bit
       const shrinkDur = duration - shrinkStart; // auto-fit
       timelineSteps.push({
