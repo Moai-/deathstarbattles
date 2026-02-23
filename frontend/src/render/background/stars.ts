@@ -1,4 +1,6 @@
 import { BG_TEXTURE } from './constants';
+import { drawNebula } from './elements/nebula';
+import { drawStar } from './elements/star';
 
 export const generateBackgroundStars = (
   scene: Phaser.Scene,
@@ -20,30 +22,27 @@ export const generateBackgroundStars = (
     const x = Phaser.Math.Between(0, width);
     const y = Phaser.Math.Between(0, height);
     const rand = Math.random();
-    let radius = 0;
-    if (rand < 0.99) {
-      radius = Phaser.Math.FloatBetween(0.3, 5);
-    } else {
-      radius = Phaser.Math.FloatBetween(5, 9); // Rare large stars
-    }
-
-    const reds = Phaser.Math.Between(0, 33);
-    const purples = Phaser.Math.Between(270, 340);
-    const hue = Phaser.Math.Between(0, 4) > 2 ? reds : purples;
-    const saturation = Phaser.Math.Between(40, 80);
-    const lightness = Phaser.Math.Between(10, 20);
-    const color = Phaser.Display.Color.HSLToColor(
-      hue / 360,
-      saturation / 100,
-      lightness / 100,
-    ).color;
-
-    graphics.fillStyle(color);
-    graphics.fillCircle(x, y, radius);
+    drawStar(graphics, {x, y, big: rand < 0.99})
   }
 
+  const galaxy = scene.add.graphics();
+
+  drawNebula(galaxy, {
+    x: 500,
+    y: 200,
+    radius: Phaser.Math.FloatBetween(280, 600),
+    hue: Phaser.Math.Between(190, 330),
+    vividness: 0.85,
+    alpha: 1,
+    tilt: Math.random() * 0.6,
+    aspect: Phaser.Math.FloatBetween(0.8, 1.4),
+    glowEdges: true,
+  })
+
   renderTexture.draw(graphics);
+  renderTexture.draw(galaxy);
   graphics.destroy();
+  galaxy.destroy();
 
   renderTexture.saveTexture(BG_TEXTURE);
 

@@ -154,4 +154,6 @@ export enum Backgrounds {
   NONE,
   STARS,
   SHARDS,
+  DEEPSPACE,
+  NEBULAR,
 }
