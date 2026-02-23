@@ -62,7 +62,7 @@ export const drawJet = (
   // Helpers
   const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 
-  // Slightly smoother random than raw Math.random for “banding”
+  // Slightly smoother random than raw Math.random for "banding"
   const randSigned = () => (Math.random() - 0.5) * 2; // -1..1
 
   for (let layer = 0; layer < layers; layer++) {
@@ -103,7 +103,7 @@ export const drawJet = (
 
       const ya = Math.tan(halfAngle) * (xa - x0);
       const yb = Math.tan(halfAngle) * (xb - x0);
-      
+
       g.fillStyle(color, a);
       g.beginPath();
       g.moveTo(cx + xa, cy - ya);
