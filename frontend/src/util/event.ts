@@ -1,5 +1,6 @@
 import mitt from 'mitt';
 import { AnyPoint, GameConfig, OtherActions } from 'shared/src/types';
+import { SerializedEntity } from 'shared/src/utils';
 
 export enum GameEvents {
   END_TURN = 'endturn',
@@ -33,6 +34,11 @@ type DebugPath = {
   colour: number;
 };
 
+type SelectionClick = {
+  clickLoc: AnyPoint,
+  entities: Array<SerializedEntity>
+}
+
 type EventData = {
   [GameEvents.END_TURN]: void;
   [GameEvents.ANGLE_POWER_UI]: { angle: number; power: number };
@@ -49,7 +55,7 @@ type EventData = {
 
   // Editor stuff
   [GameEvents.ED_ADD_ENTITY]: void;
-  [GameEvents.ED_ENTITY_CLICKED]: Array<number>; // list of entities in the clicked area
+  [GameEvents.ED_ENTITY_CLICKED]: SelectionClick;
   
 };
 

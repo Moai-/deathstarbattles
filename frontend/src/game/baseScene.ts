@@ -22,7 +22,7 @@ export class BaseScene extends Phaser.Scene {
   public fxManager = new FxManager(this);
 
   protected objectManager = new GameObjectManager(this);
-  protected unsubRenderObservers = createRenderObservers(this.world, this.objectManager);
+  protected unsubRenderObservers = () => {};
   protected movementSystem = createMovementSystem();
   protected pathTrackerSystem = createPathTrackerSystem();
   protected gravitySystem = createGravitySystem();
@@ -37,6 +37,7 @@ export class BaseScene extends Phaser.Scene {
 
   create() {
     this.fxManager.create();
+    this.unsubRenderObservers = createRenderObservers(this.world, this.objectManager);
     drawPathListener(this);
   }
 

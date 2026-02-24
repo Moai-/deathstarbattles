@@ -14,7 +14,7 @@ export const createAsteroid = (
   radius: number,
 ) => {
   const eid = createCollidingBase(world, x, y, radius, ObjectTypes.ASTEROID);
-
+  console.log('create asteroid', eid)
   Collision.radius[eid] = radius;
   HasGravity.strength[eid] = radius * 60;
 

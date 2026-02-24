@@ -12,6 +12,7 @@ import {
   getPosition,
   getRadius,
   noop,
+  serializeComponents,
   setPosition,
 } from 'shared/src/utils';
 import { SimManager } from 'shared/src/ai/simulation/manager';
@@ -41,6 +42,7 @@ export default class EditorManager {
 
   // editor state
   private pointerMode: PointerMode = PointerMode.SELECT_ENTITY;
+  private selectedEntities: Array<number> = [];
 
   private static posQuery = [Position];
 
@@ -105,25 +107,33 @@ export default class EditorManager {
   }
 
   private handlePointerDown(pointer: Phaser.Input.Pointer) {
-    const ent = query(this.world, EditorManager.posQuery);
-    const overlappingEntities: Array<number> = [];
-    for (let i = 0; i < ent.length; i++) {
-      const entity = ent[i];
-      const pos = getPosition(entity);
-      const rad = getRadius(entity) || 5;
-      if (doCirclesOverlap(pointer.x, pointer.y, 2, pos.x, pos.y, rad)) {
-        overlappingEntities.push(entity);
+    if (this.pointerMode === PointerMode.SELECT_ENTITY) {
+      const ent = query(this.world, EditorManager.posQuery);
+      const overlappingEntities: Array<number> = [];
+      for (let i = 0; i < ent.length; i++) {
+        const entity = ent[i];
+        const pos = getPosition(entity);
+        const rad = getRadius(entity) || 5;
+        if (doCirclesOverlap(pointer.x, pointer.y, 2, pos.x, pos.y, rad)) {
+          overlappingEntities.push(entity);
+        }
       }
+      this.selectedEntities = overlappingEntities;
     }
-    gameBus.emit(GameEvents.ED_ENTITY_CLICKED, overlappingEntities);
   }
 
   private handlePointerMove() {
 
   }
 
-  private handlePointerUp() {
-
+  private handlePointerUp(pointer: Phaser.Input.Pointer) {
+    if (this.pointerMode === PointerMode.SELECT_ENTITY) {
+      const payload = {
+        clickLoc: {x: pointer.x, y: pointer.y}, 
+        entities: this.selectedEntities.map((eid) => serializeComponents(this.world, eid))
+      }
+      gameBus.emit(GameEvents.ED_ENTITY_CLICKED, payload)
+    }
   }
 
   private setUpListeners() {

@@ -160,7 +160,6 @@ export class GameObjectManager {
 
   private renderEntity(eid: number) {
     const renderType = getType(eid);
-    console.log('rendering eid %s of type %s', eid, renderType)
     return renderMap[renderType](this.scene, eid);
   }
 }
