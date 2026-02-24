@@ -7,7 +7,7 @@ import {
   createPathTrackerSystem,
   createPolarJetSystem,
 } from 'shared/src/ecs/systems';
-import { createRenderSystem } from '../render/renderSystem';
+import { createRenderObservers, createRenderSystem } from '../render/renderSystem';
 import { GameObjectManager } from '../render/objectManager';
 import { gameBus, GameEvents } from 'src/util';
 import { clearBackground } from 'src/render/background';
@@ -22,6 +22,7 @@ export class BaseScene extends Phaser.Scene {
   public fxManager = new FxManager(this);
 
   protected objectManager = new GameObjectManager(this);
+  protected unsubRenderObservers = createRenderObservers(this.world, this.objectManager);
   protected movementSystem = createMovementSystem();
   protected pathTrackerSystem = createPathTrackerSystem();
   protected gravitySystem = createGravitySystem();
@@ -53,6 +54,7 @@ export class BaseScene extends Phaser.Scene {
   destroy() {
     getSoundManager(this).stopAllSounds('effects');
     resetWorld(this.world);
+    this.unsubRenderObservers();
     this.fxManager.destroy();
     this.objectManager.destroy();
     clearBackground(this);

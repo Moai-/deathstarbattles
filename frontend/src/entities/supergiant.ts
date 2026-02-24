@@ -1,4 +1,4 @@
-import { IWorld } from 'bitecs';
+import { World } from 'bitecs';
 import {
   GravityFalloffType,
   HasGravity,
@@ -12,7 +12,7 @@ export const MIN_SUPERGIANT_RAD = 1000;
 export const MAX_SUPERGIANT_RAD = 3000;
 
 export const createSupergiant = (
-  world: IWorld,
+  world: World,
   x: number,
   y: number,
   radius: number,
@@ -29,7 +29,7 @@ export const createSupergiant = (
   return eid;
 };
 
-export const createRandomSupergiant = (world: IWorld) => {
+export const createRandomSupergiant = (world: World) => {
   const radius = Phaser.Math.Between(MIN_SUPERGIANT_RAD, MAX_SUPERGIANT_RAD);
   return createSupergiant(world, 0, 0, radius);
 };

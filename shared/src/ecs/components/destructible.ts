@@ -1,3 +1,1 @@
-import { defineComponent } from 'bitecs';
-
-export const Destructible = defineComponent();
+export const Destructible = {}

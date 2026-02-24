@@ -1,4 +1,4 @@
-import { defineQuery, defineSystem, removeEntity, hasComponent } from 'bitecs';
+import { removeEntity, hasComponent, query } from 'bitecs';
 import { getPosition, getRadius, setPosition } from 'shared/src/utils';
 import { Wormhole, ExitTypes } from '../components/wormhole';
 import { GameWorld, NULL_ENTITY } from '../world';
@@ -7,7 +7,7 @@ import { BASE_HEIGHT, BASE_WIDTH } from 'shared/src/consts';
 import { generateNonOverlappingPositions } from 'shared/src/utils';
 import { Projectile, Position, Collision, Active } from '../components';
 
-const projectileQuery = defineQuery([Projectile, Position, Collision, Active]);
+const projectileEntities = [Projectile, Position, Collision, Active];
 
 export const createCollisionResolverSystem = (
   onCollision: (
@@ -17,10 +17,10 @@ export const createCollisionResolverSystem = (
     time: number,
   ) => boolean = () => true,
 ) => {
-  return defineSystem((world: GameWorld) => {
+  return (world: GameWorld) => {
     if (!world.movements) return world; // no shots this frame
 
-    const projectiles = projectileQuery(world);
+    const projectiles = query(world, projectileEntities);
 
     for (const projEid of projectiles) {
       const parent = Projectile.parent[projEid];
@@ -32,13 +32,13 @@ export const createCollisionResolverSystem = (
       }
 
       // Another projectile, we don't care -- strip out the target
-      if (hasComponent(world, Projectile, target)) {
+      if (hasComponent(world, target, Projectile)) {
         Projectile.lastCollisionTarget[projEid] = NULL_ENTITY;
         continue;
       }
 
       // Target can be destroyed
-      if (hasComponent(world, Destructible, target)) {
+      if (hasComponent(world, target, Destructible)) {
         const doRemove = onCollision(projEid, target, true, world.time);
         if (doRemove) {
           removeEntity(world, target);
@@ -49,7 +49,7 @@ export const createCollisionResolverSystem = (
 
       // Target is a wormhole
       // Teleport and strip out target
-      if (hasComponent(world, Wormhole, target)) {
+      if (hasComponent(world, target, Wormhole)) {
         handleWormholeTeleport(projEid, target, world);
         Projectile.lastCollisionTarget[projEid] = NULL_ENTITY;
         continue;
@@ -60,7 +60,7 @@ export const createCollisionResolverSystem = (
     }
 
     return world;
-  });
+  }
 };
 
 const handleWormholeTeleport = (

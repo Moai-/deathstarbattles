@@ -175,7 +175,7 @@ const runSimulation = (
   };
 
   const destructible = !!(
-    hitsEid && hasComponent(world, Destructible, hitsEid)
+    hitsEid && hasComponent(world, hitsEid, Destructible)
   );
 
   return {
@@ -201,13 +201,13 @@ const runSimulation = (
 const fireProjectile = (input: TurnInput) => {
   const proj = addEntity(world);
   const { playerId } = input;
-  addComponent(world, Position, proj);
-  addComponent(world, Velocity, proj);
-  addComponent(world, Collision, proj);
-  addComponent(world, Projectile, proj);
-  addComponent(world, AffectedByGravity, proj);
-  addComponent(world, HasLifetime, proj);
-  addComponent(world, Active, proj);
+  addComponent(world, proj, Position);
+  addComponent(world, proj, Velocity);
+  addComponent(world, proj, Collision);
+  addComponent(world, proj, Projectile);
+  addComponent(world, proj, AffectedByGravity);
+  addComponent(world, proj, HasLifetime);
+  addComponent(world, proj, Active);
 
   Collision.radius[proj] = Collision.radius[input.playerId] / 8;
   Projectile.parent[proj] = input.playerId;

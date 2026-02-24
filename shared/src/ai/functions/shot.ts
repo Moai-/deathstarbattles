@@ -39,7 +39,7 @@ export const analyzeShot = (
     for (const t of objects) {
       const d2 = getSquaredDistance(p, t);
 
-      const destructible = hasComponent(world, Destructible, t.eid);
+      const destructible = hasComponent(world, t.eid, Destructible);
 
       if (d2 <= t.r2) {
         return {

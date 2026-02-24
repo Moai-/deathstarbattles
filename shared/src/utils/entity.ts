@@ -1,4 +1,4 @@
-import { defineQuery } from 'bitecs';
+import { query } from 'bitecs';
 import { Collision } from '../ecs/components/collision';
 import { ObjectInfo } from '../ecs/components/objectInfo';
 import { Position } from '../ecs/components/position';
@@ -46,24 +46,26 @@ export const scrambleWormhole = (eid: number) => {
   Wormhole.teleportTarget[eid] = 0;
 };
 
-const colliderQuery = defineQuery([Collision, Position, Active]);
-export const getColliders = (world: GameWorld) => colliderQuery(world);
+const collidingEntities = [Collision, Position, Active];
+export const getColliders = (world: GameWorld) => query(world, collidingEntities) as Array<number>;
 
-const targetQuery = defineQuery([Collision, Position, Destructible, Active]);
-export const getTargets = (world: GameWorld) => targetQuery(world);
+const targetEntities = [Collision, Position, Destructible, Active];
+export const getTargets = (world: GameWorld) => query(world, targetEntities) as Array<number>;
 
-export const getAllObjects: (world: GameWorld) => Array<GameObject> = (world) =>
-  getColliders(world).map((eid) => ({
+export const getAllObjects: (world: GameWorld) => Array<GameObject> = (world: GameWorld) => {
+  const colliders = getColliders(world) ;
+  return colliders.map((eid) => ({
     x: Position.x[eid],
     y: Position.y[eid],
     radius: Collision.radius[eid],
     eid,
-  }));
+  }))
+}
 
-const locusQuery = defineQuery([HyperLocus, Active]);
+const locusEntities = [HyperLocus, Active];
 
 export const getHyperLocus = (world: GameWorld) => {
-  const [locus] = locusQuery(world);
+  const [locus] = query(world, locusEntities);
   if (locus) {
     return locus;
   }

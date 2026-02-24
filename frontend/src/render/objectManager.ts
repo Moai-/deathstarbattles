@@ -2,16 +2,20 @@ import { AnyPoint } from 'shared/src/types';
 import { getType } from 'shared/src/utils';
 import renderMap from './objects';
 import renderBoundaryIndicator from './objects/boundaryIndicator';
+import { BaseScene } from 'src/game/baseScene';
 
 export class GameObjectManager {
   private objects = new Map<number, Phaser.GameObjects.Container>();
   private children = new Map<number, Array<Phaser.GameObjects.GameObject>>();
   private boundaryIndicators = new Map<number, Phaser.GameObjects.Triangle>();
 
-  constructor(private scene: Phaser.Scene) {}
+  constructor(private scene: BaseScene) {}
 
   createObject(eid: number) {
-    this.objects.set(eid, this.renderEntity(eid));
+    // Wrap in microtask because the new observer is too damn fast
+    // If I don't do this, the manager tries to render the entity
+    // before it even knows what it needs to render...
+    queueMicrotask(() => this.objects.set(eid, this.renderEntity(eid)));
   }
 
   getObject(eid: number) {
@@ -156,6 +160,7 @@ export class GameObjectManager {
 
   private renderEntity(eid: number) {
     const renderType = getType(eid);
+    console.log('rendering eid %s of type %s', eid, renderType)
     return renderMap[renderType](this.scene, eid);
   }
 }

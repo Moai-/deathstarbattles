@@ -1,15 +1,14 @@
-import { defineQuery, defineSystem } from 'bitecs';
+import { query } from 'bitecs';
 import { GameWorld } from '../world';
 import { Active, Position, Velocity } from '../components';
 
 const slow = 1 / 300;
-const movingQuery = defineQuery([Position, Velocity, Active]);
+const movingEntities = [Position, Velocity, Active];
 
 export const createMovementSystem = () => {
-  return defineSystem((world) => {
-    const w = world as GameWorld;
-    const dt = w.delta;
-    const entities = movingQuery(world);
+  return (world: GameWorld) => {
+    const dt = world.delta;
+    const entities = query(world, movingEntities);
 
     for (const eid of entities) {
       const vx = Velocity.x[eid];
@@ -22,5 +21,5 @@ export const createMovementSystem = () => {
       Position.y[eid] = newY;
     }
     return world;
-  });
+  }
 };

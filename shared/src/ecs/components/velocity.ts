@@ -1,6 +1,6 @@
-import { defineComponent, Types } from 'bitecs';
+import { MAX_ENTITIES } from "shared/src/consts";
 
-export const Velocity = defineComponent({
-  x: Types.f32,
-  y: Types.f32,
-});
+export const Velocity = {
+  x: new Float32Array(MAX_ENTITIES),
+  y: new Float32Array(MAX_ENTITIES),
+};

@@ -1,26 +1,26 @@
-import { defineComponent, Types } from "bitecs";
+import { MAX_ENTITIES } from "shared/src/consts";
 
-export const HasPolarJets = defineComponent({
+export const HasPolarJets = {
   // Base acceleration magnitude
-  strength: Types.f32,
+  strength: new Float32Array(MAX_ENTITIES),
 
   // Geometry
-  innerRadius: Types.f32,
-  length: Types.f32,
-  tanHalfSpread: Types.f32,
-  spreadRad: Types.f32,
+  innerRadius: new Float32Array(MAX_ENTITIES),
+  length: new Float32Array(MAX_ENTITIES),
+  tanHalfSpread: new Float32Array(MAX_ENTITIES),
+  spreadRad: new Float32Array(MAX_ENTITIES),
 
   // Precomputed basis (so we don't sin/cos every loop)
-  dirX: Types.f32,
-  dirY: Types.f32,
-  perpX: Types.f32,
-  perpY: Types.f32,
+  dirX: new Float32Array(MAX_ENTITIES),
+  dirY: new Float32Array(MAX_ENTITIES),
+  perpX: new Float32Array(MAX_ENTITIES),
+  perpY: new Float32Array(MAX_ENTITIES),
 
   // Shaping
-  corePow: Types.f32,
-  endFadeFrac: Types.f32, 
-  outerFadeBias: Types.f32, 
+  corePow: new Float32Array(MAX_ENTITIES),
+  endFadeFrac: new Float32Array(MAX_ENTITIES), 
+  outerFadeBias: new Float32Array(MAX_ENTITIES), 
 
   // Deflection angle
-  deflectAngleRad: Types.f32,
-});
+  deflectAngleRad: new Float32Array(MAX_ENTITIES),
+};

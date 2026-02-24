@@ -1,4 +1,4 @@
-import { addComponent, IWorld } from "bitecs";
+import { addComponent, World } from "bitecs";
 import { Collision } from "shared/src/ecs/components";
 import { HasPolarJets } from "shared/src/ecs/components/hasPolarJets";
 
@@ -16,8 +16,8 @@ type AddJetsOpts = {
 };
 
 
-export const addJets = (eid: number, world: IWorld, opts: AddJetsOpts) => {
-  addComponent(world, HasPolarJets, eid);
+export const addJets = (eid: number, world: World, opts: AddJetsOpts) => {
+  addComponent(world, eid, HasPolarJets);
   const r = Collision.radius[eid];
 
   const axis = opts.axisAngleRad;

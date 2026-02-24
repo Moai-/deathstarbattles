@@ -1,6 +1,6 @@
-import { defineComponent, Types } from 'bitecs';
+import { MAX_ENTITIES } from "shared/src/consts";
 
-export const ObjectInfo = defineComponent({
-  type: Types.ui8,
-  cloneOf: Types.eid,
-});
+export const ObjectInfo = {
+  type: new Uint8Array(MAX_ENTITIES),
+  cloneOf: new Uint32Array(MAX_ENTITIES),
+};

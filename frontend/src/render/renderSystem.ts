@@ -1,4 +1,4 @@
-import { defineQuery, enterQuery, defineSystem, exitQuery } from 'bitecs';
+import { query, observe, onAdd, onRemove } from 'bitecs';
 import { Renderable } from './components/renderable';
 import { GameObjectManager } from './objectManager';
 import { LeavesTrail } from './components/leavesTrail';
@@ -6,34 +6,38 @@ import { AnyPoint } from 'shared/src/types';
 import { dimTrail, makeTrail } from './elements/trail';
 import { getPosition } from 'shared/src/utils';
 import { Active, Position, Projectile } from 'shared/src/ecs/components';
+import { GameWorld } from 'shared/src/ecs/world';
 
-const renderQuery = defineQuery([Renderable, Active]);
-const renderQueryEnter = enterQuery(renderQuery);
-const renderQueryExit = exitQuery(renderQuery);
+const renderables = [Renderable, Active];
 
-const trailQuery = defineQuery([Position, LeavesTrail, Active]);
-const dimTrailQuery = defineQuery([Position, LeavesTrail]);
+const withTrails = [Position, LeavesTrail, Active];
+const withDimTrails = [Position, LeavesTrail];
 
-const projectileQuery = defineQuery([Projectile, Active]);
+const projectiles = [Projectile, Active];
+
+export const createRenderObservers = (world: GameWorld, objectManager: GameObjectManager) => {
+  const unsubCreate = observe(world, onAdd(Renderable, Active), (eid) => {
+    objectManager.createObject(eid);
+  });
+
+  const unsubRemove = observe(world, onRemove(Renderable, Active), (eid) => {
+    objectManager.removeObject(eid);
+  });
+
+  return () => {
+    unsubCreate();
+    unsubRemove();
+  }
+}
 
 export const createRenderSystem = (
   scene: Phaser.Scene,
   objectManager: GameObjectManager,
 ) => {
-  return defineSystem((world) => {
-    const enteredEntities = renderQueryEnter(world);
 
-    for (const eid of enteredEntities) {
-      objectManager.createObject(eid);
-    }
+  return (world: GameWorld) => {
 
-    const exitedEntities = renderQueryExit(world);
-
-    for (const eid of exitedEntities) {
-      objectManager.removeObject(eid);
-    }
-
-    const updatedEntities = renderQuery(world);
+    const updatedEntities = query(world, renderables);
 
     for (const eid of updatedEntities) {
       const x = Position.x[eid];
@@ -41,9 +45,9 @@ export const createRenderSystem = (
       objectManager.updateObjectPosition(eid, x, y);
     }
 
-    const updatedTrails = trailQuery(world);
+    const updatedTrails = query(world, withTrails);
 
-    const dimmedTrails = dimTrailQuery(world);
+    const dimmedTrails = query(world, withDimTrails);
 
     for (const eid of dimmedTrails) {
       dimTrail(eid, objectManager, scene);
@@ -53,7 +57,7 @@ export const createRenderSystem = (
       makeTrail(eid, objectManager, scene);
     }
 
-    const updatedProjectiles = projectileQuery(world);
+    const updatedProjectiles = query(world, projectiles);
 
     for (const eid of updatedProjectiles) {
       const x = Position.x[eid];
@@ -83,8 +87,8 @@ export const createRenderSystem = (
     }
 
     return world;
-  });
-};
+  }
+}
 
 const getEdgePoint = (
   rect: Phaser.Geom.Rectangle,

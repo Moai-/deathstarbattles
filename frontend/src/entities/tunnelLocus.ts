@@ -1,4 +1,4 @@
-import { addComponent, IWorld } from 'bitecs';
+import { addComponent, World } from 'bitecs';
 import { createLocus } from './hyperLocus';
 import {
   Collision,
@@ -14,16 +14,16 @@ import { GravityFalloffType } from 'shared/src/ecs/components/hasGravity';
 const LOCUS_RAD = 10;
 
 export const createTunnelLocus = (
-  world: IWorld,
+  world: World,
   x: number,
   y: number,
   radius: number,
 ) => {
   const eid = createLocus(world);
-  addComponent(world, Position, eid);
-  addComponent(world, Collision, eid);
-  addComponent(world, HasGravity, eid);
-  addComponent(world, Renderable, eid);
+  addComponent(world, eid, Position);
+  addComponent(world, eid, Collision);
+  addComponent(world, eid, HasGravity);
+  addComponent(world, eid, Renderable);
 
   ObjectInfo.type[eid] = ObjectTypes.TUNNEL_LOCUS;
   Renderable.col[eid] = generateRandomCol(
@@ -38,6 +38,6 @@ export const createTunnelLocus = (
   return eid;
 };
 
-export const createRandomTunnelLocus = (world: IWorld) => {
+export const createRandomTunnelLocus = (world: World) => {
   return createTunnelLocus(world, 0, 0, LOCUS_RAD);
 };

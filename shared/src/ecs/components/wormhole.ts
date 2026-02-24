@@ -1,9 +1,9 @@
-import { defineComponent, Types } from 'bitecs';
+import { MAX_ENTITIES } from "shared/src/consts";
 
-export const Wormhole = defineComponent({
-  teleportTarget: Types.eid,
-  exitType: Types.ui8,
-});
+export const Wormhole = {
+  teleportTarget: new Uint32Array(MAX_ENTITIES),
+  exitType: new Uint8Array(MAX_ENTITIES),
+};
 
 export enum ExitTypes {
   PAIRED,

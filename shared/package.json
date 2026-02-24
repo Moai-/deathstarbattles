@@ -10,6 +10,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "bitecs": "^0.3.40"
+    "bitecs": "^0.4.0"
   }
 }

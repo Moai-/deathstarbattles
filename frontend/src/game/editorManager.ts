@@ -17,11 +17,9 @@ import {
 import { SimManager } from 'shared/src/ai/simulation/manager';
 import { EditorScene } from './editorScene';
 import { createRandomAsteroid } from 'src/entities/asteroid';
-import { defineQuery, getAllEntities, removeEntity, resetWorld } from 'bitecs';
+import { query, getAllEntities, removeEntity, resetWorld } from 'bitecs';
 import { Position } from 'shared/src/ecs/components';
 import { gameBus, GameEvents } from 'src/util';
-
-const positionedEntities = defineQuery([Position]);
 
 export default class EditorManager {
   // globals
@@ -35,6 +33,8 @@ export default class EditorManager {
   private projectileManager: ProjectileManager;
   private objectManager: GameObjectManager;
   private simManager: SimManager;
+
+  private static posQuery = [Position];
 
   constructor(
     scene: EditorScene,
@@ -97,7 +97,7 @@ export default class EditorManager {
   }
 
   private handlePointerDown(pointer: Phaser.Input.Pointer) {
-    const ent = positionedEntities(this.world);
+    const ent = query(this.world, EditorManager.posQuery);
     const overlappingEntities: Array<number> = [];
     for (let i = 0; i < ent.length; i++) {
       const entity = ent[i];
@@ -162,7 +162,6 @@ export default class EditorManager {
 
   private clearECS() {
     getAllEntities(this.world).forEach((ent) => removeEntity(this.world, ent));
-    this.world = resetWorld(this.world);
   }
 
   getGameState() {

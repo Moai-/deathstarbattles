@@ -1,4 +1,4 @@
-import { addComponent, IWorld } from 'bitecs';
+import { World } from 'bitecs';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { Renderable } from '../render/components/renderable';
@@ -11,7 +11,7 @@ const MIN_STAR_RAD = 6;
 const MAX_STAR_RAD = 12;
 
 export const createNeutronStar = (
-  world: IWorld,
+  world: World,
   x: number,
   y: number,
   radius: number,
@@ -34,7 +34,7 @@ export const createNeutronStar = (
   return eid;
 };
 
-export const createRandomNeutronStar = (world: IWorld) => {
+export const createRandomNeutronStar = (world: World) => {
   const radius = Phaser.Math.Between(MIN_STAR_RAD, MAX_STAR_RAD);
   return createNeutronStar(world, 0, 0, radius);
 };

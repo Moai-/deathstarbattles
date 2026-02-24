@@ -1,6 +1,6 @@
-import { defineComponent, Types } from 'bitecs';
+import { MAX_ENTITIES } from "shared/src/consts";
 
-export const Animated = defineComponent({
-  type: Types.ui8,
-  frame: Types.ui16,
-});
+export const Animated = {
+  type: new Uint8Array(MAX_ENTITIES),
+  frame: new Uint16Array(MAX_ENTITIES),
+};

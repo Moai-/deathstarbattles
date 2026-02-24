@@ -12,9 +12,10 @@ import {
   Wormhole,
 } from 'shared/src/ecs/components';
 import { ComponentTags, SimSnapshot } from './types';
-import { addComponent, addEntity, Component, hasComponent } from 'bitecs';
+import { addComponent, addEntity, hasComponent, ComponentRef } from 'bitecs';
 import { GameWorld } from 'shared/src/ecs/world';
 import { ENTITY_START_CURSOR } from 'shared/src/consts';
+
 
 export const buildSnapshot = (
   eids: Array<number>,
@@ -61,8 +62,8 @@ export const buildSnapshot = (
     exitType: new Uint8Array(n),
   };
 
-  const has = (component: Component, eid: number) =>
-    hasComponent(world, component, eid) ? 1 : 0;
+  const has = (component: ComponentRef, eid: number) =>
+    hasComponent(world, eid, component) ? 1 : 0;
 
   eids.forEach((src, i) => {
     snap.eid[i] = src;
@@ -170,50 +171,50 @@ export const restoreSnapshot = (snapshot: SimSnapshot, world: GameWorld) => {
     const clonedEid = addEntity(world);
     cloneMap.set(eid, clonedEid);
 
-    addComponent(world, ObjectInfo, clonedEid);
+    addComponent(world, clonedEid, ObjectInfo);
     ObjectInfo.type[clonedEid] = snapshot.type[i];
     ObjectInfo.cloneOf[clonedEid] = eid;
 
     const tag = snapshot.componentTags[i];
 
     if (tag & ComponentTags.AffectedByGravity) {
-      addComponent(world, AffectedByGravity, clonedEid);
+      addComponent(world, clonedEid, AffectedByGravity);
     }
 
     if (tag & ComponentTags.Destructible) {
-      addComponent(world, Destructible, clonedEid);
+      addComponent(world, clonedEid, Destructible);
     }
 
     if (tag & ComponentTags.Collision) {
-      addComponent(world, Collision, clonedEid);
+      addComponent(world, clonedEid, Collision);
     }
 
     if (tag & ComponentTags.HasGravity) {
-      addComponent(world, HasGravity, clonedEid);
+      addComponent(world, clonedEid, HasGravity);
     }
 
     if (tag & ComponentTags.HasLifetime) {
-      addComponent(world, HasLifetime, clonedEid);
+      addComponent(world, clonedEid, HasLifetime);
     }
 
     if (tag & ComponentTags.Position) {
-      addComponent(world, Position, clonedEid);
+      addComponent(world, clonedEid, Position);
     }
 
     if (tag & ComponentTags.Projectile) {
-      addComponent(world, Projectile, clonedEid);
+      addComponent(world, clonedEid, Projectile);
     }
 
     if (tag & ComponentTags.Velocity) {
-      addComponent(world, Velocity, clonedEid);
+      addComponent(world, clonedEid, Velocity);
     }
 
     if (tag & ComponentTags.Wormhole) {
-      addComponent(world, Wormhole, clonedEid);
+      addComponent(world, clonedEid, Wormhole);
     }
 
     if (tag & ComponentTags.Active) {
-      addComponent(world, Active, clonedEid);
+      addComponent(world, clonedEid, Active);
     }
   }
 

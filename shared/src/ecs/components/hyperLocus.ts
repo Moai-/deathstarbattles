@@ -1,3 +1,1 @@
-import { defineComponent } from 'bitecs';
-
-export const HyperLocus = defineComponent();
+export const HyperLocus = {};

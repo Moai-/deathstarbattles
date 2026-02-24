@@ -1,4 +1,4 @@
-import { addComponent, IWorld } from 'bitecs';
+import { addComponent, World } from 'bitecs';
 import {
   GravityFalloffType,
   HasGravity,
@@ -13,7 +13,7 @@ const ANOMALY_RAD = 12;
 const NORMAL_GRAV = 60 * 90;
 
 export const createAnomaly = (
-  world: IWorld,
+  world: World,
   x: number,
   y: number,
   radius: number,
@@ -36,11 +36,11 @@ export const createAnomaly = (
   return eid;
 };
 
-export const createRandomAnomaly = (world: IWorld) => {
+export const createRandomAnomaly = (world: World) => {
   return createAnomaly(world, 0, 0, ANOMALY_RAD);
 };
 
-const addRandomAnomalyEffect = (eid: number, world: IWorld) => {
+const addRandomAnomalyEffect = (eid: number, world: World) => {
   randomFromArray<(eid: number) => void>([
     (eid) => {
       // White hole
@@ -87,8 +87,8 @@ const addRandomAnomalyEffect = (eid: number, world: IWorld) => {
   ])(eid);
 };
 
-const maybeHole = (eid: number, world: IWorld) => {
+const maybeHole = (eid: number, world: World) => {
   if (oneIn(2)) {
-    addComponent(world, Wormhole, eid);
+    addComponent(world, eid, Wormhole);
   }
 };

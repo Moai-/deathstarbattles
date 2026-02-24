@@ -1,10 +1,10 @@
-import { defineComponent, Types } from 'bitecs';
+import { MAX_ENTITIES } from 'shared/src/consts';
 
-export const HasGravity = defineComponent({
-  strength: Types.f32,
-  radius: Types.f32,
-  falloffType: Types.ui8,
-});
+export const HasGravity = {
+  strength: new Float32Array(MAX_ENTITIES),
+  radius: new Float32Array(MAX_ENTITIES),
+  falloffType: new Uint8Array(MAX_ENTITIES),
+}
 
 export enum GravityFalloffType {
   INVERSE_SQUARE,

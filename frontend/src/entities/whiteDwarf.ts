@@ -1,4 +1,4 @@
-import { IWorld } from 'bitecs';
+import { World } from 'bitecs';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { Renderable } from '../render/components/renderable';
@@ -10,7 +10,7 @@ const MIN_STAR_RAD = 6;
 const MAX_STAR_RAD = 12;
 
 export const createWhiteDwarf = (
-  world: IWorld,
+  world: World,
   x: number,
   y: number,
   radius: number,
@@ -26,7 +26,7 @@ export const createWhiteDwarf = (
   return eid;
 };
 
-export const createRandomWhiteDwarf = (world: IWorld) => {
+export const createRandomWhiteDwarf = (world: World) => {
   const radius = Phaser.Math.Between(MIN_STAR_RAD, MAX_STAR_RAD);
   return createWhiteDwarf(world, 0, 0, radius);
 };

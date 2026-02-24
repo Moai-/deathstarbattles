@@ -1,14 +1,13 @@
-import { defineQuery, defineSystem } from 'bitecs';
+import { query } from 'bitecs';
 import { GameWorld } from '../world';
 import { Projectile, Active, Position } from '../components';
 import { getPosition } from 'shared/src/utils';
 
-const projectileQuery = defineQuery([Position, Projectile, Active]);
+const projectileEntities = [Position, Projectile, Active];
 
 export const createPathTrackerSystem = () => {
-  return defineSystem((w) => {
-    const world = w as GameWorld;
-    const projectiles = projectileQuery(world);
+  return (world: GameWorld) => {
+    const projectiles = query(world, projectileEntities);
     if (projectiles.length) {
       world.movements = world.movements || {};
     }
@@ -24,5 +23,5 @@ export const createPathTrackerSystem = () => {
     }
 
     return world;
-  });
+  }
 };

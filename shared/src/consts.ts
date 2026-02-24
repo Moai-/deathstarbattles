@@ -5,3 +5,4 @@ export const CONTROLS_HEIGHT = 50;
 export const DEFAULT_DEATHBEAM_RADIUS = 2;
 export const NULL_ENTITY = 0;
 export const ENTITY_START_CURSOR = 1;
+export const MAX_ENTITIES = 100_000;

@@ -1,4 +1,4 @@
-import { IWorld } from 'bitecs';
+import { World } from 'bitecs';
 import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { Renderable } from '../render/components/renderable';
 import { ObjectTypes } from 'shared/src/types';
@@ -9,7 +9,7 @@ const MIN_STAR_RAD = 250;
 const MAX_STAR_RAD = 350;
 
 export const createRedGiant = (
-  world: IWorld,
+  world: World,
   x: number,
   y: number,
   radius: number,
@@ -25,7 +25,7 @@ export const createRedGiant = (
   return eid;
 };
 
-export const createRandomRedGiant = (world: IWorld) => {
+export const createRandomRedGiant = (world: World) => {
   const radius = Phaser.Math.Between(MIN_STAR_RAD, MAX_STAR_RAD);
   return createRedGiant(world, 0, 0, radius);
 };

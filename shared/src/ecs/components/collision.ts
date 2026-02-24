@@ -1,5 +1,5 @@
-import { defineComponent, Types } from 'bitecs';
+import { MAX_ENTITIES } from 'shared/src/consts';
 
-export const Collision = defineComponent({
-  radius: Types.ui16,
-});
+export const Collision = {
+  radius: new Uint16Array(MAX_ENTITIES)
+}

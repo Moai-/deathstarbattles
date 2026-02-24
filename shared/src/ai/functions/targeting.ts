@@ -32,7 +32,7 @@ export const getClosestDestructible = (world: GameWorld, ownEid: number) => {
 export const buildColliderCache = (world: GameWorld): TargetCache =>
   getColliders(world).map((o) => ({
     eid: o,
-    breaks: hasComponent(world, Destructible, o),
+    breaks: hasComponent(world, o, Destructible),
     x: Position.x[o],
     y: Position.y[o],
     r: getRadius(o),
@@ -46,7 +46,7 @@ export const buildTargetCache = (
   getTargets(world)
     .map((o) => ({
       eid: o,
-      breaks: hasComponent(world, Destructible, o),
+      breaks: hasComponent(world, o, Destructible),
       x: Position.x[o],
       y: Position.y[o],
       r: getRadius(o),

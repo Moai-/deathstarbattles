@@ -1,5 +1,5 @@
-import { defineComponent, Types } from 'bitecs';
+import { MAX_ENTITIES } from 'shared/src/consts';
 
-export const HasLifetime = defineComponent({
-  createdAt: Types.ui32,
-});
+export const HasLifetime = {
+  createdAt: new Uint32Array(MAX_ENTITIES)
+}

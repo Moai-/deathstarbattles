@@ -22,7 +22,7 @@ export const finalizeSetup = (
 ) => {
   const objectsInWorld = buildColliderCache(world);
   const wormholes = objectsInWorld
-    .filter((o) => hasComponent(world, Wormhole, o.eid))
+    .filter((o) => hasComponent(world, o.eid, Wormhole))
     .map((o) => o.eid);
 
   for (let i = 0; i < wormholes.length; ) {

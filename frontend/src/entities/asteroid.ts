@@ -1,4 +1,4 @@
-import { IWorld } from 'bitecs';
+import { World } from 'bitecs';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { ObjectTypes } from 'shared/src/types';
@@ -8,7 +8,7 @@ export const MIN_ASTEROID_RAD = 15;
 export const MAX_ASTEROID_RAD = 35;
 
 export const createAsteroid = (
-  world: IWorld,
+  world: World,
   x: number,
   y: number,
   radius: number,
@@ -21,7 +21,7 @@ export const createAsteroid = (
   return eid;
 };
 
-export const createRandomAsteroid = (world: IWorld) => {
+export const createRandomAsteroid = (world: World) => {
   const radius = Phaser.Math.Between(MIN_ASTEROID_RAD, MAX_ASTEROID_RAD);
   return createAsteroid(world, 0, 0, radius);
 };

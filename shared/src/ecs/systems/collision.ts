@@ -1,14 +1,14 @@
-import { defineQuery, defineSystem } from 'bitecs';
+import { query, World } from 'bitecs';
 import { Position, Collision, Projectile, Active } from '../components';
 import { doObjectsOverlap } from 'shared/src/utils';
 
-const projectileQuery = defineQuery([Position, Collision, Projectile, Active]);
-const targetQuery = defineQuery([Position, Collision, Active]);
+const projectileEntities = [Position, Collision, Projectile, Active];
+const targetEntities = [Position, Collision, Active];
 
 export const createCollisionSystem = () => {
-  return defineSystem((world) => {
-    const projectiles = projectileQuery(world);
-    const targets = targetQuery(world);
+  return (world: World) => {
+    const projectiles = query(world, projectileEntities);
+    const targets = query(world, targetEntities);
 
     for (let i = 0; i < projectiles.length; i++) {
       const eid1 = projectiles[i];
@@ -24,5 +24,5 @@ export const createCollisionSystem = () => {
     }
 
     return world;
-  });
+  }
 };

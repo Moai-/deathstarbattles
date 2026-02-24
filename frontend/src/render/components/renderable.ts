@@ -1,6 +1,6 @@
-import { defineComponent, Types } from 'bitecs';
+import { MAX_ENTITIES } from "shared/src/consts";
 
-export const Renderable = defineComponent({
-  variant: Types.ui8,
-  col: Types.ui32,
-});
+export const Renderable = {
+  variant: new Uint8Array(MAX_ENTITIES),
+  col: new Uint32Array(MAX_ENTITIES),
+}

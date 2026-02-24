@@ -1,4 +1,4 @@
-import { IWorld } from 'bitecs';
+import { World } from 'bitecs';
 import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { Renderable } from '../render/components/renderable';
 import { ObjectTypes } from 'shared/src/types';
@@ -9,7 +9,7 @@ export const MIN_RAD = 70;
 export const MAX_RAD = 230;
 
 export const createJovian = (
-  world: IWorld,
+  world: World,
   x: number,
   y: number,
   radius: number,
@@ -25,7 +25,7 @@ export const createJovian = (
   return eid;
 };
 
-export const createRandomJovian = (world: IWorld) => {
+export const createRandomJovian = (world: World) => {
   const radius = Phaser.Math.Between(MIN_RAD, MAX_RAD);
   return createJovian(world, 0, 0, radius);
 };

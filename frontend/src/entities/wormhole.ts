@@ -1,4 +1,4 @@
-import { addComponent, IWorld } from 'bitecs';
+import { addComponent, World } from 'bitecs';
 import { Position } from 'shared/src/ecs/components/position';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { HasGravity } from 'shared/src/ecs/components/hasGravity';
@@ -11,14 +11,14 @@ const MIN_STAR_RAD = 30;
 const MAX_STAR_RAD = 80;
 
 export const createWormhole = (
-  world: IWorld,
+  world: World,
   x: number,
   y: number,
   radius: number,
 ) => {
   const eid = createCollidingBase(world, x, y, radius, ObjectTypes.WORMHOLE);
 
-  addComponent(world, Wormhole, eid);
+  addComponent(world, eid, Wormhole);
 
   const timeSeed = Math.floor(Date.now() / 5000);
   const rng = mulberry32(timeSeed);
@@ -35,7 +35,7 @@ export const createWormhole = (
   return eid;
 };
 
-export const createRandomWormhole = (world: IWorld) => {
+export const createRandomWormhole = (world: World) => {
   const radius = Phaser.Math.Between(MIN_STAR_RAD, MAX_STAR_RAD);
   return createWormhole(world, 0, 0, radius);
 };

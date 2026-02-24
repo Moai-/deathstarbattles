@@ -1,4 +1,4 @@
-import { IWorld } from 'bitecs';
+import { World } from 'bitecs';
 import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { Renderable } from '../render/components/renderable';
 import { ObjectTypes } from 'shared/src/types';
@@ -9,7 +9,7 @@ const MIN_STAR_RAD = 180;
 const MAX_STAR_RAD = 300;
 
 export const createStar = (
-  world: IWorld,
+  world: World,
   x: number,
   y: number,
   radius: number,
@@ -24,7 +24,7 @@ export const createStar = (
   return eid;
 };
 
-export const createRandomStar = (world: IWorld) => {
+export const createRandomStar = (world: World) => {
   const radius = Phaser.Math.Between(MIN_STAR_RAD, MAX_STAR_RAD);
   return createStar(world, 0, 0, radius);
 };

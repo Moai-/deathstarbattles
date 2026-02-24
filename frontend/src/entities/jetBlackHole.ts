@@ -1,4 +1,4 @@
-import { IWorld } from 'bitecs';
+import { World } from 'bitecs';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { ObjectTypes } from 'shared/src/types';
@@ -7,7 +7,7 @@ import { addJets } from './jets';
 
 export const BLACK_HOLE_RAD = 8;
 
-export const createJetBlackHole = (world: IWorld, x: number, y: number) => {
+export const createJetBlackHole = (world: World, x: number, y: number) => {
   const eid = createCollidingBase(
     world,
     x,
@@ -28,6 +28,6 @@ export const createJetBlackHole = (world: IWorld, x: number, y: number) => {
   return eid;
 };
 
-export const createRandomJetBlackHole = (world: IWorld) => {
+export const createRandomJetBlackHole = (world: World) => {
   return createJetBlackHole(world, 0, 0);
 };

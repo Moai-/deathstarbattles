@@ -1,4 +1,4 @@
-import { defineQuery, defineSystem } from "bitecs";
+import { query } from "bitecs";
 import { Position, Active, Velocity } from "../components";
 import { HasPolarJets } from "../components/hasPolarJets";
 import { GameWorld } from "../world";
@@ -6,8 +6,8 @@ import { AffectedByJets } from "../components/affectedByJets";
 
 const JET_EPS = 1e-6;
 
-const jetSourceQuery = defineQuery([HasPolarJets, Position, Active]);
-const jetTargetQuery = defineQuery([AffectedByJets, Velocity, Position, Active]);
+const jetSourceEntities = [HasPolarJets, Position, Active];
+const jetTargetEntities = [AffectedByJets, Velocity, Position, Active];
 
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 
@@ -109,10 +109,10 @@ const applyOneJet = (
 };
 
 export const createPolarJetSystem = () => {
-  return defineSystem((world: GameWorld) => {
+  return (world: GameWorld) => {
     const dt = world.delta;
-    const sources = jetSourceQuery(world);
-    const targets = jetTargetQuery(world);
+    const sources = query(world, jetSourceEntities);
+    const targets = query(world, jetTargetEntities);
 
     for (const eid of targets) {
       const px = Position.x[eid];
@@ -167,6 +167,6 @@ export const createPolarJetSystem = () => {
     }
 
     return world;
-  });
+  }
 };
 

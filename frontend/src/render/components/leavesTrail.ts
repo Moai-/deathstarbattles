@@ -1,4 +1,4 @@
-import { defineComponent, Types } from 'bitecs';
+import { MAX_ENTITIES } from "shared/src/consts";
 
 export enum TrailType {
   NONE,
@@ -10,7 +10,7 @@ export enum TrailType {
 const MAX_STRING_DIST = 10;
 export const MAX_STRING_DIST_SQ = MAX_STRING_DIST * MAX_STRING_DIST;
 
-export const LeavesTrail = defineComponent({
-  type: Types.ui8,
-  col: Types.ui32,
-});
+export const LeavesTrail = {
+  type: new Uint8Array(MAX_ENTITIES),
+  col: new Uint32Array(MAX_ENTITIES),
+};

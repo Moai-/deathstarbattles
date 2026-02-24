@@ -1,4 +1,4 @@
-import { IWorld } from 'bitecs';
+import { World } from 'bitecs';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { HasGravity } from 'shared/src/ecs/components/hasGravity';
 import { ObjectTypes } from 'shared/src/types';
@@ -8,7 +8,7 @@ export const MIN_PLANET_RAD = 30;
 export const MAX_PLANET_RAD = 70;
 
 export const createPlanet = (
-  world: IWorld,
+  world: World,
   x: number,
   y: number,
   radius: number,
@@ -21,7 +21,7 @@ export const createPlanet = (
   return eid;
 };
 
-export const createRandomPlanet = (world: IWorld) => {
+export const createRandomPlanet = (world: World) => {
   const radius = Phaser.Math.Between(MIN_PLANET_RAD, MAX_PLANET_RAD);
   return createPlanet(world, 0, 0, radius);
 };

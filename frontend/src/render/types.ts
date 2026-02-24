@@ -1,4 +1,4 @@
-import { GameScene } from 'src/game/gameScene';
+import { BaseScene } from 'src/game/baseScene';
 
 export enum Depths {
   BOTTOM,
@@ -11,6 +11,6 @@ export enum Depths {
 }
 
 export type RenderObject = (
-  scene: GameScene,
+  scene: BaseScene,
   eid: number,
 ) => Phaser.GameObjects.Container;
