@@ -14,6 +14,10 @@ export enum GameEvents {
   GAME_LOADED = 'gameloaded',
   GAME_REMOVED = 'gameremoved',
   DEBUG_DRAW_PATH = 'debugdrawpath',
+
+  // Editor stuff
+  ED_ADD_ENTITY = 'ed_addentity',
+  ED_ENTITY_CLICKED = 'ed_entityclicked',
 }
 
 type WinnerData = { col: number; playerId: number };
@@ -42,6 +46,11 @@ type EventData = {
   [GameEvents.GAME_LOADED]: void;
   [GameEvents.SET_VOLUME]: GameVolume;
   [GameEvents.DEBUG_DRAW_PATH]: DebugPath;
+
+  // Editor stuff
+  [GameEvents.ED_ADD_ENTITY]: void;
+  [GameEvents.ED_ENTITY_CLICKED]: Array<number>; // list of entities in the clicked area
+  
 };
 
 export const gameBus = mitt<EventData>();

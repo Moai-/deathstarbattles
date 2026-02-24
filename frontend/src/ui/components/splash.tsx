@@ -71,9 +71,14 @@ const Splash: React.FC = () => {
           Original Website
         </a>
       </SubBlock>
-      <NeonButton onClick={() => setGameState(GameState.CONFIG_GAME)}>
-        New game
-      </NeonButton>
+      <div style={{display: 'flex', gap: '10px'}}>
+        <NeonButton onClick={() => setGameState(GameState.CONFIG_GAME)}>
+          New game
+        </NeonButton>
+        <NeonButton onClick={() => setGameState(GameState.EDITOR)}>
+          Editor
+        </NeonButton>
+      </div>
     </OverlayContainer>
   );
 };

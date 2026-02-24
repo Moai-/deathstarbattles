@@ -5,10 +5,10 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
-"bitecs@npm:^0.3.40":
-  version: 0.3.40
-  resolution: "bitecs@npm:0.3.40"
-  checksum: 10c0/bb83221c63f850b7ab0d34176531f78b66b136434b85754040d4bc335c90702fb51c387c4983de5aa1dae24db7d523d3b6d32e25019ceaa9d77feed9f85cbe39
+"bitecs@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "bitecs@npm:0.4.0"
+  checksum: 10c0/e8956cb9f9f3f7011f8db72540fa80151e38f3928d8155945c8b36cc783e8160234711682302abae9be3f3bda8a79ce431f36c002a5925c98302d537bdcbf815
   languageName: node
   linkType: hard
 
@@ -16,6 +16,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "shared@workspace:."
   dependencies:
-    bitecs: "npm:^0.3.40"
+    bitecs: "npm:^0.4.0"
   languageName: unknown
   linkType: soft

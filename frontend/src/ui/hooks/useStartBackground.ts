@@ -12,6 +12,7 @@ export const useStartBackground = (isActive: boolean) => {
       });
     } else {
       gameBus.off(GameEvents.GAME_END);
+      stopMainScene();
     }
 
     return () => {

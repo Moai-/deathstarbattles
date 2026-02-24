@@ -6,6 +6,7 @@ import WinrarScreen from './winrar';
 import { SetupScreen } from './basicSetup';
 import { GameStateProvider, useGameState } from './context';
 import { useUiInsets } from '../hooks/useUiInsets';
+import { EditorScreen } from './editor/editor';
 
 const App: React.FC = () => {
   useUiInsets();
@@ -22,6 +23,7 @@ const App: React.FC = () => {
       {gameState === GameState.CONFIG_GAME && <SetupScreen />}
       {gameState === GameState.INGAME && <ControlPanel />}
       {gameState === GameState.SCORESCREEN && <WinrarScreen />}
+      {gameState === GameState.EDITOR && <EditorScreen />}
     </>
   );
 };

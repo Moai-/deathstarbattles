@@ -1,8 +1,8 @@
 import { Depths } from 'src/render/types';
 import { gameBus, GameEvents } from './event';
-import { GameScene } from 'src/game/gameScene';
+import { BaseScene } from 'src/game/baseScene';
 
-export const drawPathListener = (scene: GameScene) => {
+export const drawPathListener = (scene: BaseScene) => {
   gameBus.on(GameEvents.DEBUG_DRAW_PATH, (debugInfo) => {
     if (!scene.debug) {
       return;

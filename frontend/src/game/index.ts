@@ -3,6 +3,7 @@ import { GameScene } from './gameScene';
 import { BASE_HEIGHT, BASE_WIDTH } from 'shared/src/consts';
 import { ResourceScene } from './resourceScene';
 import { gameBus, GameEvents } from 'src/util';
+import { EditorScene } from './editorScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.WEBGL,
@@ -16,7 +17,7 @@ const config: Phaser.Types.Core.GameConfig = {
     height: BASE_HEIGHT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [ResourceScene, GameScene],
+  scene: [ResourceScene, GameScene, EditorScene],
   roundPixels: true,
   physics: { default: 'arcade' },
 };
@@ -86,3 +87,37 @@ export const startMainScene = () => {
     scene.scene.start();
   }
 };
+
+export const getEditorScene = () => {
+  const game = getGame();
+  if (game) {
+    const scene = game.scene.getScene('EditorScene');
+    if (scene) {
+      return scene as EditorScene;
+    }
+  }
+  return null;
+}
+
+export const startEditorScene = () => {
+  const scene = getEditorScene();
+  if (scene) {
+    scene.scene.start();
+  }
+}
+
+export const stopEditorScene = () => {
+  return new Promise<void>((resolve) => {
+    const scene = getEditorScene();
+    if (scene) {
+      gameBus.on(GameEvents.GAME_REMOVED, () => {
+        gameBus.off(GameEvents.GAME_REMOVED);
+        resolve();
+      });
+      scene.scene.stop();
+      scene.destroy();
+    } else {
+      resolve();
+    }
+  });
+}

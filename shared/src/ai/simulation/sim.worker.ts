@@ -38,7 +38,7 @@ import { restoreSnapshot } from './snapshot';
 type Updater = (world: GameWorld, time: number, delta: number) => void;
 
 const MAX_MS = 10000;
-const MS_STEP = 8;
+const MS_STEP = 1;
 
 const world = createGameWorld();
 

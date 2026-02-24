@@ -1,5 +1,5 @@
 import { GameConfig } from 'shared/src/types';
-import { createGame, getGame, startMainScene, stopMainScene } from 'src/game';
+import { createGame, getGame, startEditorScene, startMainScene, stopEditorScene, stopMainScene } from 'src/game';
 import { gameBus, GameEvents } from 'src/util';
 
 export const startGameWithConfig = async (config: GameConfig) =>
@@ -14,5 +14,21 @@ export const startGameWithConfig = async (config: GameConfig) =>
       stopMainScene().then(startMainScene);
     } else {
       createGame().then(startMainScene);
+    }
+  });
+
+
+export const startEditor = async () =>   
+  new Promise<void>((resolve) => {
+    gameBus.on(GameEvents.SCENE_LOADED, () => {
+      gameBus.off(GameEvents.SCENE_LOADED);
+      gameBus.emit(GameEvents.START_GAME, {});
+      resolve();
+    });
+    const game = getGame();
+    if (game) {
+      stopEditorScene().then(startEditorScene);
+    } else {
+      createGame().then(startEditorScene);
     }
   });

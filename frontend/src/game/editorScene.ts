@@ -2,31 +2,32 @@ import {
   createCleanupSystem,
   createCollisionResolverSystem,
 } from 'shared/src/ecs/systems';
-import GameManager from './gameManager';
 import { gameBus, GameEvents } from 'src/util';
-import { getSoundManager } from './resourceScene';
 import { BaseScene } from './baseScene';
+import EditorManager from './editorManager';
 
-export class GameScene extends BaseScene {
-  private gameManager = new GameManager(this, this.world, this.objectManager);
+export class EditorScene extends BaseScene {
+  private editorManager = new EditorManager(this, this.world, this.objectManager);
   private cleanupSystem = createCleanupSystem(
-    this.gameManager.onCleanup.bind(this.gameManager),
+    this.editorManager.onCleanup.bind(this.editorManager),
   );
   private collisionResolverSystem = createCollisionResolverSystem(
-    this.gameManager.onCollision.bind(this.gameManager),
+    this.editorManager.onCollision.bind(this.editorManager),
   );
 
   constructor() {
-    super('GameScene');
+    super('EditorScene');
   }
 
   create() {
     super.create();
-    gameBus.on(GameEvents.START_GAME, (config) => {
-      this.gameManager.startGame(config);
+    gameBus.on(GameEvents.START_GAME, () => {
+      this.editorManager.ready();
     });
-    this.gameManager.create();
-    getSoundManager(this).playSound('songLoop');
+    gameBus.on(GameEvents.ED_ADD_ENTITY, () => {
+      this.editorManager.addEntity();
+    })
+    this.editorManager.create();
     gameBus.emit(GameEvents.SCENE_LOADED);
   }
 
@@ -38,6 +39,6 @@ export class GameScene extends BaseScene {
 
   destroy() {
     super.destroy();
-    this.gameManager.destroy();
+    this.editorManager.destroy();
   }
 }

@@ -3,6 +3,7 @@ export enum GameState {
   CONFIG_GAME,
   INGAME,
   SCORESCREEN,
+  EDITOR,
 }
 
 export enum ObjectAmounts {

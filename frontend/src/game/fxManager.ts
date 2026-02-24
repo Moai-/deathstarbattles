@@ -1,12 +1,12 @@
 import { BlackHolePipeline } from 'src/shaders/blackHole.pipeline';
-import { GameScene } from './gameScene';
 import { buildColliderCache } from 'shared/src/ai/functions';
 import { ObjectTypes } from 'shared/src/types';
 import { getType } from 'shared/src/utils';
 import { FXAAPipeline } from 'src/shaders/fxaa.pipeline';
+import { BaseScene } from './baseScene';
 
 export class FxManager {
-  constructor(private scene: GameScene) {}
+  constructor(private scene: BaseScene) {}
 
   create() {
     const renderer = this.getRenderer();

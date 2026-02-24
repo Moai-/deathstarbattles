@@ -2,16 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { FaCheck, FaExpand, FaSignOutAlt } from 'react-icons/fa';
 import { GiTransportationRings, GiRingedBeam } from "react-icons/gi";
 import {
-  ControlPanelContainer,
-  ToggleButton,
   SliderContainer,
   FineButton,
   ValueLabel,
-  NeonButton,
   MiniButton,
-  ActionButtonGroup,
-  ControlRow,
-  SideButtonColumn,
   StyledSlider,
 } from '../styled';
 import { toggleFullscreen } from '../functions/toggleFullscreen';
@@ -245,86 +239,6 @@ const ControlPanel: React.FC = () => {
       </ControlSectionDesktop>
     </DesktopControl>
   );
-
-
-
-  // return (
-  //   <ControlPanelContainer collapsed={collapsed}>
-  //     <SideButtonColumn>
-  //       <MiniButton onClick={() => toggleFullscreen()}>
-  //         <FaExpand />
-  //       </MiniButton>
-  //       <MiniButton onClick={backToMenu}>
-  //         <FaSignOutAlt />
-  //       </MiniButton>
-  //     </SideButtonColumn>
-
-  //     <ToggleButton onClick={() => setCollapsed(!collapsed)}>
-  //       {collapsed ? '▶' : '◀'}
-  //     </ToggleButton>
-
-  //     {collapsed && (
-  //       <EndTurnButton onClick={() => endTurn()}>
-  //         <FaCheck />
-  //       </EndTurnButton>
-  //     )}
-
-  //     <ControlRow>
-        // <SliderContainer>
-        //   <FineButton
-        //     onClick={() => adjustValue(setAngle, -1, -180, 180)}
-        //     disabled={isHyperspaceOn}
-        //   >
-        //     -
-        //   </FineButton>
-        //   <StyledSlider
-        //     min={-180}
-        //     max={180}
-        //     value={Math.floor(angle)}
-        //     onChange={(e) => emitAngle(Number(e.target.value))}
-        //     disabled={isHyperspaceOn}
-        //   />
-        //   <FineButton
-        //     onClick={() => adjustValue(setAngle, 1, -180, 180)}
-        //     disabled={isHyperspaceOn}
-        //   >
-        //     +
-        //   </FineButton>
-        //   <ValueLabel>Angle: {angle}°</ValueLabel>
-        // </SliderContainer>
-        // <SliderContainer>
-        //   <FineButton
-        //     onClick={() => adjustValue(setPower, -1, 20, 100)}
-        //     disabled={isHyperspaceOn}
-        //   >
-        //     -
-        //   </FineButton>
-        //   <StyledSlider
-        //     min={20}
-        //     max={100}
-        //     value={Math.floor(power)}
-        //     onChange={(e) => emitPower(Number(e.target.value))}
-        //     disabled={isHyperspaceOn}
-        //   />
-        //   <FineButton
-        //     onClick={() => adjustValue(setPower, 1, 20, 100)}
-        //     disabled={isHyperspaceOn}
-        //   >
-        //     +
-        //   </FineButton>
-        //   <ValueLabel>Power: {power}%</ValueLabel>
-        // </SliderContainer>
-  //     </ControlRow>
-
-  //     {/* Action Buttons */}
-  //     <ActionButtonGroup>
-  //       <NeonButton onClick={endTurn}>End Turn</NeonButton>
-        // <NeonButton onClick={toggleHyperspace}>
-        //   Hyperspace{isHyperspaceOn ? ' [On] ' : ' [Off]'}
-        // </NeonButton>
-  //     </ActionButtonGroup>
-  //   </ControlPanelContainer>
-  // );
 };
 
 export default ControlPanel;
