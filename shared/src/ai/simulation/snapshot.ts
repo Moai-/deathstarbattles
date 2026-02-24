@@ -15,6 +15,8 @@ import { ComponentTags, SimSnapshot } from './types';
 import { addComponent, addEntity, hasComponent, ComponentRef } from 'bitecs';
 import { GameWorld } from 'shared/src/ecs/world';
 import { ENTITY_START_CURSOR } from 'shared/src/consts';
+import { AffectedByJets } from 'shared/src/ecs/components/affectedByJets';
+import { HasPolarJets } from 'shared/src/ecs/components/hasPolarJets';
 
 
 export const buildSnapshot = (
@@ -60,6 +62,21 @@ export const buildSnapshot = (
     // Wormhole
     teleportTarget: new Uint32Array(n),
     exitType: new Uint8Array(n),
+
+    // Jets
+    jetStrength: new Float32Array(n),
+    innerRadius: new Float32Array(n),
+    length: new Float32Array(n),
+    tanHalfSpread: new Float32Array(n),
+    spreadRad: new Float32Array(n),
+    dirX: new Float32Array(n),
+    dirY: new Float32Array(n),
+    perpX: new Float32Array(n),
+    perpY: new Float32Array(n),
+    corePow: new Float32Array(n),
+    endFadeFrac: new Float32Array(n), 
+    outerFadeBias: new Float32Array(n),
+    deflectAngleRad: new Float32Array(n),
   };
 
   const has = (component: ComponentRef, eid: number) =>
@@ -78,7 +95,9 @@ export const buildSnapshot = (
       (has(Destructible, src)       ? ComponentTags.Destructible      : 0) | // eslint-disable-line
       (has(Projectile, src)         ? ComponentTags.Projectile        : 0) | // eslint-disable-line
       (has(Active, src)             ? ComponentTags.Active            : 0) | // eslint-disable-line
-      (has(Wormhole, src)           ? ComponentTags.Wormhole          : 0);  // eslint-disable-line
+      (has(Wormhole, src)           ? ComponentTags.Wormhole          : 0) | // eslint-disable-line
+      (has(AffectedByJets, src)     ? ComponentTags.AffectedByJets    : 0) | // eslint-disable-line
+      (has(HasPolarJets, src)       ? ComponentTags.HasPolarJets      : 0);  // eslint-disable-line
 
     snap.radius[i] = Collision.radius[src];
 
@@ -100,6 +119,20 @@ export const buildSnapshot = (
 
     snap.teleportTarget[i] = Wormhole.teleportTarget[src];
     snap.exitType[i] = Wormhole.exitType[src];
+
+    snap.jetStrength[i] = HasPolarJets.jetStrength[src];
+    snap.innerRadius[i] = HasPolarJets.innerRadius[src];
+    snap.length[i] = HasPolarJets.length[src];
+    snap.tanHalfSpread[i] = HasPolarJets.tanHalfSpread[src];
+    snap.spreadRad[i] = HasPolarJets.spreadRad[src];
+    snap.dirX[i] = HasPolarJets.dirX[src];
+    snap.dirY[i] = HasPolarJets.dirY[src];
+    snap.perpX[i] = HasPolarJets.perpX[src];
+    snap.perpY[i] = HasPolarJets.perpY[src];
+    snap.corePow[i] = HasPolarJets.corePow[src];
+    snap.endFadeFrac[i] = HasPolarJets.endFadeFrac[src];
+    snap.outerFadeBias[i] = HasPolarJets.outerFadeBias[src];
+    snap.deflectAngleRad[i] = HasPolarJets.deflectAngleRad[src];
   });
 
   return snap;
@@ -130,6 +163,20 @@ export const buffersOf = (s: SimSnapshot) => [
 
   s.teleportTarget.buffer,
   s.exitType.buffer,
+
+  s.jetStrength.buffer,
+  s.innerRadius.buffer,
+  s.length.buffer,
+  s.tanHalfSpread.buffer,
+  s.spreadRad.buffer,
+  s.dirX.buffer,
+  s.dirY.buffer,
+  s.perpX.buffer,
+  s.perpY.buffer,
+  s.corePow.buffer,
+  s.endFadeFrac.buffer,
+  s.outerFadeBias.buffer,
+  s.deflectAngleRad.buffer,
 ];
 
 // With a world snapshot as input, restore all entities within it and populate them
@@ -165,6 +212,20 @@ export const restoreSnapshot = (snapshot: SimSnapshot, world: GameWorld) => {
     ENTITY_START_CURSOR,
   );
   Wormhole.exitType.set(snapshot.exitType.subarray(0, n), ENTITY_START_CURSOR);
+
+  HasPolarJets.jetStrength.set(snapshot.jetStrength.subarray(0, n), ENTITY_START_CURSOR);
+  HasPolarJets.innerRadius.set(snapshot.innerRadius.subarray(0, n), ENTITY_START_CURSOR);
+  HasPolarJets.length.set(snapshot.length.subarray(0, n), ENTITY_START_CURSOR);
+  HasPolarJets.tanHalfSpread.set(snapshot.tanHalfSpread.subarray(0, n), ENTITY_START_CURSOR);
+  HasPolarJets.spreadRad.set(snapshot.spreadRad.subarray(0, n), ENTITY_START_CURSOR);
+  HasPolarJets.dirX.set(snapshot.dirX.subarray(0, n), ENTITY_START_CURSOR);
+  HasPolarJets.dirY.set(snapshot.dirY.subarray(0, n), ENTITY_START_CURSOR);
+  HasPolarJets.perpX.set(snapshot.perpX.subarray(0, n), ENTITY_START_CURSOR);
+  HasPolarJets.perpY.set(snapshot.perpY.subarray(0, n), ENTITY_START_CURSOR);
+  HasPolarJets.corePow.set(snapshot.corePow.subarray(0, n), ENTITY_START_CURSOR);
+  HasPolarJets.endFadeFrac.set(snapshot.endFadeFrac.subarray(0, n), ENTITY_START_CURSOR);
+  HasPolarJets.outerFadeBias.set(snapshot.outerFadeBias.subarray(0, n), ENTITY_START_CURSOR);
+  HasPolarJets.deflectAngleRad.set(snapshot.deflectAngleRad.subarray(0, n), ENTITY_START_CURSOR);
 
   for (let i = 0; i < n; i++) {
     const eid = snapshot.eid[i];
@@ -215,6 +276,14 @@ export const restoreSnapshot = (snapshot: SimSnapshot, world: GameWorld) => {
 
     if (tag & ComponentTags.Active) {
       addComponent(world, clonedEid, Active);
+    }
+
+    if (tag & ComponentTags.HasPolarJets) {
+      addComponent(world, clonedEid, HasPolarJets);
+    }
+
+    if (tag & ComponentTags.AffectedByJets) {
+      addComponent(world, clonedEid, AffectedByJets);
     }
   }
 

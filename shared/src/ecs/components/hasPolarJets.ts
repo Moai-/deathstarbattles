@@ -2,7 +2,7 @@ import { MAX_ENTITIES } from "shared/src/consts";
 
 export const HasPolarJets = {
   // Base acceleration magnitude
-  strength: new Float32Array(MAX_ENTITIES),
+  jetStrength: new Float32Array(MAX_ENTITIES),
 
   // Geometry
   innerRadius: new Float32Array(MAX_ENTITIES),

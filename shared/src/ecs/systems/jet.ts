@@ -124,7 +124,7 @@ export const createPolarJetSystem = () => {
         const sx = Position.x[sid];
         const sy = Position.y[sid];
 
-        const strength = HasPolarJets.strength[sid];
+        const strength = HasPolarJets.jetStrength[sid];
         const innerRadius = HasPolarJets.innerRadius[sid];
         const length = HasPolarJets.length[sid];
         const tanHalf = HasPolarJets.tanHalfSpread[sid];

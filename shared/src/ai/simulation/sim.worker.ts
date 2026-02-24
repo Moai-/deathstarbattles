@@ -25,6 +25,7 @@ import {
   createGravitySystem,
   createMovementSystem,
   createPathTrackerSystem,
+  createPolarJetSystem,
 } from 'shared/src/ecs/systems';
 import { SimShotResult, TargetCache, TurnInput } from 'shared/src/types';
 import {
@@ -221,6 +222,7 @@ const setupSystems = () => {
   const movementSystem = createMovementSystem();
   const pathTrackerSystem = createPathTrackerSystem();
   const gravitySystem = createGravitySystem();
+  const jetSystem = createPolarJetSystem();
   const collisionSystem = createCollisionSystem();
   const collisionResolverSystem = createCollisionResolverSystem(() => {
     return false;
@@ -233,6 +235,7 @@ const setupSystems = () => {
     movementSystem(world);
     pathTrackerSystem(world);
     gravitySystem(world);
+    jetSystem(world);
     collisionSystem(world);
     collisionResolverSystem(world);
     cleanupSystem(world);

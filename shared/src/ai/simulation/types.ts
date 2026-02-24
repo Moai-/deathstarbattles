@@ -11,6 +11,8 @@ export enum ComponentTags {
   Velocity         = 1 << 7, // eslint-disable-line
   Wormhole         = 1 << 8, // eslint-disable-line
   Active           = 1 << 9, // eslint-disable-line
+  AffectedByJets   = 1 << 10,
+  HasPolarJets     = 1 << 11
 }
 
 export interface SimSnapshot {
@@ -53,6 +55,21 @@ export interface SimSnapshot {
   // Wormhole
   teleportTarget: Uint32Array;
   exitType: Uint8Array;
+
+  // Jets
+  jetStrength: Float32Array;
+  innerRadius: Float32Array;
+  length: Float32Array;
+  tanHalfSpread: Float32Array;
+  spreadRad: Float32Array;
+  dirX: Float32Array;
+  dirY: Float32Array;
+  perpX: Float32Array;
+  perpY: Float32Array;
+  corePow: Float32Array;
+  endFadeFrac: Float32Array;
+  outerFadeBias: Float32Array;
+  deflectAngleRad: Float32Array;
 }
 
 export enum SimMessageType {

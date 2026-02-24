@@ -35,7 +35,7 @@ export const addJets = (eid: number, world: World, opts: AddJetsOpts) => {
   HasPolarJets.tanHalfSpread[eid] = Math.tan(spreadRad * 0.5);
 
   HasPolarJets.deflectAngleRad[eid] = deflect;
-  HasPolarJets.strength[eid] = opts.strength ?? 10;
+  HasPolarJets.jetStrength[eid] = opts.strength ?? 10;
 
   HasPolarJets.corePow[eid] = opts.corePow ?? 3.6;
   HasPolarJets.endFadeFrac[eid] = opts.endFadeFrac ?? 0.22;
