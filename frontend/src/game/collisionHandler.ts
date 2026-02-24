@@ -1,4 +1,4 @@
-import { GameWorld } from 'shared/src/ecs/world';
+import type { GameWorld } from 'shared/src/ecs/world';
 import Explosion, {
   laserCols,
   stationCols,

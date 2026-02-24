@@ -21,6 +21,11 @@ import { query, getAllEntities, removeEntity, resetWorld } from 'bitecs';
 import { Position } from 'shared/src/ecs/components';
 import { gameBus, GameEvents } from 'src/util';
 
+enum PointerMode {
+  SELECT_ENTITY,
+  ADD_ENTITY,
+}
+
 export default class EditorManager {
   // globals
   private scene: EditorScene;
@@ -33,6 +38,9 @@ export default class EditorManager {
   private projectileManager: ProjectileManager;
   private objectManager: GameObjectManager;
   private simManager: SimManager;
+
+  // editor state
+  private pointerMode: PointerMode = PointerMode.SELECT_ENTITY;
 
   private static posQuery = [Position];
 
@@ -161,7 +169,7 @@ export default class EditorManager {
   }
 
   private clearECS() {
-    getAllEntities(this.world).forEach((ent) => removeEntity(this.world, ent));
+    getAllEntities(this.world).forEach((ent) => void(removeEntity(this.world, ent)));
   }
 
   getGameState() {
