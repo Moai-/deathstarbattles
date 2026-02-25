@@ -18,6 +18,11 @@ export class GameObjectManager {
     queueMicrotask(() => this.objects.set(eid, this.renderEntity(eid)));
   }
 
+  refreshObject(eid: number) {
+    this.removeObject(eid);
+    this.createObject(eid);
+  }
+
   getObject(eid: number) {
     return this.objects.get(eid);
   }
@@ -160,7 +165,6 @@ export class GameObjectManager {
 
   private renderEntity(eid: number) {
     const renderType = getType(eid);
-    console.log('rendering eid %s of type %s', eid, renderType)
     return renderMap[renderType](this.scene, eid);
   }
 }

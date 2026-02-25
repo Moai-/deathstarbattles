@@ -1,3 +1,5 @@
+import { addComponent, addEntity, createWorld, getComponent } from "bitecs";
+
 // https://stackoverflow.com/questions/1349404/generate-a-string-of-random-characters
 export function makeId(length = 5) {
   let result = '';

@@ -18,7 +18,7 @@ const GameStateContext = createContext<GameStateContextProps | undefined>(
 export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [gameState, setGameState] = useState<GameState>(GameState.MAIN_MENU);
+  const [gameState, setGameState] = useState<GameState>(GameState.EDITOR);
   const [winnerData, setWinnerData] = useState<WinnerData | null>(null);
   useEffect(() => {
     if (gameState === GameState.INGAME) {

@@ -11,3 +11,5 @@ export { Velocity } from './velocity';
 export { Wormhole } from './wormhole';
 export { Player } from './player';
 export { Active } from './active';
+export { HasPolarJets } from './hasPolarJets';
+export { AffectedByJets } from './affectedByJets';

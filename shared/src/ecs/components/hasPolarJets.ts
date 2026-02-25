@@ -1,4 +1,5 @@
 import { MAX_ENTITIES } from "shared/src/consts";
+import { nameComponent } from 'shared/src/utils';
 
 export const HasPolarJets = {
   // Base acceleration magnitude
@@ -24,3 +25,5 @@ export const HasPolarJets = {
   // Deflection angle
   deflectAngleRad: new Float32Array(MAX_ENTITIES),
 };
+
+nameComponent(HasPolarJets, 'HasPolarJets');

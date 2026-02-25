@@ -6,7 +6,7 @@ import { Projectile } from '../ecs/components/projectile';
 import { ExitTypes, Wormhole } from '../ecs/components/wormhole';
 import { GameWorld } from '../ecs/world';
 import { AnyPoint, GameObject, ObjectTypes } from '../types';
-import { Active, Destructible, HyperLocus } from '../ecs/components';
+import { collidingEntities,locusEntities, targetEntities } from '../ecs/components/_queries';
 
 export const getRadius = (eid: number) => Collision.radius[eid];
 
@@ -46,10 +46,7 @@ export const scrambleWormhole = (eid: number) => {
   Wormhole.teleportTarget[eid] = 0;
 };
 
-const collidingEntities = [Collision, Position, Active];
 export const getColliders = (world: GameWorld) => query(world, collidingEntities) as Array<number>;
-
-const targetEntities = [Collision, Position, Destructible, Active];
 export const getTargets = (world: GameWorld) => query(world, targetEntities) as Array<number>;
 
 export const getAllObjects: (world: GameWorld) => Array<GameObject> = (world: GameWorld) => {
@@ -61,8 +58,6 @@ export const getAllObjects: (world: GameWorld) => Array<GameObject> = (world: Ga
     eid,
   }))
 }
-
-const locusEntities = [HyperLocus, Active];
 
 export const getHyperLocus = (world: GameWorld) => {
   const [locus] = query(world, locusEntities);

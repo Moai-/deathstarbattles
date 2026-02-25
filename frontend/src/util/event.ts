@@ -1,5 +1,6 @@
 import mitt from 'mitt';
 import { AnyPoint, GameConfig, OtherActions } from 'shared/src/types';
+import { SerializedEntity } from 'shared/src/utils';
 
 export enum GameEvents {
   END_TURN = 'endturn',
@@ -18,6 +19,7 @@ export enum GameEvents {
   // Editor stuff
   ED_ADD_ENTITY = 'ed_addentity',
   ED_ENTITY_CLICKED = 'ed_entityclicked',
+  ED_UI_PROP_CHANGED = 'ed_ui_propchanged'
 }
 
 type WinnerData = { col: number; playerId: number };
@@ -32,6 +34,18 @@ type DebugPath = {
   paths: Array<Array<AnyPoint>>;
   colour: number;
 };
+
+export type SelectionClick = {
+  clickLoc: AnyPoint,
+  entities: Array<SerializedEntity>
+}
+
+export type PropChanged = {
+  eid: number,
+  compIdx: number,
+  propName: string,
+  newVal: number,
+}
 
 type EventData = {
   [GameEvents.END_TURN]: void;
@@ -49,7 +63,8 @@ type EventData = {
 
   // Editor stuff
   [GameEvents.ED_ADD_ENTITY]: void;
-  [GameEvents.ED_ENTITY_CLICKED]: Array<number>; // list of entities in the clicked area
+  [GameEvents.ED_ENTITY_CLICKED]: SelectionClick;
+  [GameEvents.ED_UI_PROP_CHANGED]: PropChanged;
   
 };
 

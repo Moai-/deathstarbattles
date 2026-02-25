@@ -39,7 +39,6 @@ export const createDeathStar = (
   Position.y[eid] = y;
   Collision.radius[eid] = DEFAULT_DEATHSTAR_RADIUS;
   ObjectInfo.type[eid] = ObjectTypes.DEATHSTAR;
-  console.log('death star %s object info type set to', eid, ObjectInfo.type[eid]);
   Renderable.col[eid] = colToUi32(color);
 
   const projEid = addEntity(world);
