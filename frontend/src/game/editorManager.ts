@@ -18,7 +18,7 @@ import {
 import { SimManager } from 'shared/src/ai/simulation/manager';
 import { EditorScene } from './editorScene';
 import { createRandomAsteroid } from 'src/entities/asteroid';
-import { query, getAllEntities, removeEntity, resetWorld } from 'bitecs';
+import { query, getAllEntities, removeEntity, getEntityComponents } from 'bitecs';
 import { Position } from 'shared/src/ecs/components';
 import { gameBus, GameEvents } from 'src/util';
 
@@ -42,7 +42,6 @@ export default class EditorManager {
 
   // editor state
   private pointerMode: PointerMode = PointerMode.SELECT_ENTITY;
-  private selectedEntities: Array<number> = [];
 
   private static posQuery = [Position];
 
@@ -81,7 +80,7 @@ export default class EditorManager {
 
   addEntity() {
     const eid = createRandomAsteroid(this.world);
-    setPosition(eid, {x: 500, y: 500})
+    setPosition(eid, {x: Math.random() * 1920, y: Math.random() * 1080})
   }
 
   onCollision(eid1: number, eid2: number, wasDestroyed: boolean) {
@@ -118,7 +117,11 @@ export default class EditorManager {
           overlappingEntities.push(entity);
         }
       }
-      this.selectedEntities = overlappingEntities;
+      const payload = {
+        clickLoc: {x: pointer.x, y: pointer.y}, 
+        entities: overlappingEntities.map((eid) => serializeComponents(this.world, eid))
+      }
+      gameBus.emit(GameEvents.ED_ENTITY_CLICKED, payload)
     }
   }
 
@@ -127,13 +130,7 @@ export default class EditorManager {
   }
 
   private handlePointerUp(pointer: Phaser.Input.Pointer) {
-    if (this.pointerMode === PointerMode.SELECT_ENTITY) {
-      const payload = {
-        clickLoc: {x: pointer.x, y: pointer.y}, 
-        entities: this.selectedEntities.map((eid) => serializeComponents(this.world, eid))
-      }
-      gameBus.emit(GameEvents.ED_ENTITY_CLICKED, payload)
-    }
+
   }
 
   private setUpListeners() {
@@ -164,7 +161,14 @@ export default class EditorManager {
     this.indicator.setAnglePowerListener((angle, power) =>
       this.inputHandler.setAnglePower(angle, power),
     );
-
+    gameBus.on(GameEvents.ED_UI_PROP_CHANGED, (propChanged) => {
+      const {eid, compIdx, propName, newVal} = propChanged;
+      const thisComp = getEntityComponents(this.world, eid)[compIdx];
+      if (thisComp) {
+        thisComp[propName][eid] = newVal;
+        this.objectManager.refreshObject(eid);
+      }
+    })
   }
 
   private clearListeners() {
@@ -175,6 +179,7 @@ export default class EditorManager {
     this.inputHandler.setOnEndTurnCallback(noop);
     this.indicator.setAnglePowerListener(noop);
     this.indicator.setGetTargetIdCallback(() => 0);
+    gameBus.off(GameEvents.ED_UI_PROP_CHANGED);
     this.disableClickListeners();
   }
 

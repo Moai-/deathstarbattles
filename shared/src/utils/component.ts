@@ -22,13 +22,15 @@ export function getComponentName(component: object): string | undefined {
 
 export type SerializedComponent = {
   key: string;
-  props: unknown;
+  props: {
+    [key: string]: number | any;
+  };
 };
 
 export type SerializedEntity = {
   eid: number;
   name: string;
-  components: SerializedComponent[];
+  components: Array<SerializedComponent>;
 };
 
 function isTypedArray(v: any): v is ArrayBufferView {
