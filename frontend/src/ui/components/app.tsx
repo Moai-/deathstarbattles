@@ -6,7 +6,7 @@ import WinrarScreen from './winrar';
 import { SetupScreen } from './basicSetup';
 import { GameStateProvider, useGameState } from './context';
 import { useUiInsets } from '../hooks/useUiInsets';
-import { EditorScreen } from './editor/editor';
+import { EditorScreen } from './editor';
 
 const App: React.FC = () => {
   useUiInsets();

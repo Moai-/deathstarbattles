@@ -2,44 +2,6 @@ import mitt from 'mitt';
 import { AnyPoint, GameConfig, ObjectTypes, OtherActions } from 'shared/src/types';
 import { SerializedEntity } from 'shared/src/utils';
 
-export enum GameEvents {
-  // Game stuff
-  END_TURN = 'endturn',
-  ANGLE_POWER_GAME = 'apgame',
-  ANGLE_POWER_UI = 'apui',
-  OTHER_ACTION_UI = 'otheractionui',
-  OTHER_ACTION_GAME = 'otheractiongame',
-  SET_VOLUME = 'setvolume',
-  SCENE_LOADED = 'sceneloaded',
-  START_GAME = 'startgame',
-  GAME_END = 'gameend',
-  GAME_LOADED = 'gameloaded',
-  GAME_REMOVED = 'gameremoved',
-  DEBUG_DRAW_PATH = 'debugdrawpath',
-
-  // Editor stuff
-  ED_ADD_ENTITY = 'ed_addentity',
-  ED_ENTITY_CLICKED = 'ed_entityclicked',
-  ED_UI_PROP_CHANGED = 'ed_ui_propchanged',
-  ED_UI_DELETE_ENTITY = 'ed_ui_deleteentity',
-  ED_PH_DELETE_ENTITY = 'ed_ph_deleteentity',
-  ED_UI_REMOVE_COMPONENT = 'ed_ui_removecomponent',
-  ED_PH_COMPONENT_REMOVED = 'ed_ph_componentremoved',
-
-  // Editor placement (ghost-follow-cursor then place / abort)
-  ED_UI_START_PLACE_ENTITY = 'ed_ui_startplaceentity',
-  ED_UI_START_MOVE_ENTITY = 'ed_ui_startmoveentity',
-  ED_UI_ABORT_PLACE = 'ed_ui_abortplace',
-  ED_PH_ABORT_PLACE = 'ed_ph_abortplace',
-
-  // Editor fire shot (Death Star)
-  ED_UI_START_FIRE_SHOT = 'ed_ui_startfireshot',
-  ED_FIRE_SHOT_READY = 'ed_fireshotready',
-  ED_UI_FIRE_SHOT_CONFIRM = 'ed_ui_fireshotconfirm',
-  ED_UI_FIRE_SHOT_CANCEL = 'ed_ui_fireshotcancel',
-  ED_FIRE_MODE_EXITED = 'ed_firemodeexited',
-}
-
 type WinnerData = { col: number; playerId: number };
 
 type GameVolume = {
@@ -76,7 +38,7 @@ export type ComponentRemovedPayload = {
 export type PropChanged = EntityIdPayload & {
   compIdx: number,
   propName: string,
-  newVal: number,
+  newVal: unknown,
 }
 
 export type AddEntityPayload = {
@@ -112,22 +74,66 @@ export type FireShotConfirmPayload = {
   power: number
 }
 
+export enum GameEvents {
+  // === Game stuff ===
+  // controls
+  ANGLE_POWER_GAME = 'apgame',
+  ANGLE_POWER_UI = 'apui',
+  OTHER_ACTION_UI = 'otheractionui',
+  OTHER_ACTION_GAME = 'otheractiongame',
+  SET_VOLUME = 'setvolume',
+  // lifecycle
+  SCENE_LOADED = 'sceneloaded',
+  START_GAME = 'startgame',
+  GAME_LOADED = 'gameloaded',
+  GAME_REMOVED = 'gameremoved',
+  GAME_END = 'gameend',
+  // in-game events
+  END_TURN = 'endturn',
+  DEBUG_DRAW_PATH = 'debugdrawpath',
+
+  // === Editor stuff ===
+  // ECS general management
+  ED_ADD_ENTITY = 'ed_addentity',
+  ED_ENTITY_CLICKED = 'ed_entityclicked',
+  ED_UI_PROP_CHANGED = 'ed_ui_propchanged',
+  ED_UI_DELETE_ENTITY = 'ed_ui_deleteentity',
+  ED_PH_DELETE_ENTITY = 'ed_ph_deleteentity',
+  ED_UI_REMOVE_COMPONENT = 'ed_ui_removecomponent',
+  ED_PH_COMPONENT_REMOVED = 'ed_ph_componentremoved',
+  // Entity placement
+  ED_UI_START_PLACE_ENTITY = 'ed_ui_startplaceentity',
+  ED_UI_START_MOVE_ENTITY = 'ed_ui_startmoveentity',
+  ED_UI_ABORT_PLACE = 'ed_ui_abortplace',
+  ED_PH_ABORT_PLACE = 'ed_ph_abortplace',
+  // Fire shot
+  ED_UI_START_FIRE_SHOT = 'ed_ui_startfireshot',
+  ED_FIRE_SHOT_READY = 'ed_fireshotready',
+  ED_UI_FIRE_SHOT_CONFIRM = 'ed_ui_fireshotconfirm',
+  ED_UI_FIRE_SHOT_CANCEL = 'ed_ui_fireshotcancel',
+  ED_FIRE_MODE_EXITED = 'ed_firemodeexited',
+}
+
 type EventData = {
-  // Game stuff
-  [GameEvents.END_TURN]: void;
+  // === Game stuff ===
+  // controls
   [GameEvents.ANGLE_POWER_UI]: { angle: number; power: number };
   [GameEvents.ANGLE_POWER_GAME]: { angle: number; power: number };
   [GameEvents.OTHER_ACTION_UI]: OtherActions;
   [GameEvents.OTHER_ACTION_GAME]: OtherActions;
-  [GameEvents.GAME_END]: Array<WinnerData>; // List of winners in case if there's multiple
-  [GameEvents.START_GAME]: GameConfig;
+  [GameEvents.SET_VOLUME]: GameVolume;
+  // lifecycle
   [GameEvents.SCENE_LOADED]: void;
+  [GameEvents.START_GAME]: GameConfig;
   [GameEvents.GAME_REMOVED]: void;
   [GameEvents.GAME_LOADED]: void;
-  [GameEvents.SET_VOLUME]: GameVolume;
+  [GameEvents.GAME_END]: Array<WinnerData>;
+  // in-game events
+  [GameEvents.END_TURN]: void;
   [GameEvents.DEBUG_DRAW_PATH]: DebugPath;
 
-  // Editor stuff
+  // === Editor stuff ===
+  // ECS general management
   [GameEvents.ED_ADD_ENTITY]: AddEntityPayload;
   [GameEvents.ED_ENTITY_CLICKED]: SelectionClick;
   [GameEvents.ED_UI_PROP_CHANGED]: PropChanged;
@@ -135,10 +141,12 @@ type EventData = {
   [GameEvents.ED_PH_DELETE_ENTITY]: EntityIdPayload;
   [GameEvents.ED_UI_REMOVE_COMPONENT]: RemoveComponentPayload;
   [GameEvents.ED_PH_COMPONENT_REMOVED]: ComponentRemovedPayload;
+  // Entity placement
   [GameEvents.ED_UI_START_PLACE_ENTITY]: StartPlaceEntityPayload;
   [GameEvents.ED_UI_START_MOVE_ENTITY]: StartMoveEntityPayload;
   [GameEvents.ED_UI_ABORT_PLACE]: void;
   [GameEvents.ED_PH_ABORT_PLACE]: void;
+  // Fire shot
   [GameEvents.ED_UI_START_FIRE_SHOT]: StartFireShotPayload;
   [GameEvents.ED_FIRE_SHOT_READY]: FireShotReadyPayload;
   [GameEvents.ED_UI_FIRE_SHOT_CONFIRM]: FireShotConfirmPayload;
