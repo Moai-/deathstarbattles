@@ -23,12 +23,21 @@ export enum GameEvents {
   ED_UI_PROP_CHANGED = 'ed_ui_propchanged',
   ED_UI_DELETE_ENTITY = 'ed_ui_deleteentity',
   ED_PH_DELETE_ENTITY = 'ed_ph_deleteentity',
+  ED_UI_REMOVE_COMPONENT = 'ed_ui_removecomponent',
+  ED_PH_COMPONENT_REMOVED = 'ed_ph_componentremoved',
 
   // Editor placement (ghost-follow-cursor then place / abort)
   ED_UI_START_PLACE_ENTITY = 'ed_ui_startplaceentity',
   ED_UI_START_MOVE_ENTITY = 'ed_ui_startmoveentity',
   ED_UI_ABORT_PLACE = 'ed_ui_abortplace',
   ED_PH_ABORT_PLACE = 'ed_ph_abortplace',
+
+  // Editor fire shot (Death Star)
+  ED_UI_START_FIRE_SHOT = 'ed_ui_startfireshot',
+  ED_FIRE_SHOT_READY = 'ed_fireshotready',
+  ED_UI_FIRE_SHOT_CONFIRM = 'ed_ui_fireshotconfirm',
+  ED_UI_FIRE_SHOT_CANCEL = 'ed_ui_fireshotcancel',
+  ED_FIRE_MODE_EXITED = 'ed_firemodeexited',
 }
 
 type WinnerData = { col: number; playerId: number };
@@ -53,6 +62,17 @@ export type EntityIdPayload = {
   eid: number,
 }
 
+export type RemoveComponentPayload = {
+  eid: number
+  compKey: string
+}
+
+export type ComponentRemovedPayload = {
+  eid: number
+  name: string
+  components: SerializedEntity['components']
+}
+
 export type PropChanged = EntityIdPayload & {
   compIdx: number,
   propName: string,
@@ -71,7 +91,26 @@ export type StartMoveEntityPayload = {
   eid: number
 }
 
+export type StartFireShotPayload = {
+  eid: number
+  x: number
+  y: number
+}
 
+export type FireShotReadyPayload = {
+  eid: number
+  x: number
+  y: number
+  indicatorRadius: number
+  initialAngle: number
+  initialPower: number
+}
+
+export type FireShotConfirmPayload = {
+  eid: number
+  angle: number
+  power: number
+}
 
 type EventData = {
   // Game stuff
@@ -94,10 +133,17 @@ type EventData = {
   [GameEvents.ED_UI_PROP_CHANGED]: PropChanged;
   [GameEvents.ED_UI_DELETE_ENTITY]: EntityIdPayload;
   [GameEvents.ED_PH_DELETE_ENTITY]: EntityIdPayload;
+  [GameEvents.ED_UI_REMOVE_COMPONENT]: RemoveComponentPayload;
+  [GameEvents.ED_PH_COMPONENT_REMOVED]: ComponentRemovedPayload;
   [GameEvents.ED_UI_START_PLACE_ENTITY]: StartPlaceEntityPayload;
   [GameEvents.ED_UI_START_MOVE_ENTITY]: StartMoveEntityPayload;
   [GameEvents.ED_UI_ABORT_PLACE]: void;
   [GameEvents.ED_PH_ABORT_PLACE]: void;
+  [GameEvents.ED_UI_START_FIRE_SHOT]: StartFireShotPayload;
+  [GameEvents.ED_FIRE_SHOT_READY]: FireShotReadyPayload;
+  [GameEvents.ED_UI_FIRE_SHOT_CONFIRM]: FireShotConfirmPayload;
+  [GameEvents.ED_UI_FIRE_SHOT_CANCEL]: void;
+  [GameEvents.ED_FIRE_MODE_EXITED]: void;
 };
 
 export const gameBus = mitt<EventData>();

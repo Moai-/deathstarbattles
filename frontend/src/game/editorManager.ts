@@ -9,6 +9,7 @@ import {
 } from 'shared/src/types';
 import {
   doCirclesOverlap,
+  getComponentName,
   getPosition,
   getRadius,
   noop,
@@ -19,10 +20,13 @@ import { NULL_ENTITY } from 'shared/src/ecs/world';
 import { SimManager } from 'shared/src/ai/simulation/manager';
 import { EditorScene } from './editorScene';
 import { createRandom } from 'src/entities';
-import { query, getAllEntities, removeEntity, getEntityComponents } from 'bitecs';
+import { query, getAllEntities, removeEntity, getEntityComponents, removeComponent } from 'bitecs';
 import { ObjectTypes } from 'shared/src/types';
 import { Position } from 'shared/src/ecs/components';
+import { Collision } from 'shared/src/ecs/components';
 import { gameBus, GameEvents } from 'src/util';
+import { getSoundManager } from './resourceScene';
+import * as ecsComponents from 'shared/src/ecs/components';
 
 type PlacementState =
   | { mode: 'add'; objectType: ObjectTypes; ghostEid: number }
@@ -45,6 +49,11 @@ export default class EditorManager {
   // editor state
   private placementState: PlacementState = null;
   private escapeKey: Phaser.Input.Keyboard.Key | null = null;
+  /** When set, we are in "fire shot" mode for this Death Star eid. */
+  private firingFromEid: number | null = null;
+  /** Persisted angle/power between firing shots. */
+  private lastAngle = 90;
+  private lastPower = 50;
 
   private static posQuery = [Position];
 
@@ -82,11 +91,15 @@ export default class EditorManager {
     this.escapeKey = this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) ?? null;
   }
 
-  /** Called from EditorScene each frame; handles Escape to abort placement. */
+  /** Called from EditorScene each frame; handles Escape to abort placement or fire mode. */
   update() {
-    if (this.placementState && this.escapeKey?.isDown) {
-      this.abortPlacement();
-      gameBus.emit(GameEvents.ED_PH_ABORT_PLACE);
+    if (this.escapeKey?.isDown) {
+      if (this.placementState) {
+        this.abortPlacement();
+        gameBus.emit(GameEvents.ED_PH_ABORT_PLACE);
+      } else if (this.firingFromEid !== null) {
+        this.exitFireMode();
+      }
     }
   }
 
@@ -233,6 +246,9 @@ export default class EditorManager {
       removeEntity(this.world, eid);
       gameBus.emit(GameEvents.ED_PH_DELETE_ENTITY, { eid });
     });
+    gameBus.on(GameEvents.ED_UI_REMOVE_COMPONENT, ({ eid, compKey }) => {
+      this.removeEntityComponent(eid, compKey);
+    });
 
     gameBus.on(GameEvents.ED_UI_START_PLACE_ENTITY, ({ objectType }) => {
       this.startPlaceEntity(objectType);
@@ -243,6 +259,11 @@ export default class EditorManager {
     const onAbortPlace = () => this.abortPlacement();
     gameBus.on(GameEvents.ED_UI_ABORT_PLACE, onAbortPlace);
     gameBus.on(GameEvents.ED_PH_ABORT_PLACE, onAbortPlace);
+    gameBus.on(GameEvents.ED_UI_START_FIRE_SHOT, ({ eid }) => this.startFireShot(eid));
+    gameBus.on(GameEvents.ED_UI_FIRE_SHOT_CONFIRM, ({ eid, angle, power }) =>
+      this.confirmFireShot(eid, angle, power),
+    );
+    gameBus.on(GameEvents.ED_UI_FIRE_SHOT_CANCEL, () => this.exitFireMode());
   }
 
   private clearListeners() {
@@ -255,10 +276,14 @@ export default class EditorManager {
     this.indicator.setGetTargetIdCallback(() => 0);
     gameBus.off(GameEvents.ED_UI_PROP_CHANGED);
     gameBus.off(GameEvents.ED_UI_DELETE_ENTITY);
+    gameBus.off(GameEvents.ED_UI_REMOVE_COMPONENT);
     gameBus.off(GameEvents.ED_UI_START_PLACE_ENTITY);
     gameBus.off(GameEvents.ED_UI_START_MOVE_ENTITY);
     gameBus.off(GameEvents.ED_UI_ABORT_PLACE);
     gameBus.off(GameEvents.ED_PH_ABORT_PLACE);
+    gameBus.off(GameEvents.ED_UI_START_FIRE_SHOT);
+    gameBus.off(GameEvents.ED_UI_FIRE_SHOT_CONFIRM);
+    gameBus.off(GameEvents.ED_UI_FIRE_SHOT_CANCEL);
     this.disableClickListeners();
   }
 
@@ -270,5 +295,77 @@ export default class EditorManager {
     return {
       lastTurnShots: this.world.movements,
     } as GameState;
+  }
+
+  /** Enter fire-shot mode: show Phaser indicator for the given Death Star eid. */
+  private startFireShot(eid: number) {
+    this.firingFromEid = eid;
+    this.indicator.radius = 30 * (Collision.radius[eid] / 8);
+    this.indicator.setGetTargetIdCallback(() => this.firingFromEid ?? 0);
+    this.indicator.drawIndicator();
+    this.syncAnglePower(this.lastAngle, this.lastPower);
+    const { x, y } = getPosition(eid);
+    gameBus.emit(GameEvents.ED_FIRE_SHOT_READY, {
+      eid,
+      x,
+      y,
+      indicatorRadius: this.indicator.radius,
+      initialAngle: this.lastAngle,
+      initialPower: this.lastPower,
+    });
+  }
+
+  /** Sync angle/power to input handler and indicator (same as game). */
+  private syncAnglePower(angle: number, power: number) {
+    this.inputHandler.setAnglePower(angle, power);
+    this.indicator.updateVector(angle, power);
+  }
+
+  /** Fire the shot, remove indicator, play sound, exit fire mode. */
+  private confirmFireShot(eid: number, angle: number, power: number) {
+    this.lastAngle = angle;
+    this.lastPower = power;
+    this.objectManager.removeAllChildren();
+    this.projectileManager.fireFrom(eid, angle, power);
+    this.exitFireMode();
+    const sm = getSoundManager(this.scene);
+    sm.playSound('laserShot');
+    sm.playSound('elecTravelHum');
+  }
+
+  /** Remove indicator and clear fire mode; notify UI. */
+  private exitFireMode() {
+    this.indicator.removeIndicator();
+    this.firingFromEid = null;
+    this.indicator.setGetTargetIdCallback(() => 0);
+    gameBus.emit(GameEvents.ED_FIRE_MODE_EXITED);
+  }
+
+  private static componentByName: Record<string, object> | null = null;
+
+  private static getComponentByName(key: string): object | undefined {
+    if (EditorManager.componentByName === null) {
+      EditorManager.componentByName = {};
+      for (const comp of Object.values(ecsComponents)) {
+        if (comp && typeof comp === 'object') {
+          const name = getComponentName(comp as object);
+          if (name) EditorManager.componentByName[name] = comp as object;
+        }
+      }
+    }
+    return EditorManager.componentByName[key];
+  }
+
+  private removeEntityComponent(eid: number, compKey: string) {
+    const comp = EditorManager.getComponentByName(compKey);
+    if (!comp) return;
+    removeComponent(this.world, eid, comp);
+    this.objectManager.refreshObject(eid);
+    const serialized = serializeComponents(this.world, eid);
+    gameBus.emit(GameEvents.ED_PH_COMPONENT_REMOVED, {
+      eid,
+      name: serialized.name,
+      components: serialized.components,
+    });
   }
 }

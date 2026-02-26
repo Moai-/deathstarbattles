@@ -16,13 +16,18 @@ import { createLocus } from './hyperLocus';
 import { createRandomTunnelLocus } from './tunnelLocus';
 import { createRandomNeutronStar } from './neutronStar';
 import { createRandomJetBlackHole } from './jetBlackHole';
+import { createDeathStar } from './deathStar';
+import { playerCols } from 'shared/src/utils';
 
 const none = () => NULL_ENTITY;
 
+export const createRandomDeathStar = (world: GameWorld) =>
+  createDeathStar(world, 0, 0, playerCols[0]);
+
 export const createRandom: Record<ObjectTypes, (world: GameWorld) => number> = {
-  // These three do not get created randomly
+  // These two do not get created from the editor
   [ObjectTypes.NONE]: none,
-  [ObjectTypes.DEATHSTAR]: none,
+  [ObjectTypes.DEATHSTAR]: createRandomDeathStar,
   [ObjectTypes.DEATHBEAM]: none,
   // Random object generation index
   [ObjectTypes.ASTEROID]: createRandomAsteroid,

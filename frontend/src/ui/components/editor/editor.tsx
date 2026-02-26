@@ -7,6 +7,7 @@ import { SerializedComponent, SerializedEntity } from "shared/src/utils";
 import { BASE_HEIGHT, BASE_WIDTH } from "shared/src/consts";
 import { ObjectTypes } from "shared/src/types";
 import { SelectionMenu } from "./SelectionMenu";
+import { stopEditorScene } from "src/game";
 
 export type ClickLoc = { x: number; y: number };
 
@@ -74,6 +75,52 @@ export function computeAnchoredMenuPos(clickLocCanvas: ClickLoc, menuW = 220, me
   };
 }
 
+const PAD = 8;
+const FIRING_PANEL_GAP = 5;
+
+/** Panel position ~5px below the firing indicator bottom; if that would go off-screen, place above. */
+export function computeFiringPanelPosition(
+  deathStarCanvasX: number,
+  deathStarCanvasY: number,
+  indicatorRadius: number,
+  panelW: number,
+  panelH: number
+): { x: number; y: number } {
+  const rect = getCanvasRect();
+  if (!rect) return { x: PAD, y: PAD };
+
+  const scaleX = rect.width / BASE_WIDTH;
+  const scaleY = rect.height / BASE_HEIGHT;
+
+  const centerPageX = rect.left + deathStarCanvasX * scaleX;
+  const centerPageY = rect.top + deathStarCanvasY * scaleY;
+  const indicatorBottomPageY = centerPageY + indicatorRadius * scaleY;
+
+  const left = centerPageX - panelW / 2;
+  const maxX = window.innerWidth - panelW - PAD;
+  const minX = PAD;
+  const clampedLeft = clamp(left, minX, maxX);
+
+  const topBelow = indicatorBottomPageY + FIRING_PANEL_GAP;
+  const topAbove = centerPageY - indicatorRadius * scaleY - FIRING_PANEL_GAP - panelH;
+
+  const wouldGoBelow = topBelow + panelH > window.innerHeight - PAD;
+  const wouldGoAbove = topAbove < PAD;
+
+  let y: number;
+  if (wouldGoBelow && !wouldGoAbove) {
+    y = topAbove;
+  } else if (wouldGoAbove && !wouldGoBelow) {
+    y = topBelow;
+  } else if (wouldGoBelow && wouldGoAbove) {
+    y = clamp(topBelow, PAD, window.innerHeight - panelH - PAD);
+  } else {
+    y = topBelow;
+  }
+
+  return { x: clampedLeft, y: clamp(y, PAD, window.innerHeight - panelH - PAD) };
+}
+
 export function useOutsideClick(
   refs: React.RefObject<HTMLElement>[],
   onOutside: () => void,
@@ -97,7 +144,137 @@ const DEFAULT_WINDOW_WIDTH = 360;
 const DEFAULT_WINDOW_HEIGHT = 260;
 const COLLAPSED_HEIGHT = 35;
 
-const ADD_ENTITY_EXCLUDED = ["NONE", "DEATHSTAR", "DEATHBEAM"];
+const ADD_ENTITY_EXCLUDED = ["NONE", "DEATHBEAM"];
+
+const FIRING_PANEL_WIDTH = 270;
+const FIRING_PANEL_HEIGHT = 160;
+
+/** Minimal angle (‑180..180) and power (20..100) controls plus Fire/Cancel, for editor Death Star shot. Draggable. */
+function FiringPanel(props: {
+  position: { x: number; y: number };
+  eid: number;
+  initialAngle: number;
+  initialPower: number;
+  onFire: (eid: number, angle: number, power: number) => void;
+  onCancel: () => void;
+  onMove: (x: number, y: number) => void;
+}) {
+  const { position, eid, initialAngle, initialPower, onFire, onCancel, onMove } = props;
+  const [angle, setAngle] = useState(initialAngle);
+  const [power, setPower] = useState(initialPower);
+  const draggingRef = useRef(false);
+  const dragOffsetRef = useRef({ dx: 0, dy: 0 });
+  const onMoveRef = useRef(onMove);
+  onMoveRef.current = onMove;
+
+  const emitAnglePower = useCallback(() => {
+    gameBus.emit(GameEvents.ANGLE_POWER_UI, { angle, power });
+  }, [angle, power]);
+
+  useEffect(() => {
+    emitAnglePower();
+  }, [angle, power, emitAnglePower]);
+
+  useEffect(() => {
+    const handler = ({ angle: a, power: p }: { angle: number; power: number }) => {
+      setAngle(Math.trunc(a));
+      setPower(Math.trunc(p));
+    };
+    gameBus.on(GameEvents.ANGLE_POWER_GAME, handler);
+    return () => gameBus.off(GameEvents.ANGLE_POWER_GAME, handler);
+  }, []);
+
+  useEffect(() => {
+    const onMoveMouse = (e: MouseEvent) => {
+      if (draggingRef.current) {
+        const nx = e.clientX - dragOffsetRef.current.dx;
+        const ny = e.clientY - dragOffsetRef.current.dy;
+        const pad = 6;
+        const maxX = window.innerWidth - FIRING_PANEL_WIDTH - pad;
+        const maxY = window.innerHeight - FIRING_PANEL_HEIGHT - pad;
+        onMoveRef.current(clamp(nx, pad, maxX), clamp(ny, pad, maxY));
+      }
+    };
+    const onUp = () => { draggingRef.current = false; };
+    window.addEventListener("mousemove", onMoveMouse);
+    window.addEventListener("mouseup", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMoveMouse);
+      window.removeEventListener("mouseup", onUp);
+    };
+  }, []);
+
+  const onMouseDownBar = (e: React.MouseEvent) => {
+    draggingRef.current = true;
+    dragOffsetRef.current = { dx: e.clientX - position.x, dy: e.clientY - position.y };
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        left: position.x,
+        top: position.y,
+        width: FIRING_PANEL_WIDTH,
+        border: "1px solid #999",
+        background: "white",
+        padding: 0,
+        zIndex: 999,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div
+        onMouseDown={onMouseDownBar}
+        style={{
+          cursor: "move",
+          userSelect: "none",
+          padding: "6px 8px",
+          borderBottom: "1px solid #ddd",
+          fontWeight: 600,
+        }}
+      >
+        Fire shot
+      </div>
+      <div style={{ padding: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+          <span style={{ width: 44 }}>Angle</span>
+          <input
+            type="range"
+            min={-180}
+            max={180}
+            value={angle}
+            onChange={(e) => setAngle(Number(e.target.value))}
+            style={{ flex: 1 }}
+          />
+          <span style={{ minWidth: 36, textAlign: "right" }}>{angle}°</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+          <span style={{ width: 44 }}>Power</span>
+          <input
+            type="range"
+            min={20}
+            max={100}
+            value={power}
+            onChange={(e) => setPower(Number(e.target.value))}
+            style={{ flex: 1 }}
+          />
+          <span style={{ minWidth: 36, textAlign: "right" }}>{power}%</span>
+        </div>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button type="button" onClick={() => onFire(eid, angle, power)}>
+            Fire
+          </button>
+          <button type="button" onClick={onCancel}>
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function getCreatableEntityTypeItems(): { label: string; value: ObjectTypes }[] {
   return (Object.entries(ObjectTypes))
@@ -113,8 +290,9 @@ export function DraggableInspectWindow(props: {
   onMove: (eid: number, x: number, y: number) => void;
   onResize: (eid: number, width: number, height: number) => void;
   onEditProp: (eid: number, compKey: string, propKey: string, next: any) => void;
+  onRemoveComponent: (eid: number, compKey: string) => void;
 }) {
-  const { win, onClose, onToggleCollapse, onMove, onResize, onEditProp } = props;
+  const { win, onClose, onToggleCollapse, onMove, onResize, onEditProp, onRemoveComponent } = props;
 
   const draggingRef = useRef(false);
   const dragOffsetRef = useRef({ dx: 0, dy: 0 });
@@ -259,7 +437,20 @@ export function DraggableInspectWindow(props: {
         <div style={{ padding: "8px", overflow: "auto", flex: 1 }}>
           {win.components.map((c) => (
             <div key={c.key} style={{ marginBottom: 10 }}>
-              <div style={{ fontWeight: 600, marginBottom: 4 }}>{c.key}</div>
+              <div style={{ fontWeight: 600, marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemoveComponent(win.eid, c.key);
+                  }}
+                  title="Remove component"
+                  style={{ padding: "0 4px", lineHeight: 1, cursor: "pointer", flexShrink: 0 }}
+                >
+                  ×
+                </button>
+                <span>{c.key}</span>
+              </div>
 
               <div style={{ paddingLeft: 10 }}>
                 {Object.entries(c.props ?? {}).length === 0 ? (
@@ -348,6 +539,22 @@ export const EditorScreen = () => {
   const [menuKind, setMenuKind] = useState<MenuKind | null>(null);
   const [menuPos, setMenuPos] = useState<{ x: number; y: number } | null>(null);
   const [menuEntities, setMenuEntities] = useState<SerializedEntity[]>([]);
+  /** When set, we're in fire-shot mode: show minimal angle/power UI. Set when ED_FIRE_SHOT_READY is received. */
+  const [firingFrom, setFiringFrom] = useState<{
+    eid: number;
+    x: number;
+    y: number;
+    indicatorRadius: number;
+    initialAngle: number;
+    initialPower: number;
+    panelPosition: { x: number; y: number };
+  } | null>(null);
+  /** Remember firing panel position per death star eid. */
+  const [firingPanelPositionByEid, setFiringPanelPositionByEid] = useState<Map<number, { x: number; y: number }>>(() => new Map());
+  const firingPanelPositionByEidRef = useRef(firingPanelPositionByEid);
+  firingPanelPositionByEidRef.current = firingPanelPositionByEid;
+  const firingFromRef = useRef(firingFrom);
+  firingFromRef.current = firingFrom;
 
   // Inspect windows (index is eid)
   const [inspectWindows, setInspectWindows] = useState<Map<number, InspectWindowState>>(
@@ -363,10 +570,53 @@ export const EditorScreen = () => {
       setInspectWindows(newInspects);
       closeMenus();
     })
+    gameBus.on(GameEvents.ED_FIRE_MODE_EXITED, () => {
+      const current = firingFromRef.current;
+      if (current) {
+        setFiringPanelPositionByEid((prev) => {
+          const next = new Map(prev);
+          next.set(current.eid, current.panelPosition);
+          return next;
+        });
+      }
+      setFiringFrom(null);
+    });
+    gameBus.on(GameEvents.ED_FIRE_SHOT_READY, (payload) => {
+      const saved = firingPanelPositionByEidRef.current.get(payload.eid);
+      const panelPosition =
+        saved ?? computeFiringPanelPosition(
+          payload.x,
+          payload.y,
+          payload.indicatorRadius,
+          FIRING_PANEL_WIDTH,
+          FIRING_PANEL_HEIGHT
+        );
+      setFiringFrom({
+        eid: payload.eid,
+        x: payload.x,
+        y: payload.y,
+        indicatorRadius: payload.indicatorRadius,
+        initialAngle: payload.initialAngle,
+        initialPower: payload.initialPower,
+        panelPosition,
+      });
+    });
+    gameBus.on(GameEvents.ED_PH_COMPONENT_REMOVED, ({ eid, name, components }) => {
+      setInspectWindows((prev) => {
+        const cur = prev.get(eid);
+        if (!cur) return prev;
+        const next = new Map(prev);
+        next.set(eid, { ...cur, entityName: name, components });
+        return next;
+      });
+    });
     startEditor();
 
     return () => {
       gameBus.off(GameEvents.ED_ENTITY_CLICKED);
+      gameBus.off(GameEvents.ED_FIRE_MODE_EXITED);
+      gameBus.off(GameEvents.ED_FIRE_SHOT_READY);
+      gameBus.off(GameEvents.ED_PH_COMPONENT_REMOVED);
     }
   }, []);
 
@@ -481,13 +731,19 @@ export const EditorScreen = () => {
     }
 
     if (menuKind === "actions" && activeEntity) {
+      const isDeathStar = activeEntity.name.includes("DEATHSTAR");
+      const positionComp = activeEntity.components?.find((c) => c.key === "Position");
+      const posX = (positionComp?.props?.x as number) ?? 0;
+      const posY = (positionComp?.props?.y as number) ?? 0;
+
       const actionItems = [
         { label: "Move", value: "move" as const },
         { label: "Inspect", value: "inspect" as const },
+        ...(isDeathStar ? [{ label: "Fire shot", value: "fireshot" as const }] : []),
         { label: "Delete", value: "delete" as const },
       ];
       return (
-        <SelectionMenu<"move" | "inspect" | "delete">
+        <SelectionMenu<"move" | "inspect" | "delete" | "fireshot">
           position={menuPos}
           title={activeEntity.name}
           items={actionItems}
@@ -497,6 +753,13 @@ export const EditorScreen = () => {
               gameBus.emit(GameEvents.ED_UI_DELETE_ENTITY, { eid: activeEntity.eid });
             else if (action === "move")
               gameBus.emit(GameEvents.ED_UI_START_MOVE_ENTITY, { eid: activeEntity.eid });
+            else if (action === "fireshot") {
+              gameBus.emit(GameEvents.ED_UI_START_FIRE_SHOT, {
+                eid: activeEntity.eid,
+                x: posX,
+                y: posY,
+              });
+            }
             closeMenus();
           }}
           menuRef={selectionMenuRef}
@@ -525,14 +788,57 @@ export const EditorScreen = () => {
   };
 
   const windowsList = useMemo(() => Array.from(inspectWindows.values()), [inspectWindows]);
+
+  const handleBack = () => {
+    setGameState(GameState.MAIN_MENU);
+    stopEditorScene();
+  }
   
   return (
     <div>
-      <button onClick={() => setGameState(GameState.MAIN_MENU)}>back</button>
+      <button onClick={handleBack}>back</button>
       <button ref={addButtonRef} onClick={openAddEntityMenu}>
         add
       </button>
       {renderSelectionMenu()}
+
+      {firingFrom && (
+        <FiringPanel
+          position={firingFrom.panelPosition}
+          eid={firingFrom.eid}
+          initialAngle={firingFrom.initialAngle}
+          initialPower={firingFrom.initialPower}
+          onFire={(eid, angle, power) => {
+            const current = firingFromRef.current;
+            if (current) {
+              setFiringPanelPositionByEid((prev) => {
+                const next = new Map(prev);
+                next.set(current.eid, current.panelPosition);
+                return next;
+              });
+            }
+            gameBus.emit(GameEvents.ED_UI_FIRE_SHOT_CONFIRM, { eid, angle, power });
+            setFiringFrom(null);
+          }}
+          onCancel={() => {
+            const current = firingFromRef.current;
+            if (current) {
+              setFiringPanelPositionByEid((prev) => {
+                const next = new Map(prev);
+                next.set(current.eid, current.panelPosition);
+                return next;
+              });
+            }
+            gameBus.emit(GameEvents.ED_UI_FIRE_SHOT_CANCEL);
+            setFiringFrom(null);
+          }}
+          onMove={(x, y) =>
+            setFiringFrom((prev) =>
+              prev ? { ...prev, panelPosition: { x, y } } : null
+            )
+          }
+        />
+      )}
 
       {windowsList.map((w) => (
         <DraggableInspectWindow
@@ -599,6 +905,9 @@ export const EditorScreen = () => {
               next.set(eid, { ...cur, components: comps });
               return next;
             });
+          }}
+          onRemoveComponent={(eid, compKey) => {
+            gameBus.emit(GameEvents.ED_UI_REMOVE_COMPONENT, { eid, compKey });
           }}
         />
       ))}
