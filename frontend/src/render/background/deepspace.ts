@@ -1,7 +1,7 @@
 import { BG_TEXTURE } from './constants';
-import { drawDustLanes } from './elements/dustLane';
-import { drawGalaxy } from './elements/galaxy';
+import { drawGalaxyComposite } from './elements/galaxy';
 import { drawStar } from './elements/star';
+import { applyMask } from './helpers';
 
 export const generateDeepSpace = (
   scene: Phaser.Scene,
@@ -25,8 +25,21 @@ export const generateDeepSpace = (
   const offsetY = Phaser.Math.Between(1, tenthHeight);
   const noisyY = height / 2 + (Phaser.Math.Between(1, 2) === 1 ? offsetY : -offsetY);
 
+  // const rotation = (Math.random() * Math.PI * 2);
+  const rotation = Math.random() * 0.1;
+  const outerRadius = tenthWidth * 7;
+  const tilt = 0.9;
 
   // 1. Old background stars
+  const farawayStars = scene.add.graphics();
+  for (let i = 0; i < 500; i++) {
+    const x = Phaser.Math.Between(0, width);
+    const y = Phaser.Math.Between(0, height);
+    drawStar(farawayStars, {x, y, bri: Phaser.Math.Between(10, 20), sat: 30, hue: 'reds', size: Phaser.Math.FloatBetween(0.3, 2)})
+  }
+  renderTexture.draw(farawayStars);
+  farawayStars.destroy();
+
   const oldStars = scene.add.graphics();
 
   for (let i = 0; i < 500; i++) {
@@ -38,70 +51,80 @@ export const generateDeepSpace = (
   oldStars.destroy();
 
   // 2. Foreground galaxy
-  const themeHue = Phaser.Math.Between(200, 320);
-  const galaxy = scene.add.graphics();
-  drawGalaxy(galaxy, {
-    x: noisyX,
-    y: noisyY,
-    outerRadius: tenthWidth * 7,
-    tilt: Phaser.Math.FloatBetween(0.6, 0.8),
+  const themeHue = Phaser.Math.Between(200, 300);
+  const tex = drawGalaxyComposite(scene, {
+    outerRadius,
+    tilt,
+    rotation,
     hue: themeHue,
+    lightness: 110,
+    // saturation: 50,
     armCount: Phaser.Math.Between(2, 8),
-    armStrength: Phaser.Math.FloatBetween(0.6, 0.96),
-    armTwist: Phaser.Math.FloatBetween(8, 12),
+    armStrength: Phaser.Math.FloatBetween(0.5, 1),
+    armTwist: Phaser.Math.FloatBetween(6, 14),
     armJitter: Phaser.Math.FloatBetween(0.5, 0.9),
+    gasAlpha: Phaser.Math.FloatBetween(0.3, 0.8),
+    coreRadius: Phaser.Math.Between(tenthWidth / 4, tenthWidth * 2),
+    coreFuzz: Phaser.Math.FloatBetween(0.1, 0.9),
+    coreAlpha: Phaser.Math.FloatBetween(0.2, 0.7),
+    zStrength: Phaser.Math.FloatBetween(0.5, 0.9),
   });
 
-  renderTexture.draw(galaxy);
-  galaxy.destroy();
+  renderTexture.draw(tex, noisyX, noisyY);
+  tex.destroy();
+
 
   // 3. Some foreground stars clustered around the galactic center
   const foregroundStars = scene.add.graphics();
-  const startX = noisyX - tenthWidth * 3;
-  const endX = noisyX + tenthWidth * 3;
-  const startY = noisyY - tenthHeight * 3;
-  const endY = noisyY + tenthHeight * 3;
+  const foregroundTex = scene.make
+    .renderTexture({width, height})
+    .setVisible(false)
+    .clear();
+    
+  const startX = noisyX - tenthWidth * 4;
+  const endX = noisyX + tenthWidth * 4;
+  const startY = noisyY - tenthHeight * 4;
+  const endY = noisyY + tenthHeight * 4;
 
   for (let i = 0; i < 500; i++) {
     const x = Phaser.Math.Between(startX, endX);
     const y = Phaser.Math.Between(startY, endY);
     const rand = Math.random();
-    drawStar(foregroundStars, {x, y, bri: Phaser.Math.Between(5, 10), big: rand < 0.99, hue: Phaser.Math.Between(themeHue - 10, themeHue + 10)})
+    drawStar(foregroundStars, {
+      x, 
+      y, 
+      bri: Phaser.Math.Between(5, 10), 
+      size: rand < 0.99 
+        ? Phaser.Math.FloatBetween(0.3, 5) 
+        : Phaser.Math.FloatBetween(5, 9), 
+      hue: Phaser.Math.Between(themeHue - 10, themeHue + 10)})
   }
-  renderTexture.draw(foregroundStars);
+  foregroundTex.draw(foregroundStars);
   foregroundStars.destroy();
 
-  // 4. Dust lanes
-  // const dustG = scene.add.graphics();
+  const {targetImg, cleanUp} = applyMask(foregroundTex, scene, {
+    x: noisyX,
+    y: noisyY,
+    outerRadius: outerRadius * 1.5,
+    tilt: tilt * 1.5,
+    rotation
+  })
 
-  // drawDustLanes(dustG, {
-  //   x: noisyX,
-  //   y: noisyY,
-  //   length: 1600,
-  //   thickness: Phaser.Math.FloatBetween(80, 170),
-  //   curvature: Phaser.Math.FloatBetween(-0.6, 0.6),
-  //   alpha: Phaser.Math.FloatBetween(0.7, 0.99),
-  //   warmth: 0.35,
-  //   contrast: 0.85,
-  //   glowEdge: true,
-  //   laneCount: Phaser.Math.Between(1, 3),
-  // });
+  renderTexture.draw(targetImg);
 
-  // renderTexture.draw(dustG);
-  // dustG.destroy();
+  cleanUp();
 
-  // drawNebula(galaxy, {
-  //   x: 500,
-  //   y: 200,
-  //   radius: Phaser.Math.FloatBetween(280, 600),
-  //   hue: Phaser.Math.Between(190, 330),
-  //   vividness: 0.85,
-  //   alpha: 1,
-  //   tilt: Math.random() * 0.6,
-  //   aspect: Phaser.Math.FloatBetween(0.8, 1.4),
-  //   glowEdges: true,
-  // })
-
+  // 4. Bright, active stars in the galaxy foreground
+  const activeStars = scene.add.graphics();
+  const lim = Phaser.Math.Between(5, 10);
+  for (let i = 0; i < lim; i++) {
+    const x = Phaser.Math.Between(noisyX - tenthWidth * 2, noisyX + tenthWidth * 2);
+    const y = Phaser.Math.Between(noisyY - tenthHeight * 2, noisyY + tenthHeight * 2);
+    drawStar(activeStars, {x, y, bri: Phaser.Math.Between(30, 65), sat: Phaser.Math.Between(20, 80), hue: themeHue, size: Phaser.Math.FloatBetween(0.5, 3)})
+  }
+  // activeStars.setRotation(tilt);
+  renderTexture.draw(activeStars);
+  activeStars.destroy();
 
 
   renderTexture.saveTexture(BG_TEXTURE);

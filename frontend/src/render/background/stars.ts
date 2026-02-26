@@ -22,7 +22,7 @@ export const generateBackgroundStars = (
     const x = Phaser.Math.Between(0, width);
     const y = Phaser.Math.Between(0, height);
     const rand = Math.random();
-    drawStar(graphics, {x, y, big: rand < 0.99})
+    drawStar(graphics, {x, y, size: rand < 0.99 ? Phaser.Math.FloatBetween(0.3, 5) : Phaser.Math.FloatBetween(5, 9)})
   }
 
   const galaxy = scene.add.graphics();

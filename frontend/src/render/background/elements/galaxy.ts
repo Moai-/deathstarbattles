@@ -1,31 +1,41 @@
 import { clamp01, lerp, smoothstep, sampleDiskBiased, makeLCG, stampFeathered } from "src/render/utils";
 
 export type GalaxyOptions = {
-  x: number;
+  outerRadius: number; // full-disk radius, px
+  
+  x: number; // On-screen location
   y: number;
-
-  outerRadius?: number; // px
-  coreRadius?: number;  // px
-
+  
   // 0 = face-on, 1 = edge-on
   tilt?: number;
-
+  
   // radians; if omitted, randomized
   rotation?: number;
-
+  
   // Base look
-  hue?: number; // 0..360
-  gasAlpha?: number; // overall transparency multiplier
-
+  hue?: number;        // 0..360
+  saturation?: number; // 0..100 (multiplier on computed saturation)
+  lightness?: number;  // 0..100 (multiplier on computed lightness)
+  gasAlpha?: number;   // overall transparency multiplier
+  
   // Detail
   spotCount?: number;
-  seed?: number;            // For repeatable patterns
   armCount?: number;        // number of spiral arms
   armStrength?: number;     // 0..1 how visible arms are
   armTwist?: number;        // radians of twist across radius
   armJitter?: number;       // 0..1 random wobble
+  
+  // Core props
+  coreRadius?: number;  // Inner core radius, px
+  coreFuzz?: number;   // 0..1 (0 = crisp rings, 1 = very soft/fuzzy)
+  coreBulge?: number;  // 0..1 (0 = core matches disk tilt, 1 = core much rounder)
+  coreAlpha?: number;  // optional overall core intensity multiplier
+  coreNucleus?: number; // 0..1, how strong the bright center is
+
+  seed?: number;            // For repeatable patterns
 };
 
+// Galaxy with light core, spiral arms, etc
 export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) => {
   const centerX = opts.x;
   const centerY = opts.y;
@@ -39,6 +49,8 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
   const axisRatio = lerp(1.0, 0.15, tilt);
 
   const hue = opts.hue ?? Phaser.Math.Between(190, 320); // bluish -> purple-ish default
+  const satMul = (opts.saturation ?? 100) / 100;
+  const lightMul = (opts.lightness ?? 100) / 100;
   const gasAlpha = opts.gasAlpha ?? 1;
 
   const localRnd =
@@ -60,8 +72,8 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
 
     // Color: brighter/warmer near core, cooler near edge
     const h = (hue + lerp(-10, 15, t) + (localRnd() - 0.5) * 6) % 360;
-    const s = lerp(65, 45, t);          // slightly desaturate outward
-    const l = lerp(22, 10, t);          // darker outward
+    const s = Phaser.Math.Clamp(lerp(65, 45, t) * satMul, 0, 100);
+    const l = Phaser.Math.Clamp(lerp(22, 10, t) * lightMul, 0, 100);
 
     const color = Phaser.Display.Color.HSLToColor(h / 360, s / 100, l / 100).color;
     g.fillStyle(color, a);
@@ -69,22 +81,186 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
   }
 
   // 2. Brighter core: tighter rings, higher alpha
-  const coreRings = 45;
-  for (let i = 0; i < coreRings; i++) {
-    const t = i / (coreRings - 1);
-    const inv = 1 - t;
+  const coreFuzz = clamp01(opts.coreFuzz ?? 0.70);
+  const coreBulge = clamp01(opts.coreBulge ?? 0.85);
+  const coreAlphaMul = opts.coreAlpha ?? 1;
 
-    const r = lerp(coreRadius * 1.1, coreRadius * 0.15, t);
-    const a = Math.pow(inv, 1.5) * 0.22 * gasAlpha;
+  // Disk squash (already applied to the whole galaxy)
+  // axisRatio = lerp(1.0, 0.15, tilt);
 
-    // Core tends towards warm/white-ish highlights
-    const h = (hue + lerp(-20, 10, t)) % 360;
-    const s = lerp(55, 20, t);
-    const l = lerp(30, 55, t);
+  // Stronger bulge target: at high tilt, keep the core much rounder than the disk
+  // "walnut" vibe: disk can go to ~0.15, but core should hang around ~0.55-ish
+  const tiltW = smoothstep(0.35, 1.0, tilt);
 
-    const color = Phaser.Display.Color.HSLToColor(h / 360, s / 100, l / 100).color;
-    g.fillStyle(color, a);
-    g.fillCircle(0, 0, r);
+  // Make the core rounder at high tilt
+  const bulgeTarget = lerp(1.0, 0.78, tilt); 
+  const coreAxisRatio = Phaser.Math.Clamp(
+    lerp(axisRatio, bulgeTarget, coreBulge * tiltW),
+    axisRatio,
+    1.0,
+  );
+  
+  // Walnut shaping: inflate Y near the center along X so it’s thick in the middle
+  const walnut = clamp01(lerp(0.0, 0.95, coreBulge) * tiltW); // only when tilted
+  const walnutSpan = coreRadius * 1.6; // how far along X before it tapers
+  
+  const applyWalnut = (x: number, y: number) => {
+    if (walnut <= 0.0001) return { x, y };
+  
+    const ax = Math.abs(x) / walnutSpan;              // 0..~
+    const mid = 1 - smoothstep(0.15, 1.0, ax);        // 1 in center, ->0 at ends
+    const bulge = 1 + walnut * mid * mid;             // quadratic for a nice “peanut/walnut”
+    return { x, y: y * bulge };
+  };
+
+  // Temporarily apply core-only scaleY so it resists squish
+  const prevScaleX = g.scaleX;
+  const prevScaleY = g.scaleY;
+  g.setScale(prevScaleX, coreAxisRatio);
+
+  // Core sizes
+  const coreOuter = coreRadius * lerp(2.3, 1.7, 1 - coreFuzz); // bigger + softer when fuzzier
+  const nucleusR = coreRadius * lerp(0.55, 0.35, coreFuzz);    // tighter nucleus when fuzzier
+  const coreNucleus = clamp01(opts.coreNucleus ?? 0.75);
+
+
+  // Puff counts (keep these reasonable for perf)
+  const hazePuffs = Math.floor(lerp(90, 170, coreFuzz));       // outer blending haze
+  const bulgePuffs = Math.floor(lerp(160, 320, coreFuzz));     // main bulge body
+  const nucleusPuffs = Math.floor(lerp(120, 260, coreFuzz) * lerp(0.7, 1.35, coreNucleus));// inner brightening
+
+  // Feathering
+  const hazeFeather = Math.floor(lerp(6, 12, coreFuzz));
+  const bulgeFeather = Math.floor(lerp(5, 11, coreFuzz));
+
+  // Helper: radial mapping (0 center -> 1 edge)
+  const coreRadNorm = (r: number) => Phaser.Math.Clamp(r / coreOuter, 0, 1);
+
+  // ---- (A) Outer haze: makes the core boundary "liquid/gassy" into the disk
+  for (let i = 0; i < hazePuffs; i++) {
+    // Bias toward the edge so it blends, not brighten the center too much
+    const t = Math.pow(localRnd(), 0.55); // 0..1, biased toward 1
+    const r = lerp(coreRadius * 0.9, coreOuter, t);
+
+    const ang = localRnd() * Math.PI * 2;
+    const {x, y} = applyWalnut(Math.cos(ang) * r, Math.sin(ang) * r)
+
+    const rn = coreRadNorm(r);           // 0..1
+    const edge = smoothstep(0.35, 1.0, rn);
+
+    // Slightly brighter near the core edge, but low alpha overall
+    const h = (hue + lerp(-10, 16, rn) + (localRnd() - 0.5) * 10) % 360;
+    const s = Phaser.Math.Clamp(lerp(50, 35, rn) * satMul, 0, 100);
+    const l = Phaser.Math.Clamp(lerp(18, 14, rn) * lightMul, 0, 100);
+
+    const col = Phaser.Display.Color.HSLToColor(h / 360, s / 100, l / 100).color;
+
+    const puffR = lerp(coreRadius * 0.42, coreRadius * 0.75, localRnd()) * lerp(1.25, 1.6, edge);
+    const a = gasAlpha * coreAlphaMul * lerp(0.010, 0.026, edge) * lerp(1.15, 0.75, coreFuzz);
+
+    stampFeathered(g, x, y, puffR, col, a, hazeFeather);
+  }
+
+  // ---- (B) Bulge body: turbulent puffs that get whiter + brighter toward center
+  for (let i = 0; i < bulgePuffs; i++) {
+    // Bias distribution inward (more mass near center)
+    const t = Math.pow(localRnd(), lerp(1.8, 2.6, coreFuzz)); // higher fuzz => stronger inner bias
+    const r = lerp(coreOuter, 0, t);
+
+    const ang = localRnd() * Math.PI * 2;
+
+    // Turbulence/jitter similar “feel” to your accretion disk
+    const turb = lerp(0.35, 1.0, coreFuzz);
+    const jitter = turb * coreRadius * 0.22 * (0.25 + 0.75 * (1 - t));
+
+    const {x, y} = applyWalnut(
+      Math.cos(ang) * r + (localRnd() - 0.5) * jitter,
+      Math.sin(ang) * r + (localRnd() - 0.5) * jitter
+    );
+
+    const rn = coreRadNorm(r);
+    const center = 1 - rn;
+
+    // Whitening ramps up smoothly as you approach the center
+    const whiten = smoothstep(0.25, 0.95, center);
+
+    // Lower saturation + higher lightness toward center (fixes “bright ring + dark center”)
+    const h = (hue + lerp(-6, 10, rn) + (localRnd() - 0.5) * lerp(10, 3, whiten)) % 360;
+    const s = Phaser.Math.Clamp(lerp(52, 6, whiten) * satMul, 0, 100);   // -> nearly white at center
+    const l = Phaser.Math.Clamp(lerp(20, 62, whiten) * lightMul, 0, 100); // -> brighter at center (but not blown out)
+
+    const col = Phaser.Display.Color.HSLToColor(h / 360, s / 100, l / 100).color;
+
+    // Puff size: larger in the mid/outer bulge, smaller near nucleus
+    const puffR =
+      lerp(coreRadius * 0.55, coreRadius * 0.14, whiten) *
+      lerp(1.25, 1.65, coreFuzz);
+
+    // Alpha: strongest toward center, but *soft*; no hard boundary
+    const a =
+      gasAlpha *
+      coreAlphaMul *
+      lerp(0.010, 0.040, smoothstep(0.10, 0.95, center)) *
+      lerp(1.10, 0.80, coreFuzz);
+
+    stampFeathered(g, x, y, puffR, col, a, bulgeFeather);
+  }
+
+  // ---- (C) Nucleus: a small additive-ish inner glow (subtle, no ring)
+
+  g.setBlendMode(Phaser.BlendModes.ADD);
+  
+  for (let i = 0; i < nucleusPuffs; i++) {
+    const t = Math.pow(localRnd(), 2.6);            // heavily center-biased
+    const r = lerp(nucleusR, 0, t);
+    const ang = localRnd() * Math.PI * 2;
+  
+    let x = Math.cos(ang) * r + (localRnd() - 0.5) * coreRadius * 0.07;
+    let y = Math.sin(ang) * r + (localRnd() - 0.5) * coreRadius * 0.07;
+  
+    const p = applyWalnut(x, y);
+    x = p.x; y = p.y;
+  
+    // Monotonic whitening + brightening toward center
+    const center = 1 - (r / nucleusR);             // 0 edge -> 1 center
+    const whiten = smoothstep(0.10, 1.0, center);
+  
+    const h = (hue + (localRnd() - 0.5) * lerp(6, 1, whiten)) % 360;
+    const s = Phaser.Math.Clamp(lerp(18, 2, whiten) * satMul, 0, 100);
+    const l = Phaser.Math.Clamp(lerp(70, 96, whiten) * lightMul, 0, 100);
+
+    const col = Phaser.Display.Color.HSLToColor(h / 360, s / 100, l / 100).color;
+  
+    const puffR = lerp(coreRadius * 0.22, coreRadius * 0.09, t) * lerp(1.1, 1.35, coreFuzz);
+    const a = gasAlpha * coreAlphaMul * lerp(0.020, 0.060, whiten) * lerp(0.65, 1.15, coreNucleus);
+  
+    stampFeathered(g, x, y, puffR, col, a, Math.floor(lerp(6, 12, coreFuzz)));
+  }
+  
+  g.setBlendMode(Phaser.BlendModes.NORMAL);
+
+  // Restore disk scale for arms/spots/dust
+  g.setScale(prevScaleX, prevScaleY);
+
+
+  // ---- (D) Simple white nuclear sphere (transparent edge -> solid center)
+  {
+    // Radius relative to coreRadius
+    const sphereR = coreRadius * 0.3;
+
+    // Alpha at the center; keep modest so it doesn't blow out
+    const sphereAlpha = (opts.coreAlpha ?? 1) * gasAlpha * 0.6;
+
+    // Feather steps controls how smooth the gradient is
+    const sphereFeather = Math.floor(lerp(8, 16, coreFuzz));
+
+    // Pure white, radial alpha falloff handled by stampFeathered
+    stampFeathered(g, 0, 0, sphereR, 0xffffff, sphereAlpha, sphereFeather);
+
+    // Optional: a tiny additive pop to make it feel "hot" without hard edges
+    g.setBlendMode(Phaser.BlendModes.ADD);
+    stampFeathered(g, 0, 0, sphereR * 0.55, 0xffffff, sphereAlpha * 0.55, Math.max(6, sphereFeather - 2));
+    g.setBlendMode(Phaser.BlendModes.NORMAL);
   }
 
   // 2.5. Spiral arms (diffuse ribbons made of soft clumps)
@@ -144,12 +320,12 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
         if (w <= 0.001) continue;
 
         const clumpR = lerp(outerRadius * 0.06, outerRadius * 0.022, t) * hazeScale;
-        const a = w * 0.035 * armStrength * gasAlpha * hazeAlphaMul;
+        const a = w * 0.3 * armStrength * gasAlpha * hazeAlphaMul;
 
         // Slightly different hue for arms so they "pop" from the blob
         const h = (hue + lerp(-18, 22, t) + (localRnd() - 0.5) * 10) % 360;
-        const s = lerp(55, 45, t);
-        const l = lerp(18, 12, t);
+        const s = Phaser.Math.Clamp(lerp(55, 45, t) * satMul, 0, 100);
+        const l = Phaser.Math.Clamp(lerp(18, 12, t) * lightMul, 0, 100);
 
         const color = Phaser.Display.Color.HSLToColor(h / 360, s / 100, l / 100).color;
         g.fillStyle(color, a);
@@ -181,8 +357,8 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
         const a = w * 0.11 * armStrength * gasAlpha;
 
         const h = (hue + lerp(-10, 26, t) + (localRnd() - 0.5) * 12) % 360;
-        const s = lerp(78, 60, t);
-        const l = lerp(34, 18, t);
+        const s = Phaser.Math.Clamp(lerp(78, 60, t) * satMul, 0, 100);
+        const l = Phaser.Math.Clamp(lerp(34, 18, t) * lightMul, 0, 100);
         const color = Phaser.Display.Color.HSLToColor(h / 360, s / 100, l / 100).color;
 
         stampFeathered(g, x, y, clumpR, color, a, 6);
@@ -215,8 +391,8 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
     const a = lerp(0.06, 0.18, localRnd()) * gasAlpha;
 
     const h = (hue + lerp(-35, 35, localRnd())) % 360;
-    const s = lerp(45, 75, localRnd());
-    const l = lerp(35, 60, localRnd());
+    const s = Phaser.Math.Clamp(lerp(45, 75, localRnd()) * satMul, 0, 100);
+    const l = Phaser.Math.Clamp(lerp(35, 60, localRnd()) * lightMul, 0, 100);
 
     const color = Phaser.Display.Color.HSLToColor(h / 360, s / 100, l / 100).color;
     g.fillStyle(color, a);
@@ -250,4 +426,116 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
       g.fillCircle(0, laneOffset, Math.max(0, laneR - laneThickness));
     }
   }
+}
+
+// Galaxy bulge
+export type BulgeKnobs = {
+  bulgeStrength?: number; // 0..1
+  zStrength?: number;     // 0..1
+  tiltStart?: number;     // when effect starts showing up (default ~0.35)
+  tiltFull?: number;      // when effect reaches full (default ~0.85)
+};
+
+export const computeBulgeFromTilt = (tilt: number, knobs: BulgeKnobs = {}) => {
+  const bulgeStrength = clamp01(knobs.bulgeStrength ?? 1);
+  const zStrength = clamp01(knobs.zStrength ?? 1);
+
+  const tiltStart = knobs.tiltStart ?? 0.35;
+  const tiltFull = knobs.tiltFull ?? 0.85;
+
+  const t = smoothstep(tiltStart, tiltFull, tilt);
+
+  // Sphere A - disk bulge
+  const aSX = lerp(1.0, 1.4, t * bulgeStrength);
+  const aSY = lerp(1.0, 0.7, t * bulgeStrength);
+
+  // Sphere B - z-bulge
+  const bBase = lerp(0.55, 0.70, zStrength);
+
+  const tZ = smoothstep(0.55, 1.0, t);
+  const bSX2 = lerp(bBase, 0.9, tZ * zStrength);
+  const bSY2 = lerp(bBase, 1.2, tZ * zStrength);
+
+  return {
+    t,
+    sphereA: { sx: aSX, sy: aSY },
+    sphereB: { sx: bSX2, sy: bSY2 },
+  };
+};
+
+export type GalaxyCompositeOptions = Omit<GalaxyOptions & BulgeKnobs, 'x' | 'y'>;
+
+// Both together
+export const drawGalaxyComposite = (scene: Phaser.Scene, opts: GalaxyCompositeOptions) => {
+  const outerRadius = opts.outerRadius ?? Phaser.Math.FloatBetween(220, 520);
+  const rotation = opts.rotation ?? (Math.random() * Math.PI * 2);
+  const coreRadius = opts.coreRadius ?? outerRadius * Phaser.Math.FloatBetween(0.03, 0.09);
+  const bulgeStrength = opts.bulgeStrength ?? 1
+  const tilt = clamp01(opts.tilt ?? Math.random());
+
+  const pad = outerRadius * 0.35;
+  const size = Math.ceil((outerRadius + pad) * 2);
+  const cx = size / 2;
+  const cy = size / 2;
+
+  const renderTexture = scene.make.renderTexture({ width: size, height: size }).setVisible(false);
+  renderTexture.clear();
+
+  const galaxy = scene.add.graphics();
+  drawGalaxy(galaxy, {
+    bulgeStrength,
+    coreRadius,
+    rotation, 
+    tilt, 
+    ...opts, 
+    outerRadius,
+    x: cx, 
+    y: cy
+  });
+  renderTexture.draw(galaxy);
+  galaxy.destroy();
+
+  const coreAlpha = opts.coreAlpha ?? 1;
+  const sphereR = coreRadius * 0.55 * bulgeStrength;
+  const sphereAlpha = 0.15 * coreAlpha;
+  const sphereFeather = Math.floor(lerp(8, 16, 0.2));
+
+  const { sphereA, sphereB } = computeBulgeFromTilt(tilt, {
+    bulgeStrength: opts.bulgeStrength ?? 1.0,
+    zStrength: opts.zStrength ?? 1.0,
+    tiltStart: opts.tiltStart ?? 0.35,
+    tiltFull: opts.tiltFull ?? 0.85,
+  });
+
+  const drawBulgeSphere = (
+    rot: number,
+    sx: number,
+    sy: number,
+  ) => {
+    const g = scene.add.graphics();
+    g.setPosition(cx, cy);
+  
+    stampFeathered(g, 0, 0, sphereR, 0xffffff, sphereAlpha, sphereFeather);
+    g.setBlendMode(Phaser.BlendModes.ADD);
+    stampFeathered(g, 0, 0, sphereR * 0.55, 0xffffff, sphereAlpha * 0.55, Math.max(6, sphereFeather - 2));
+    g.setBlendMode(Phaser.BlendModes.NORMAL);
+  
+    g.setRotation(rot);
+    g.setScale(sx, sy);
+  
+    renderTexture.draw(g);
+    g.destroy();
+  };
+
+  drawBulgeSphere(rotation, sphereA.sx, sphereA.sy);
+  drawBulgeSphere(rotation + Math.PI, sphereB.sx, sphereB.sy);
+  
+  return renderTexture;
+}
+
+export const getGalaxyPreset = (opts?: GalaxyCompositeOptions) => {
+  const presets: Record<string, GalaxyCompositeOptions> = {
+
+  }
+  return presets;
 }
