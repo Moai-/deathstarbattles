@@ -15,17 +15,19 @@ import {
   serializeComponents,
   setPosition,
 } from 'shared/src/utils';
+import { NULL_ENTITY } from 'shared/src/ecs/world';
 import { SimManager } from 'shared/src/ai/simulation/manager';
 import { EditorScene } from './editorScene';
-import { createRandomAsteroid } from 'src/entities/asteroid';
+import { createRandom } from 'src/entities';
 import { query, getAllEntities, removeEntity, getEntityComponents } from 'bitecs';
+import { ObjectTypes } from 'shared/src/types';
 import { Position } from 'shared/src/ecs/components';
 import { gameBus, GameEvents } from 'src/util';
 
-enum PointerMode {
-  SELECT_ENTITY,
-  ADD_ENTITY,
-}
+type PlacementState =
+  | { mode: 'add'; objectType: ObjectTypes; ghostEid: number }
+  | { mode: 'move'; eid: number; originalX: number; originalY: number }
+  | null;
 
 export default class EditorManager {
   // globals
@@ -41,7 +43,8 @@ export default class EditorManager {
   private simManager: SimManager;
 
   // editor state
-  private pointerMode: PointerMode = PointerMode.SELECT_ENTITY;
+  private placementState: PlacementState = null;
+  private escapeKey: Phaser.Input.Keyboard.Key | null = null;
 
   private static posQuery = [Position];
 
@@ -76,11 +79,60 @@ export default class EditorManager {
 
   ready() {
     this.enableClickListeners();
+    this.escapeKey = this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) ?? null;
   }
 
-  addEntity() {
-    const eid = createRandomAsteroid(this.world);
-    setPosition(eid, {x: Math.random() * 1920, y: Math.random() * 1080})
+  /** Called from EditorScene each frame; handles Escape to abort placement. */
+  update() {
+    if (this.placementState && this.escapeKey?.isDown) {
+      this.abortPlacement();
+      gameBus.emit(GameEvents.ED_PH_ABORT_PLACE);
+    }
+  }
+
+  /** Start placement mode: ghost follows pointer until left-click (place) or right-click/escape (abort). */
+  startPlaceEntity(objectType: ObjectTypes) {
+    const creator = createRandom[objectType];
+    if (!creator) return;
+    const eid = creator(this.world);
+    if (eid === NULL_ENTITY) return;
+    this.objectManager.setPendingGhostEid(eid);
+    setPosition(eid, { x: 0, y: 0 });
+    this.placementState = { mode: 'add', objectType, ghostEid: eid };
+  }
+
+  /** Start move mode: entity ghost follows pointer until left-click (commit) or right-click/escape (abort). */
+  startMoveEntity(eid: number) {
+    const pos = getPosition(eid);
+    this.objectManager.setGhost(eid, true);
+    this.placementState = { mode: 'move', eid, originalX: pos.x, originalY: pos.y };
+  }
+
+  private abortPlacement() {
+    if (!this.placementState) return;
+    if (this.placementState.mode === 'add') {
+      removeEntity(this.world, this.placementState.ghostEid);
+      this.objectManager.removeObject(this.placementState.ghostEid);
+    } else {
+      setPosition(this.placementState.eid, {
+        x: this.placementState.originalX,
+        y: this.placementState.originalY,
+      });
+      this.objectManager.setGhost(this.placementState.eid, false);
+    }
+    this.placementState = null;
+  }
+
+  private commitPlacement(x: number, y: number) {
+    if (!this.placementState) return;
+    if (this.placementState.mode === 'add') {
+      setPosition(this.placementState.ghostEid, { x, y });
+      this.objectManager.setGhost(this.placementState.ghostEid, false);
+    } else {
+      setPosition(this.placementState.eid, { x, y });
+      this.objectManager.setGhost(this.placementState.eid, false);
+    }
+    this.placementState = null;
   }
 
   onCollision(eid1: number, eid2: number, wasDestroyed: boolean) {
@@ -106,32 +158,40 @@ export default class EditorManager {
   }
 
   private handlePointerDown(pointer: Phaser.Input.Pointer) {
-    if (this.pointerMode === PointerMode.SELECT_ENTITY) {
-      const ent = query(this.world, EditorManager.posQuery);
-      const overlappingEntities: Array<number> = [];
-      for (let i = 0; i < ent.length; i++) {
-        const entity = ent[i];
-        const pos = getPosition(entity);
-        const rad = getRadius(entity) || 5;
-        if (doCirclesOverlap(pointer.x, pointer.y, 2, pos.x, pos.y, rad)) {
-          overlappingEntities.push(entity);
-        }
+    if (this.placementState) {
+      if (pointer.rightButtonDown()) {
+        this.abortPlacement();
+        gameBus.emit(GameEvents.ED_PH_ABORT_PLACE);
+      } else if (pointer.leftButtonDown()) {
+        this.commitPlacement(pointer.x, pointer.y);
       }
-      const payload = {
-        clickLoc: {x: pointer.x, y: pointer.y}, 
-        entities: overlappingEntities.map((eid) => serializeComponents(this.world, eid))
-      }
-      gameBus.emit(GameEvents.ED_ENTITY_CLICKED, payload)
+      return;
     }
+    const ent = query(this.world, EditorManager.posQuery);
+    const overlappingEntities: Array<number> = [];
+    for (let i = 0; i < ent.length; i++) {
+      const entity = ent[i];
+      const pos = getPosition(entity);
+      const rad = getRadius(entity) || 5;
+      if (doCirclesOverlap(pointer.x, pointer.y, 2, pos.x, pos.y, rad)) {
+        overlappingEntities.push(entity);
+      }
+    }
+    const payload = {
+      clickLoc: { x: pointer.x, y: pointer.y },
+      entities: overlappingEntities.map((eid) => serializeComponents(this.world, eid)),
+    };
+    gameBus.emit(GameEvents.ED_ENTITY_CLICKED, payload);
   }
 
-  private handlePointerMove() {
-
+  private handlePointerMove(pointer: Phaser.Input.Pointer) {
+    if (!this.placementState) return;
+    const eid = this.placementState.mode === 'add' ? this.placementState.ghostEid : this.placementState.eid;
+    setPosition(eid, { x: pointer.x, y: pointer.y });
+    this.objectManager.updateObjectPosition(eid, pointer.x, pointer.y);
   }
 
-  private handlePointerUp(pointer: Phaser.Input.Pointer) {
-
-  }
+  private handlePointerUp() {}
 
   private setUpListeners() {
     // Set a tiny delay on post combat phase to allow collision manager
@@ -161,14 +221,28 @@ export default class EditorManager {
     this.indicator.setAnglePowerListener((angle, power) =>
       this.inputHandler.setAnglePower(angle, power),
     );
-    gameBus.on(GameEvents.ED_UI_PROP_CHANGED, (propChanged) => {
-      const {eid, compIdx, propName, newVal} = propChanged;
+    gameBus.on(GameEvents.ED_UI_PROP_CHANGED, ({eid, compIdx, propName, newVal}) => {
       const thisComp = getEntityComponents(this.world, eid)[compIdx];
       if (thisComp) {
         thisComp[propName][eid] = newVal;
         this.objectManager.refreshObject(eid);
       }
-    })
+    });
+
+    gameBus.on(GameEvents.ED_UI_DELETE_ENTITY, ({ eid }) => {
+      removeEntity(this.world, eid);
+      gameBus.emit(GameEvents.ED_PH_DELETE_ENTITY, { eid });
+    });
+
+    gameBus.on(GameEvents.ED_UI_START_PLACE_ENTITY, ({ objectType }) => {
+      this.startPlaceEntity(objectType);
+    });
+    gameBus.on(GameEvents.ED_UI_START_MOVE_ENTITY, ({ eid }) => {
+      this.startMoveEntity(eid);
+    });
+    const onAbortPlace = () => this.abortPlacement();
+    gameBus.on(GameEvents.ED_UI_ABORT_PLACE, onAbortPlace);
+    gameBus.on(GameEvents.ED_PH_ABORT_PLACE, onAbortPlace);
   }
 
   private clearListeners() {
@@ -180,6 +254,11 @@ export default class EditorManager {
     this.indicator.setAnglePowerListener(noop);
     this.indicator.setGetTargetIdCallback(() => 0);
     gameBus.off(GameEvents.ED_UI_PROP_CHANGED);
+    gameBus.off(GameEvents.ED_UI_DELETE_ENTITY);
+    gameBus.off(GameEvents.ED_UI_START_PLACE_ENTITY);
+    gameBus.off(GameEvents.ED_UI_START_MOVE_ENTITY);
+    gameBus.off(GameEvents.ED_UI_ABORT_PLACE);
+    gameBus.off(GameEvents.ED_PH_ABORT_PLACE);
     this.disableClickListeners();
   }
 

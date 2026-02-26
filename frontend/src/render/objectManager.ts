@@ -4,18 +4,52 @@ import renderMap from './objects';
 import renderBoundaryIndicator from './objects/boundaryIndicator';
 import { BaseScene } from 'src/game/baseScene';
 
+const GHOST_ALPHA = 0.45;
+const GHOST_SCALE = 0.75;
+
 export class GameObjectManager {
   private objects = new Map<number, Phaser.GameObjects.Container>();
   private children = new Map<number, Array<Phaser.GameObjects.GameObject>>();
   private boundaryIndicators = new Map<number, Phaser.GameObjects.Triangle>();
+  private pendingGhostEid: number | null = null;
 
   constructor(private scene: BaseScene) {}
+
+  /** Call before the entity is created so the next createObject for this eid gets ghost style. */
+  setPendingGhostEid(eid: number | null) {
+    this.pendingGhostEid = eid;
+  }
+
+  /** Apply or remove editor placement ghost style (reduced alpha and scale). */
+  setGhost(eid: number, ghost: boolean) {
+    const obj = this.getObject(eid) as Phaser.GameObjects.Container | undefined;
+    if (!obj) return;
+    if (ghost) {
+      obj.setAlpha(GHOST_ALPHA);
+      obj.setScale(GHOST_SCALE);
+    } else {
+      obj.setAlpha(1);
+      obj.setScale(1);
+    }
+  }
+
+  private applyGhostStyle(obj: Phaser.GameObjects.Container) {
+    obj.setAlpha(GHOST_ALPHA);
+    obj.setScale(GHOST_SCALE);
+  }
 
   createObject(eid: number) {
     // Wrap in microtask because the new observer is too damn fast
     // If I don't do this, the manager tries to render the entity
     // before it even knows what it needs to render...
-    queueMicrotask(() => this.objects.set(eid, this.renderEntity(eid)));
+    queueMicrotask(() => {
+      const rendered = this.renderEntity(eid);
+      this.objects.set(eid, rendered);
+      if (this.pendingGhostEid === eid) {
+        this.applyGhostStyle(rendered);
+        this.pendingGhostEid = null;
+      }
+    });
   }
 
   refreshObject(eid: number) {

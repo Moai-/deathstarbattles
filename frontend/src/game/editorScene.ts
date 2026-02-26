@@ -24,15 +24,13 @@ export class EditorScene extends BaseScene {
     gameBus.on(GameEvents.START_GAME, () => {
       this.editorManager.ready();
     });
-    gameBus.on(GameEvents.ED_ADD_ENTITY, () => {
-      this.editorManager.addEntity();
-    })
     this.editorManager.create();
     gameBus.emit(GameEvents.SCENE_LOADED);
   }
 
   update(time: number, deltaMs: number) {
     super.update(time, deltaMs);
+    this.editorManager.update();
     this.collisionResolverSystem(this.world);
     this.cleanupSystem(this.world);
   }

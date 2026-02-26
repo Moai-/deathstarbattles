@@ -5,10 +5,12 @@ import { gameBus, GameEvents } from "src/util";
 import { SelectionClick } from "src/util/event";
 import { SerializedComponent, SerializedEntity } from "shared/src/utils";
 import { BASE_HEIGHT, BASE_WIDTH } from "shared/src/consts";
+import { ObjectTypes } from "shared/src/types";
+import { SelectionMenu } from "./SelectionMenu";
 
 export type ClickLoc = { x: number; y: number };
 
-export type MenuKind = "select" | "actions";
+export type MenuKind = "select" | "actions" | "addEntity";
 
 export type InspectWindowState = {
   eid: number;
@@ -19,6 +21,8 @@ export type InspectWindowState = {
   x: number; // page coords
   y: number; // page coords
   collapsed: boolean;
+  width?: number;
+  height?: number;
 };
 
 export function clamp(n: number, min: number, max: number) {
@@ -89,19 +93,58 @@ export function useOutsideClick(
   }, [refs, onOutside, enabled]);
 }
 
+const DEFAULT_WINDOW_WIDTH = 360;
+const DEFAULT_WINDOW_HEIGHT = 260;
+const COLLAPSED_HEIGHT = 35;
+
+const ADD_ENTITY_EXCLUDED = ["NONE", "DEATHSTAR", "DEATHBEAM"];
+
+function getCreatableEntityTypeItems(): { label: string; value: ObjectTypes }[] {
+  return (Object.entries(ObjectTypes))
+    .filter(([_, label]) => !ADD_ENTITY_EXCLUDED.includes(label as string))
+    .filter(([_, label]) => isNaN(Number(label)))
+    .map(([_, label]) => ({ label: label as string, value: ObjectTypes[label as keyof typeof ObjectTypes]}));
+}
+
 export function DraggableInspectWindow(props: {
   win: InspectWindowState;
   onClose: (eid: number) => void;
   onToggleCollapse: (eid: number) => void;
   onMove: (eid: number, x: number, y: number) => void;
+  onResize: (eid: number, width: number, height: number) => void;
   onEditProp: (eid: number, compKey: string, propKey: string, next: any) => void;
 }) {
-  const { win, onClose, onToggleCollapse, onMove, onEditProp } = props;
+  const { win, onClose, onToggleCollapse, onMove, onResize, onEditProp } = props;
 
   const draggingRef = useRef(false);
   const dragOffsetRef = useRef({ dx: 0, dy: 0 });
   const onMoveRef = useRef(onMove);
   onMoveRef.current = onMove;
+
+  const resizingRef = useRef(false);
+  const resizeStartRef = useRef({
+    startX: 0,
+    startY: 0,
+    startW: 0,
+    startH: 0,
+  });
+
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  const currentWidth = win.width ?? DEFAULT_WINDOW_WIDTH;
+  const currentHeight = win.collapsed ? COLLAPSED_HEIGHT : (win.height ?? DEFAULT_WINDOW_HEIGHT);
+
+  const onMouseDownResize = (e: React.MouseEvent) => {
+    resizingRef.current = true;
+    resizeStartRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      startW: currentWidth,
+      startH: win.collapsed ? COLLAPSED_HEIGHT : (win.height ?? DEFAULT_WINDOW_HEIGHT),
+    };
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
   const onMouseDownBar = (e: React.MouseEvent) => {
     draggingRef.current = true;
@@ -115,18 +158,38 @@ export function DraggableInspectWindow(props: {
 
   useEffect(() => {
     const onMoveMouse = (e: MouseEvent) => {
-      if (!draggingRef.current) return;
-      const nx = e.clientX - dragOffsetRef.current.dx;
-      const ny = e.clientY - dragOffsetRef.current.dy;
+      if (draggingRef.current) {
+        const nx = e.clientX - dragOffsetRef.current.dx;
+        const ny = e.clientY - dragOffsetRef.current.dy;
+  
+        const pad = 6;
+        const maxX = window.innerWidth - 220;
+        const maxY = window.innerHeight - 40;
+        onMoveRef.current(win.eid, clamp(nx, pad, maxX), clamp(ny, pad, maxY));
+      }
 
-      const pad = 6;
-      const maxX = window.innerWidth - 220;
-      const maxY = window.innerHeight - 40;
-      onMoveRef.current(win.eid, clamp(nx, pad, maxX), clamp(ny, pad, maxY));
+      // resizing window
+      if (resizingRef.current) {
+        const dx = e.clientX - resizeStartRef.current.startX;
+        const dy = e.clientY - resizeStartRef.current.startY;
+
+        const minW = 260;
+        const minH = COLLAPSED_HEIGHT;
+
+        // Keep within viewport (roughly) from the window's top-left.
+        const maxW = window.innerWidth - win.x - 6;
+        const maxH = window.innerHeight - win.y - 6;
+
+        const nextW = clamp(resizeStartRef.current.startW + dx, minW, maxW);
+        const nextH = clamp(resizeStartRef.current.startH + dy, minH, maxH);
+
+        onResize(win.eid, nextW, nextH);
+      }
     };
 
     const onUp = () => {
       draggingRef.current = false;
+      resizingRef.current = false;
     };
 
     window.addEventListener("mousemove", onMoveMouse);
@@ -135,18 +198,22 @@ export function DraggableInspectWindow(props: {
       window.removeEventListener("mousemove", onMoveMouse);
       window.removeEventListener("mouseup", onUp);
     };
-  }, [win.eid]);
+  }, [win.eid, win.x, win.y, onResize]);
 
   return (
     <div
+      ref={rootRef}
       style={{
         position: "fixed",
         left: win.x,
         top: win.y,
-        width: 360,
+        width: currentWidth,
+        height: currentHeight,
         border: "1px solid #999",
         background: "white",
         zIndex: 1000,
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <div
@@ -158,7 +225,7 @@ export function DraggableInspectWindow(props: {
           display: "flex",
           alignItems: "center",
           gap: "8px",
-          borderBottom: "1px solid #ddd",
+          borderBottom: win.collapsed ? "none" : "1px solid #ddd",
         }}
       >
         <div style={{ flex: 1 }}>
@@ -189,7 +256,7 @@ export function DraggableInspectWindow(props: {
       </div>
 
       {!win.collapsed && (
-        <div style={{ padding: "8px", maxHeight: 320, overflow: "auto" }}>
+        <div style={{ padding: "8px", overflow: "auto", flex: 1 }}>
           {win.components.map((c) => (
             <div key={c.key} style={{ marginBottom: 10 }}>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>{c.key}</div>
@@ -251,6 +318,21 @@ export function DraggableInspectWindow(props: {
           ))}
         </div>
       )}
+      {!win.collapsed && (
+        <div
+          onMouseDown={onMouseDownResize}
+          style={{
+            position: "absolute",
+            right: 0,
+            bottom: 0,
+            width: 14,
+            height: 14,
+            cursor: "nwse-resize",
+            userSelect: "none",
+          }}
+          title="Resize"
+        />
+      )}
     </div>
   );
 }
@@ -258,19 +340,7 @@ export function DraggableInspectWindow(props: {
 export const EditorScreen = () => {
   const { setGameState } = useGameState();
   const [lastClick, setLastClick] = useState<SelectionClick | null>(null);
-  useEffect(() => {
-    gameBus.on(GameEvents.ED_ENTITY_CLICKED, (clickPayload) => {
-      setLastClick(clickPayload);
-    })
-    startEditor();
-
-    return () => gameBus.off(GameEvents.ED_ENTITY_CLICKED);
-  }, []);
-
-  const addEntity = () => {
-    gameBus.emit(GameEvents.ED_ADD_ENTITY)
-  }
-
+  const [showEntityMenu, setShowEntityMenu] = useState(false);
   // Selection / active entity
   const [activeEntity, setActiveEntity] = useState<SerializedEntity | null>(null);
 
@@ -279,13 +349,38 @@ export const EditorScreen = () => {
   const [menuPos, setMenuPos] = useState<{ x: number; y: number } | null>(null);
   const [menuEntities, setMenuEntities] = useState<SerializedEntity[]>([]);
 
-  // Inspect windows (one per eid)
+  // Inspect windows (index is eid)
   const [inspectWindows, setInspectWindows] = useState<Map<number, InspectWindowState>>(
     () => new Map()
   );
+  useEffect(() => {
+    gameBus.on(GameEvents.ED_ENTITY_CLICKED, (clickPayload) => {
+      setLastClick(clickPayload);
+    })
+    gameBus.on(GameEvents.ED_PH_DELETE_ENTITY, ({eid}) => {
+      const newInspects = new Map(inspectWindows);
+      newInspects.delete(eid);
+      setInspectWindows(newInspects);
+      closeMenus();
+    })
+    startEditor();
 
-  const selectMenuRef = useRef<HTMLDivElement>(null);
-  const actionsMenuRef = useRef<HTMLDivElement>(null);
+    return () => {
+      gameBus.off(GameEvents.ED_ENTITY_CLICKED);
+    }
+  }, []);
+
+  const addButtonRef = useRef<HTMLButtonElement>(null);
+
+  const openAddEntityMenu = () => {
+    const rect = addButtonRef.current?.getBoundingClientRect();
+    if (rect) {
+      setMenuPos({ x: rect.left, y: rect.bottom + 4 });
+      setMenuKind("addEntity");
+    }
+  };
+
+  const selectionMenuRef = useRef<HTMLDivElement>(null);
 
   const closeMenus = useCallback(() => {
     setMenuKind(null);
@@ -294,7 +389,7 @@ export const EditorScreen = () => {
   }, []);
 
   useOutsideClick(
-    [selectMenuRef as any, actionsMenuRef as any],
+    [selectionMenuRef as React.RefObject<HTMLElement>],
     () => closeMenus(),
     menuKind !== null
   );
@@ -351,6 +446,8 @@ export const EditorScreen = () => {
           x: clamp(start.x + 20, 6, window.innerWidth - 240),
           y: clamp(start.y + 20, 6, window.innerHeight - 60),
           collapsed: false,
+          width: DEFAULT_WINDOW_WIDTH,
+          height: DEFAULT_WINDOW_HEIGHT,
         });
         setMenuKind(null);
         return next;
@@ -362,80 +459,69 @@ export const EditorScreen = () => {
   const onPickEntityFromSelect = (entity: SerializedEntity) => {
     setActiveEntity(entity);
     setMenuKind("actions");
-
-    // keep the same menuPos/menuClickLoc; just swap content
   };
+
+  const creatableEntityItems = useMemo(() => getCreatableEntityTypeItems(), []);
 
   const renderSelectionMenu = () => {
-    if (menuKind !== "select" || !menuPos) return null;
+    if (!menuPos || (menuKind !== "select" && menuKind !== "actions" && menuKind !== "addEntity"))
+      return null;
 
-    return (
-      <div
-        ref={selectMenuRef}
-        style={{
-          position: "fixed",
-          left: menuPos.x,
-          top: menuPos.y,
-          border: "1px solid #999",
-          background: "white",
-          padding: 6,
-          zIndex: 999,
-          width: 240,
-        }}
-      >
-        <div style={{ marginBottom: 6, fontWeight: 600 }}>Select entity</div>
-        <ul style={{ margin: 0, paddingLeft: 18 }}>
-          {menuEntities.map((e) => (
-            <li key={e.eid}>
-              <button type="button" onClick={() => onPickEntityFromSelect(e)}>
-                {e.name}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  };
+    if (menuKind === "select") {
+      return (
+        <SelectionMenu<SerializedEntity>
+          position={menuPos}
+          title="Select entity"
+          items={menuEntities.map((e) => ({ label: e.name, value: e }))}
+          onSelect={onPickEntityFromSelect}
+          menuRef={selectionMenuRef}
+          width={240}
+        />
+      );
+    }
 
-  const renderActionsMenu = () => {
-    if (menuKind !== "actions" || !menuPos || !activeEntity) return null;
+    if (menuKind === "actions" && activeEntity) {
+      const actionItems = [
+        { label: "Move", value: "move" as const },
+        { label: "Inspect", value: "inspect" as const },
+        { label: "Delete", value: "delete" as const },
+      ];
+      return (
+        <SelectionMenu<"move" | "inspect" | "delete">
+          position={menuPos}
+          title={activeEntity.name}
+          items={actionItems}
+          onSelect={(action) => {
+            if (action === "inspect") openInspectWindow(activeEntity);
+            else if (action === "delete")
+              gameBus.emit(GameEvents.ED_UI_DELETE_ENTITY, { eid: activeEntity.eid });
+            else if (action === "move")
+              gameBus.emit(GameEvents.ED_UI_START_MOVE_ENTITY, { eid: activeEntity.eid });
+            closeMenus();
+          }}
+          menuRef={selectionMenuRef}
+          width={160}
+        />
+      );
+    }
 
-    return (
-      <div
-        ref={actionsMenuRef}
-        style={{
-          position: "fixed",
-          left: menuPos.x,
-          top: menuPos.y,
-          border: "1px solid #999",
-          background: "white",
-          padding: 6,
-          zIndex: 999,
-          width: 160,
-        }}
-      >
-        <div style={{ marginBottom: 6, fontWeight: 600 }}>{activeEntity.name}</div>
+    if (menuKind === "addEntity") {
+      return (
+        <SelectionMenu<ObjectTypes>
+          position={menuPos}
+          title="Add entity"
+          items={creatableEntityItems}
+          onSelect={(objectType) => {
+            gameBus.emit(GameEvents.ED_UI_START_PLACE_ENTITY, { objectType });
+            closeMenus();
+          }}
+          menuRef={selectionMenuRef}
+          width={240}
+        />
+      );
+    }
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <button type="button" onClick={() => { /* noop for now */ }}>
-            Move
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              openInspectWindow(activeEntity);
-            }}
-          >
-            Inspect
-          </button>
-
-          <button type="button" onClick={() => { /* noop for now */ }}>
-            Delete
-          </button>
-        </div>
-      </div>
-    );
+    return null;
   };
 
   const windowsList = useMemo(() => Array.from(inspectWindows.values()), [inspectWindows]);
@@ -443,9 +529,10 @@ export const EditorScreen = () => {
   return (
     <div>
       <button onClick={() => setGameState(GameState.MAIN_MENU)}>back</button>
-      <button onClick={addEntity}>add</button>
+      <button ref={addButtonRef} onClick={openAddEntityMenu}>
+        add
+      </button>
       {renderSelectionMenu()}
-      {renderActionsMenu()}
 
       {windowsList.map((w) => (
         <DraggableInspectWindow
@@ -474,6 +561,15 @@ export const EditorScreen = () => {
               if (!cur) return prev;
               const next = new Map(prev);
               next.set(eid, { ...cur, x, y });
+              return next;
+            });
+          }}
+          onResize={(eid, width, height) => {
+            setInspectWindows((prev) => {
+              const cur = prev.get(eid);
+              if (!cur) return prev;
+              const next = new Map(prev);
+              next.set(eid, { ...cur, width, height });
               return next;
             });
           }}
