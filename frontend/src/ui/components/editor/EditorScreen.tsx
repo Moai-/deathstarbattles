@@ -13,7 +13,7 @@ import { DraggableInspectWindow } from "./DraggableInspectWindow";
 import { OptionsMenu, type OptionsMenuPanel } from "./OptionsMenu";
 import { TrailLegendTooltip } from "./TrailLegendTooltip";
 import type { InspectWindowState, MenuKind } from "./types";
-import { subscribe as subscribeEditorOptions } from "src/editorOptions";
+import { EditorOptionsProvider } from "./";
 import {
   clamp,
   computeAnchoredMenuPos,
@@ -67,13 +67,7 @@ export const EditorScreen = () => {
     Map<number, InspectWindowState>
   >(() => new Map());
   const [optionsPanel, setOptionsPanel] = useState<OptionsMenuPanel>("root");
-  const [, setOptionsVersion] = useState(0);
   const [hoverPayload, setHoverPayload] = useState<SelectionClick | null>(null);
-
-  useEffect(() => {
-    const unsub = subscribeEditorOptions(() => setOptionsVersion((v) => v + 1));
-    return unsub;
-  }, []);
 
   useEffect(() => {
     gameBus.on(GameEvents.ED_ENTITY_CLICKED, (clickPayload) => {
@@ -352,6 +346,7 @@ export const EditorScreen = () => {
   }, [setGameState]);
 
   return (
+    <EditorOptionsProvider>
     <div>
       <button onClick={handleBack}>back</button>
       <button ref={addButtonRef} onClick={openAddEntityMenu}>
@@ -454,5 +449,6 @@ export const EditorScreen = () => {
         />
       ))}
     </div>
+    </EditorOptionsProvider>
   );
 };

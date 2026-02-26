@@ -8,7 +8,7 @@ import { GameObjectManager } from '../objectManager';
 import { Depths } from '../types';
 import { Collision, Projectile } from 'shared/src/ecs/components';
 import { getSquaredDistance } from 'shared/src/ai/functions';
-import { getPersistTrails } from 'src/editorOptions';
+import { getPersistTrails } from 'src/ui/components/editor';
 
 const PERSISTED_TRAIL_ALPHA = 0.4;
 

@@ -38,7 +38,8 @@ const renderAnomaly: RenderObject = (scene, eid) => {
     // I am a bad programmer for doing this
     // I should not be accessing the world when it isn't explicitly passed in
     // I should be in programmer jail for this piece of code
-    const shard = createShard(scene, {
+    const shard = scene.add.graphics();
+    createShard(shard, {
       alpha: 1,
       baseHue: Phaser.Math.Between(1, 255),
       light: 0.3,

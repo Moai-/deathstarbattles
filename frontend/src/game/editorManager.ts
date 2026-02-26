@@ -33,20 +33,12 @@ import { LeavesTrail } from 'src/render/components/leavesTrail';
 import { colToUi32 } from 'shared/src/utils';
 import { playerCols } from 'shared/src/utils/colour';
 import { DEFAULT_DEATHSTAR_RADIUS } from 'src/entities/deathStar';
-import {
-  getPersistTrails,
-  getLabelTrails,
-  recordShot,
-  getShotHistory,
-  getDeathStarSizeIndex,
-  getRemovedDestructibleEids,
-  addRemovedDestructibleEid,
-  clearRemovedDestructibleEids,
-} from 'src/editorOptions';
+
 import { gameBus, GameEvents } from 'src/util';
 import { setEditorBackground } from 'src/render/background';
 import { getSoundManager } from './resourceScene';
 import * as ecsComponents from 'shared/src/ecs/components';
+import { getDeathStarSizeIndex, getRemovedDestructibleEids, clearRemovedDestructibleEids, addRemovedDestructibleEid, getPersistTrails, getLabelTrails, getShotHistory, recordShot } from 'src/ui/components/editor';
 
 type PlacementState =
   | { mode: 'add'; objectType: ObjectTypes; ghostEid: number }

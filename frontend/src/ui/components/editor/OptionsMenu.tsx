@@ -2,17 +2,9 @@ import { RefObject } from "react";
 import { gameBus, GameEvents } from "src/util";
 import { Backgrounds } from "shared/src/types";
 import {
-  getPersistTrails,
-  setPersistTrails,
-  getLabelTrails,
-  setLabelTrails,
-  getAllDestructible,
-  setAllDestructible,
-  getDeathStarSizeIndex,
-  setDeathStarSizeIndex,
+  useEditorOptions,
   type DeathStarSizeIndex,
-  clearShotHistory,
-} from "src/editorOptions";
+} from "./";
 
 export type OptionsMenuPanel = "root" | "trails" | "deathstars" | "size" | "background";
 
@@ -38,6 +30,7 @@ export function OptionsMenu({
   onPanelChange,
   onClose,
 }: OptionsMenuProps) {
+  const options = useEditorOptions();
   if (!position) return null;
 
   const menuStyle: React.CSSProperties = {
@@ -95,7 +88,7 @@ export function OptionsMenu({
               type="button"
               onClick={() => {
                 gameBus.emit(GameEvents.ED_UI_CLEAR_TRAILS);
-                clearShotHistory();
+                options.clearShotHistory();
                 onClose();
               }}
             >
@@ -106,8 +99,8 @@ export function OptionsMenu({
             <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <input
                 type="checkbox"
-                checked={getPersistTrails()}
-                onChange={(e) => setPersistTrails(e.target.checked)}
+                checked={options.persistTrails}
+                onChange={(e) => options.setPersistTrails(e.target.checked)}
               />
               Persist trails
             </label>
@@ -116,8 +109,8 @@ export function OptionsMenu({
             <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <input
                 type="checkbox"
-                checked={getLabelTrails()}
-                onChange={(e) => setLabelTrails(e.target.checked)}
+                checked={options.labelTrails}
+                onChange={(e) => options.setLabelTrails(e.target.checked)}
               />
               Label trails
             </label>
@@ -139,10 +132,10 @@ export function OptionsMenu({
             <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <input
                 type="checkbox"
-                checked={getAllDestructible()}
+                checked={options.allDestructible}
                 onChange={(e) => {
                   const enabled = e.target.checked;
-                  setAllDestructible(enabled);
+                  options.setAllDestructible(enabled);
                   gameBus.emit(GameEvents.ED_UI_OPTIONS_ALL_DESTRUCTIBLE, {
                     enabled,
                   });
@@ -162,7 +155,7 @@ export function OptionsMenu({
   }
 
   if (panel === "size") {
-    const current = getDeathStarSizeIndex();
+    const current = options.deathStarSizeIndex;
     return (
       <div ref={menuRef} style={menuStyle}>
         <div style={{ marginBottom: 6, fontWeight: 600 }}>
@@ -178,7 +171,7 @@ export function OptionsMenu({
                   name="deathstar-size"
                   checked={current === idx}
                   onChange={() => {
-                    setDeathStarSizeIndex(idx);
+                    options.setDeathStarSizeIndex(idx);
                     gameBus.emit(GameEvents.ED_UI_OPTIONS_DEATHSTAR_SIZE, {
                       sizeIndex: idx,
                     });

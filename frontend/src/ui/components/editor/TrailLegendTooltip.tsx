@@ -1,23 +1,23 @@
-import { getShotHistory, getLabelTrails, type ShotRecord } from "src/editorOptions";
+import { useEditorOptions, type ShotRecord } from "./";
 import { canvasToScreen } from "./utils";
 
-function colorToHex(color: number): string {
-  return "#" + (color & 0xffffff).toString(16).padStart(6, "0");
-}
+const colorToHex = (color: number): string =>
+  "#" + (color & 0xffffff).toString(16).padStart(6, "0");
 
 type TrailLegendTooltipProps = {
   hoverPayload: { clickLoc: { x: number; y: number }; entities: Array<{ eid: number; name: string }> } | null;
 };
 
 export function TrailLegendTooltip({ hoverPayload }: TrailLegendTooltipProps) {
-  if (!getLabelTrails() || !hoverPayload?.entities?.length) return null;
+  const options = useEditorOptions();
+  if (!options.labelTrails || !hoverPayload?.entities?.length) return null;
 
   const deathStar = hoverPayload.entities.find((e) =>
     e.name.toUpperCase().includes("DEATHSTAR")
   );
   if (!deathStar) return null;
 
-  const shots = getShotHistory(deathStar.eid);
+  const shots = options.shotHistoryByDeathStarEid.get(deathStar.eid) ?? [];
   if (shots.length === 0) return null;
 
   const { x, y } = canvasToScreen(hoverPayload.clickLoc.x, hoverPayload.clickLoc.y);
