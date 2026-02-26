@@ -32,8 +32,7 @@ export const generateDeepSpace = (
   for (let i = 0; i < 500; i++) {
     const x = Phaser.Math.Between(0, width);
     const y = Phaser.Math.Between(0, height);
-    const rand = Math.random();
-    drawStar(oldStars, {x, y, bri: Phaser.Math.Between(5, 10), big: rand < 0.99, hue: 'reds'})
+    drawStar(oldStars, {x, y, bri: Phaser.Math.Between(3, 6), hue: 'reds'})
   }
   renderTexture.draw(oldStars);
   oldStars.destroy();
@@ -45,7 +44,7 @@ export const generateDeepSpace = (
     x: noisyX,
     y: noisyY,
     outerRadius: tenthWidth * 7,
-    tilt: Phaser.Math.FloatBetween(0.8, 0.95),
+    tilt: Phaser.Math.FloatBetween(0.6, 0.8),
     hue: themeHue,
     armCount: Phaser.Math.Between(2, 8),
     armStrength: Phaser.Math.FloatBetween(0.6, 0.96),
@@ -73,23 +72,23 @@ export const generateDeepSpace = (
   foregroundStars.destroy();
 
   // 4. Dust lanes
-  const dustG = scene.add.graphics();
+  // const dustG = scene.add.graphics();
 
-  drawDustLanes(dustG, {
-    x: noisyX,
-    y: noisyY,
-    length: 1600,
-    thickness: Phaser.Math.FloatBetween(80, 170),
-    curvature: Phaser.Math.FloatBetween(-0.6, 0.6),
-    alpha: Phaser.Math.FloatBetween(0.7, 0.99),
-    warmth: 0.35,
-    contrast: 0.85,
-    glowEdge: true,
-    laneCount: Phaser.Math.Between(1, 3),
-  });
+  // drawDustLanes(dustG, {
+  //   x: noisyX,
+  //   y: noisyY,
+  //   length: 1600,
+  //   thickness: Phaser.Math.FloatBetween(80, 170),
+  //   curvature: Phaser.Math.FloatBetween(-0.6, 0.6),
+  //   alpha: Phaser.Math.FloatBetween(0.7, 0.99),
+  //   warmth: 0.35,
+  //   contrast: 0.85,
+  //   glowEdge: true,
+  //   laneCount: Phaser.Math.Between(1, 3),
+  // });
 
-  renderTexture.draw(dustG);
-  dustG.destroy();
+  // renderTexture.draw(dustG);
+  // dustG.destroy();
 
   // drawNebula(galaxy, {
   //   x: 500,

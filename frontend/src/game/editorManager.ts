@@ -20,11 +20,31 @@ import { NULL_ENTITY } from 'shared/src/ecs/world';
 import { SimManager } from 'shared/src/ai/simulation/manager';
 import { EditorScene } from './editorScene';
 import { createRandom } from 'src/entities';
-import { query, getAllEntities, removeEntity, getEntityComponents, removeComponent } from 'bitecs';
+import { query, getAllEntities, removeEntity, getEntityComponents, removeComponent, addComponent, hasComponent, entityExists } from 'bitecs';
 import { ObjectTypes } from 'shared/src/types';
 import { Position } from 'shared/src/ecs/components';
 import { Collision } from 'shared/src/ecs/components';
+import { ObjectInfo } from 'shared/src/ecs/components/objectInfo';
+import { Player } from 'shared/src/ecs/components/player';
+import { Projectile } from 'shared/src/ecs/components/projectile';
+import { Destructible } from 'shared/src/ecs/components/destructible';
+import { Active } from 'shared/src/ecs/components/active';
+import { LeavesTrail } from 'src/render/components/leavesTrail';
+import { colToUi32 } from 'shared/src/utils';
+import { playerCols } from 'shared/src/utils/colour';
+import { DEFAULT_DEATHSTAR_RADIUS } from 'src/entities/deathStar';
+import {
+  getPersistTrails,
+  getLabelTrails,
+  recordShot,
+  getShotHistory,
+  getDeathStarSizeIndex,
+  getRemovedDestructibleEids,
+  addRemovedDestructibleEid,
+  clearRemovedDestructibleEids,
+} from 'src/editorOptions';
 import { gameBus, GameEvents } from 'src/util';
+import { setEditorBackground } from 'src/render/background';
 import { getSoundManager } from './resourceScene';
 import * as ecsComponents from 'shared/src/ecs/components';
 
@@ -109,6 +129,10 @@ export default class EditorManager {
     if (!creator) return;
     const eid = creator(this.world);
     if (eid === NULL_ENTITY) return;
+    if (ObjectInfo.type[eid] === ObjectTypes.DEATHSTAR) {
+      const multiplier = getDeathStarSizeIndex() + 1;
+      Collision.radius[eid] = DEFAULT_DEATHSTAR_RADIUS * multiplier;
+    }
     this.objectManager.setPendingGhostEid(eid);
     setPosition(eid, { x: 0, y: 0 });
     this.placementState = { mode: 'add', objectType, ghostEid: eid };
@@ -139,8 +163,14 @@ export default class EditorManager {
   private commitPlacement(x: number, y: number) {
     if (!this.placementState) return;
     if (this.placementState.mode === 'add') {
-      setPosition(this.placementState.ghostEid, { x, y });
-      this.objectManager.setGhost(this.placementState.ghostEid, false);
+      const eid = this.placementState.ghostEid;
+      setPosition(eid, { x, y });
+      if (ObjectInfo.type[eid] === ObjectTypes.DEATHSTAR) {
+        const multiplier = getDeathStarSizeIndex() + 1;
+        Collision.radius[eid] = DEFAULT_DEATHSTAR_RADIUS * multiplier;
+        this.objectManager.refreshObject(eid);
+      }
+      this.objectManager.setGhost(eid, false);
     } else {
       setPosition(this.placementState.eid, { x, y });
       this.objectManager.setGhost(this.placementState.eid, false);
@@ -198,10 +228,26 @@ export default class EditorManager {
   }
 
   private handlePointerMove(pointer: Phaser.Input.Pointer) {
-    if (!this.placementState) return;
-    const eid = this.placementState.mode === 'add' ? this.placementState.ghostEid : this.placementState.eid;
-    setPosition(eid, { x: pointer.x, y: pointer.y });
-    this.objectManager.updateObjectPosition(eid, pointer.x, pointer.y);
+    if (this.placementState) {
+      const eid = this.placementState.mode === 'add' ? this.placementState.ghostEid : this.placementState.eid;
+      setPosition(eid, { x: pointer.x, y: pointer.y });
+      this.objectManager.updateObjectPosition(eid, pointer.x, pointer.y);
+      return;
+    }
+    const ent = query(this.world, EditorManager.posQuery);
+    const overlappingEntities: Array<number> = [];
+    for (let i = 0; i < ent.length; i++) {
+      const entity = ent[i];
+      const pos = getPosition(entity);
+      const rad = getRadius(entity) || 5;
+      if (doCirclesOverlap(pointer.x, pointer.y, 2, pos.x, pos.y, rad)) {
+        overlappingEntities.push(entity);
+      }
+    }
+    gameBus.emit(GameEvents.ED_ENTITY_HOVERED, {
+      clickLoc: { x: pointer.x, y: pointer.y },
+      entities: overlappingEntities.map((eid) => serializeComponents(this.world, eid)),
+    });
   }
 
   private handlePointerUp() {}
@@ -264,6 +310,16 @@ export default class EditorManager {
       this.confirmFireShot(eid, angle, power),
     );
     gameBus.on(GameEvents.ED_UI_FIRE_SHOT_CANCEL, () => this.exitFireMode());
+    gameBus.on(GameEvents.ED_UI_CLEAR_TRAILS, () => this.clearAllTrails());
+    gameBus.on(GameEvents.ED_UI_OPTIONS_DEATHSTAR_SIZE, ({ sizeIndex }) =>
+      this.applyDeathStarSize(sizeIndex),
+    );
+    gameBus.on(GameEvents.ED_UI_OPTIONS_ALL_DESTRUCTIBLE, ({ enabled }) =>
+      this.setAllDestructible(enabled),
+    );
+    gameBus.on(GameEvents.ED_UI_OPTIONS_BACKGROUND, ({ bgType }) =>
+      setEditorBackground(this.scene, bgType),
+    );
   }
 
   private clearListeners() {
@@ -284,7 +340,52 @@ export default class EditorManager {
     gameBus.off(GameEvents.ED_UI_START_FIRE_SHOT);
     gameBus.off(GameEvents.ED_UI_FIRE_SHOT_CONFIRM);
     gameBus.off(GameEvents.ED_UI_FIRE_SHOT_CANCEL);
+    gameBus.off(GameEvents.ED_UI_CLEAR_TRAILS);
+    gameBus.off(GameEvents.ED_UI_OPTIONS_DEATHSTAR_SIZE);
+    gameBus.off(GameEvents.ED_UI_OPTIONS_ALL_DESTRUCTIBLE);
+    gameBus.off(GameEvents.ED_UI_OPTIONS_BACKGROUND);
     this.disableClickListeners();
+  }
+
+  private static projectileQuery = [Projectile];
+
+  private clearAllTrails() {
+    const projectiles = query(this.world, EditorManager.projectileQuery);
+    for (const projEid of projectiles) {
+      this.objectManager.removeChildren(projEid);
+    }
+  }
+
+  private applyDeathStarSize(sizeIndex: number) {
+    const multiplier = sizeIndex + 1;
+    const eids = getAllEntities(this.world);
+    for (const eid of eids) {
+      if (ObjectInfo.type[eid] === ObjectTypes.DEATHSTAR) {
+        Collision.radius[eid] = DEFAULT_DEATHSTAR_RADIUS * multiplier;
+        this.objectManager.refreshObject(eid);
+      }
+    }
+  }
+
+  private setAllDestructible(enabled: boolean) {
+    const eids = getAllEntities(this.world);
+    if (enabled) {
+      for (const eid of Array.from(getRemovedDestructibleEids())) {
+        if (entityExists(this.world, eid)) {
+          addComponent(this.world, eid, Destructible);
+          this.objectManager.refreshObject(eid);
+        }
+      }
+      clearRemovedDestructibleEids();
+    } else {
+      for (const eid of eids) {
+        if (hasComponent(this.world, eid, Active) && hasComponent(this.world, eid, Destructible)) {
+          removeComponent(this.world, eid, Destructible);
+          addRemovedDestructibleEid(eid);
+          this.objectManager.refreshObject(eid);
+        }
+      }
+    }
   }
 
   private clearECS() {
@@ -325,7 +426,18 @@ export default class EditorManager {
   private confirmFireShot(eid: number, angle: number, power: number) {
     this.lastAngle = angle;
     this.lastPower = power;
-    this.objectManager.removeAllChildren();
+    const projEid = Player.pooledProjectile[eid];
+    if (!getPersistTrails() && projEid !== undefined) {
+      this.objectManager.removeChildren(projEid);
+    }
+    // When persist is on we do not clear trails; trail.ts will dim previous trail
+    if (getLabelTrails() && projEid !== undefined) {
+      const history = getShotHistory(eid);
+      const colorIndex = history.length % playerCols.length;
+      const trailColor = playerCols[colorIndex];
+      LeavesTrail.col[projEid] = colToUi32(trailColor);
+      recordShot(eid, angle, power, trailColor);
+    }
     this.projectileManager.fireFrom(eid, angle, power);
     this.exitFireMode();
     const sm = getSoundManager(this.scene);

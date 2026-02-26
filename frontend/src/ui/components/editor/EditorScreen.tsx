@@ -10,7 +10,10 @@ import { stopEditorScene } from "src/game";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import { FiringPanel } from "./FiringPanel";
 import { DraggableInspectWindow } from "./DraggableInspectWindow";
-import type { InspectWindowState, MenuKind } from "./editorTypes";
+import { OptionsMenu, type OptionsMenuPanel } from "./OptionsMenu";
+import { TrailLegendTooltip } from "./TrailLegendTooltip";
+import type { InspectWindowState, MenuKind } from "./types";
+import { subscribe as subscribeEditorOptions } from "src/editorOptions";
 import {
   clamp,
   computeAnchoredMenuPos,
@@ -63,10 +66,21 @@ export const EditorScreen = () => {
   const [inspectWindows, setInspectWindows] = useState<
     Map<number, InspectWindowState>
   >(() => new Map());
+  const [optionsPanel, setOptionsPanel] = useState<OptionsMenuPanel>("root");
+  const [, setOptionsVersion] = useState(0);
+  const [hoverPayload, setHoverPayload] = useState<SelectionClick | null>(null);
+
+  useEffect(() => {
+    const unsub = subscribeEditorOptions(() => setOptionsVersion((v) => v + 1));
+    return unsub;
+  }, []);
 
   useEffect(() => {
     gameBus.on(GameEvents.ED_ENTITY_CLICKED, (clickPayload) => {
       setLastClick(clickPayload);
+    });
+    gameBus.on(GameEvents.ED_ENTITY_HOVERED, (payload) => {
+      setHoverPayload(payload);
     });
     gameBus.on(GameEvents.ED_PH_DELETE_ENTITY, ({ eid }) => {
       setInspectWindows((prev) => {
@@ -121,6 +135,7 @@ export const EditorScreen = () => {
 
     return () => {
       gameBus.off(GameEvents.ED_ENTITY_CLICKED);
+      gameBus.off(GameEvents.ED_ENTITY_HOVERED);
       gameBus.off(GameEvents.ED_PH_DELETE_ENTITY);
       gameBus.off(GameEvents.ED_FIRE_MODE_EXITED);
       gameBus.off(GameEvents.ED_FIRE_SHOT_READY);
@@ -129,7 +144,9 @@ export const EditorScreen = () => {
   }, []);
 
   const addButtonRef = useRef<HTMLButtonElement>(null);
+  const optionsButtonRef = useRef<HTMLButtonElement>(null);
   const selectionMenuRef = useRef<HTMLDivElement>(null);
+  const optionsMenuRef = useRef<HTMLDivElement>(null);
 
   const closeMenus = useCallback(() => {
     setMenuKind(null);
@@ -138,7 +155,10 @@ export const EditorScreen = () => {
   }, []);
 
   useOutsideClick(
-    [selectionMenuRef as React.RefObject<HTMLElement>],
+    [
+      selectionMenuRef as React.RefObject<HTMLElement>,
+      optionsMenuRef as React.RefObject<HTMLElement>,
+    ],
     closeMenus,
     menuKind !== null
   );
@@ -217,6 +237,15 @@ export const EditorScreen = () => {
     }
   }, []);
 
+  const openOptionsMenu = useCallback(() => {
+    const rect = optionsButtonRef.current?.getBoundingClientRect();
+    if (rect) {
+      setMenuPos({ x: rect.left, y: rect.bottom + 4 });
+      setMenuKind("options");
+      setOptionsPanel("root");
+    }
+  }, []);
+
   const onPickEntityFromSelect = useCallback((entity: SerializedEntity) => {
     setActiveEntity(entity);
     setMenuKind("actions");
@@ -227,7 +256,10 @@ export const EditorScreen = () => {
   const renderSelectionMenu = () => {
     if (
       !menuPos ||
-      (menuKind !== "select" && menuKind !== "actions" && menuKind !== "addEntity")
+      (menuKind !== "select" &&
+        menuKind !== "actions" &&
+        menuKind !== "addEntity" &&
+        menuKind !== "options")
     ) {
       return null;
     }
@@ -295,6 +327,17 @@ export const EditorScreen = () => {
         />
       );
     }
+    if (menuKind === "options") {
+      return (
+        <OptionsMenu
+          position={menuPos}
+          menuRef={optionsMenuRef}
+          panel={optionsPanel}
+          onPanelChange={setOptionsPanel}
+          onClose={closeMenus}
+        />
+      );
+    }
     return null;
   };
 
@@ -314,7 +357,11 @@ export const EditorScreen = () => {
       <button ref={addButtonRef} onClick={openAddEntityMenu}>
         add
       </button>
+      <button ref={optionsButtonRef} onClick={openOptionsMenu}>
+        options
+      </button>
       {renderSelectionMenu()}
+      <TrailLegendTooltip hoverPayload={hoverPayload} />
 
       {firingFrom != null && (
         <FiringPanel

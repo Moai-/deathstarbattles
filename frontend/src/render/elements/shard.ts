@@ -9,7 +9,7 @@ export interface ShardConfig {
 }
 
 export const createShard = (
-  scene: Phaser.Scene,
+  gfx: Phaser.GameObjects.Graphics,
   cfg: ShardConfig = {},
 ): Phaser.GameObjects.Graphics => {
   const {
@@ -38,8 +38,6 @@ export const createShard = (
       Phaser.Display.Color.HSLToColor(baseHue / 360, sat, light + dL).color,
   );
 
-  const g = scene.add.graphics().setAlpha(alpha);
-
   const centre = { x: 0, y: 0 };
   const tris = [
     [centre, v[0], v[1]],
@@ -49,14 +47,14 @@ export const createShard = (
   ];
 
   tris.forEach((tri, idx) => {
-    g.fillStyle(facetColours[idx]);
-    g.beginPath();
-    g.moveTo(tri[0].x, tri[0].y);
-    g.lineTo(tri[1].x, tri[1].y);
-    g.lineTo(tri[2].x, tri[2].y);
-    g.closePath();
-    g.fillPath();
+    gfx.fillStyle(facetColours[idx]);
+    gfx.beginPath();
+    gfx.moveTo(tri[0].x, tri[0].y);
+    gfx.lineTo(tri[1].x, tri[1].y);
+    gfx.lineTo(tri[2].x, tri[2].y);
+    gfx.closePath();
+    gfx.fillPath();
   });
 
-  return g;
+  return gfx;
 };

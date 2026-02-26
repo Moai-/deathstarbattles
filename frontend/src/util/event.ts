@@ -1,5 +1,5 @@
 import mitt from 'mitt';
-import { AnyPoint, GameConfig, ObjectTypes, OtherActions } from 'shared/src/types';
+import { AnyPoint, Backgrounds, GameConfig, ObjectTypes, OtherActions } from 'shared/src/types';
 import { SerializedEntity } from 'shared/src/utils';
 
 type WinnerData = { col: number; playerId: number };
@@ -112,6 +112,12 @@ export enum GameEvents {
   ED_UI_FIRE_SHOT_CONFIRM = 'ed_ui_fireshotconfirm',
   ED_UI_FIRE_SHOT_CANCEL = 'ed_ui_fireshotcancel',
   ED_FIRE_MODE_EXITED = 'ed_firemodeexited',
+  // Editor options
+  ED_UI_CLEAR_TRAILS = 'ed_ui_cleartrails',
+  ED_UI_OPTIONS_DEATHSTAR_SIZE = 'ed_ui_options_deathstarsize',
+  ED_UI_OPTIONS_ALL_DESTRUCTIBLE = 'ed_ui_options_alldestructible',
+  ED_UI_OPTIONS_BACKGROUND = 'ed_ui_options_background',
+  ED_ENTITY_HOVERED = 'ed_entityhovered',
 }
 
 type EventData = {
@@ -152,6 +158,12 @@ type EventData = {
   [GameEvents.ED_UI_FIRE_SHOT_CONFIRM]: FireShotConfirmPayload;
   [GameEvents.ED_UI_FIRE_SHOT_CANCEL]: void;
   [GameEvents.ED_FIRE_MODE_EXITED]: void;
+  // Editor options
+  [GameEvents.ED_UI_CLEAR_TRAILS]: void;
+  [GameEvents.ED_UI_OPTIONS_DEATHSTAR_SIZE]: { sizeIndex: number };
+  [GameEvents.ED_UI_OPTIONS_ALL_DESTRUCTIBLE]: { enabled: boolean };
+  [GameEvents.ED_UI_OPTIONS_BACKGROUND]: { bgType: Backgrounds };
+  [GameEvents.ED_ENTITY_HOVERED]: SelectionClick;
 };
 
 export const gameBus = mitt<EventData>();

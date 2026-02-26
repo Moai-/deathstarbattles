@@ -8,6 +8,9 @@ import { GameObjectManager } from '../objectManager';
 import { Depths } from '../types';
 import { Collision, Projectile } from 'shared/src/ecs/components';
 import { getSquaredDistance } from 'shared/src/ai/functions';
+import { getPersistTrails } from 'src/editorOptions';
+
+const PERSISTED_TRAIL_ALPHA = 0.4;
 
 type MakeTrail = (
   projEid: number,
@@ -84,6 +87,14 @@ const beadsOnAStringTrail: MakeTrail = (projEid, manager, scene) => {
 };
 
 export const makeTrail: MakeTrail = (projEid, manager, scene) => {
+  if (getPersistTrails()) {
+    const existing = manager.getChildren(projEid);
+    if (existing.length > 0) {
+      for (const child of existing) {
+        (child as Phaser.GameObjects.Graphics).setAlpha(PERSISTED_TRAIL_ALPHA);
+      }
+    }
+  }
   switch (LeavesTrail.type[projEid]) {
     case TrailType.BEADS_ON_A_STRING:
       return beadsOnAStringTrail(projEid, manager, scene);

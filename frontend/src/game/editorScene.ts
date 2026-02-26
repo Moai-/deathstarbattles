@@ -17,7 +17,7 @@ export class EditorScene extends BaseScene {
 
   constructor() {
     super('EditorScene');
-    this.debug = true;
+    // this.debug = true;
   }
 
   create() {

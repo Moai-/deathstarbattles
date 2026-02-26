@@ -50,6 +50,7 @@ export class BaseScene extends Phaser.Scene {
     this.polarJetSystem(this.world);
     this.collisionSystem(this.world);
     this.renderSystem(this.world);
+    this.fxManager.update();
   }
 
   destroy() {

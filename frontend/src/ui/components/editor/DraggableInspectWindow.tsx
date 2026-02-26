@@ -1,6 +1,6 @@
 import { useDraggable } from "../../hooks/useDraggable";
 import { useResize } from "../../hooks/useResize";
-import type { InspectWindowState } from "./editorTypes";
+import type { InspectWindowState } from "./types";
 import {
   COLLAPSED_HEIGHT,
   DEFAULT_WINDOW_HEIGHT,
@@ -134,7 +134,7 @@ export const DraggableInspectWindow = (props: DraggableInspectWindowProps) => {
                     flexShrink: 0,
                   }}
                 >
-                  ×
+                  x
                 </button>
                 <span>{c.key}</span>
               </div>

@@ -1,6 +1,6 @@
 import { BASE_HEIGHT, BASE_WIDTH } from "shared/src/consts";
 import { ObjectTypes } from "shared/src/types";
-import type { ClickLoc } from "./editorTypes";
+import type { ClickLoc } from "./types";
 
 export const clamp = (n: number, min: number, max: number): number => {
   return Math.max(min, Math.min(max, n));
@@ -28,6 +28,18 @@ export const getCanvasRect = (): DOMRect | null => {
     return null;
   }
   return canvas.getBoundingClientRect();
+};
+
+/** Convert game/canvas coordinates to viewport (fixed) coordinates. */
+export const canvasToScreen = (canvasX: number, canvasY: number): { x: number; y: number } => {
+  const rect = getCanvasRect();
+  if (!rect) return { x: canvasX, y: canvasY };
+  const scaleX = rect.width / BASE_WIDTH;
+  const scaleY = rect.height / BASE_HEIGHT;
+  return {
+    x: rect.left + canvasX * scaleX,
+    y: rect.top + canvasY * scaleY,
+  };
 };
 
 export const computeAnchoredMenuPos = (

@@ -2,7 +2,7 @@ import { SerializedComponent } from "shared/src/utils";
 
 export type ClickLoc = { x: number; y: number };
 
-export type MenuKind = "select" | "actions" | "addEntity";
+export type MenuKind = "select" | "actions" | "addEntity" | "options";
 
 export type InspectWindowState = {
   eid: number;
