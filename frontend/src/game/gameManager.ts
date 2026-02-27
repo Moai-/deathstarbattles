@@ -71,6 +71,7 @@ export default class GameManager {
   }
 
   create() {
+    console.log('gameman create')
     this.indicator.create();
     this.inputHandler.create();
     this.setUpListeners();
@@ -78,6 +79,8 @@ export default class GameManager {
   }
 
   destroy() {
+    console.log('gameman destroy')
+
     this.clearListeners();
     this.indicator.destroy();
     this.inputHandler.destroy();
@@ -94,11 +97,14 @@ export default class GameManager {
   }
 
   async startGame(conf: GameConfig) {
+    console.log('gameman start')
+
     this.active = true;
     this.numTurn = 0;
     this.activePlayerIndex = -1;
     this.turnInputs = [];
     const { players } = runGameSetup(this.scene, this.world, conf)!;
+    console.log(players);
     this.scene.fxManager.update();
     this.isHyperspace = getHyperLocus(this.world) !== null;
 
@@ -114,6 +120,7 @@ export default class GameManager {
   }
 
   private startTurn() {
+    console.log('gameman first turn')
     if (this.activePlayerIndex < 0) {
       this.activePlayerIndex = 0;
     }

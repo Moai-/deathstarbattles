@@ -3,12 +3,13 @@
     "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "node",
+    "jsx": "react",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "outDir": "./dist",
-    "baseUrl": "."
+    "baseUrl": ".",
   }
 }

@@ -4,7 +4,7 @@ import Select from 'react-select';
 import { StylesConfig, SingleValue } from 'react-select';
 import { useSetup } from './context';
 import { PlayerSetup } from 'shared/src/types';
-import playerCols, { colNames } from 'src/game/playerCols';
+import {playerCols, colNames} from 'shared/src/utils';
 import { toHTMLHex } from 'src/ui/functions/utils';
 
 interface ColorOption {

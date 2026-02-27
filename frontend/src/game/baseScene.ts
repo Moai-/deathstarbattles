@@ -6,6 +6,7 @@ import {
   createMovementSystem,
   createPathTrackerSystem,
   createPolarJetSystem,
+  createJetMaintenanceSystem,
 } from 'shared/src/ecs/systems';
 import { createRenderObservers, createRenderSystem } from '../render/renderSystem';
 import { GameObjectManager } from '../render/objectManager';
@@ -15,7 +16,6 @@ import { getSoundManager } from './resourceScene';
 import { drawPathListener } from 'src/util/debug';
 import { resetWorld } from 'bitecs';
 import { FxManager } from './fxManager';
-import { createJetMaintenanceSystem } from 'shared/src/ecs/systems/jet';
 
 export class BaseScene extends Phaser.Scene {
   public world = createGameWorld();

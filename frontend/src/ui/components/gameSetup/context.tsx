@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import playerCols from 'src/game/playerCols';
+import {playerCols} from 'shared/src/utils';
 import { PlayerSetup } from 'shared/src/types';
 
 type BotConf = {

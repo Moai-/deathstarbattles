@@ -19,7 +19,7 @@ export class FxManager {
   }
 
   update() {
-    setTimeout(() => {
+    queueMicrotask(() => {
       const blackHoleFX = this.getPipeline('BlackHoleFX');
       if (blackHoleFX) {
         const blackHoles = buildColliderCache(this.scene.world).filter(
@@ -27,7 +27,7 @@ export class FxManager {
         );
         (blackHoleFX as BlackHolePipeline).updateHoles(blackHoles);
       }
-    });
+    })
   }
 
   destroy() {

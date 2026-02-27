@@ -15,12 +15,10 @@ export class GameObjectManager {
 
   constructor(private scene: BaseScene) {}
 
-  /** Call before the entity is created so the next createObject for this eid gets ghost style. */
   setPendingGhostEid(eid: number | null) {
     this.pendingGhostEid = eid;
   }
 
-  /** Apply or remove editor placement ghost style (reduced alpha and scale). */
   setGhost(eid: number, ghost: boolean) {
     const obj = this.getObject(eid) as Phaser.GameObjects.Container | undefined;
     if (!obj) return;
@@ -39,9 +37,10 @@ export class GameObjectManager {
   }
 
   createObject(eid: number) {
-    // Wrap in microtask because the new observer is too damn fast
-    // If I don't do this, the manager tries to render the entity
-    // before it even knows what it needs to render...
+    // Wrap in microtask because the bitecs 4.0 new observer is too damn fast
+    // If I don't do this, the manager tries to render the entity before it 
+    // even knows what it needs to render...
+    // TODO: figure out how to do this without microtask, this is a crutch IMO
     queueMicrotask(() => {
       const rendered = this.renderEntity(eid);
       this.objects.set(eid, rendered);
@@ -183,6 +182,7 @@ export class GameObjectManager {
   }
 
   destroy() {
+    console.log('objman destroy')
     this.removeAllBoundaryIndicators();
     this.removeAllChildren();
     this.removeAllObjects();
