@@ -8,8 +8,8 @@
     "dev": "cd frontend && vite",
     "build": "cd frontend && vite build",
     "start": "vite preview --config frontend/vite.config.ts",
-    "predeploy": "echo 'deathstarbattles.ca' > dist/CNAME",
-    "deploy": "gh-pages -d dist",
+    "predeploy": "node scripts/write-cname.js",
+    "deploy": "yarn build && yarn predeploy && gh-pages -d dist",
     "postinstall": "cd frontend && yarn && cd ../shared && yarn"
   },
   "author": "Moai-",

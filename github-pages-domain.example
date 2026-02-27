@@ -1,0 +1,4 @@
+# Custom domain for GitHub Pages (no leading https:// or trailing slash).
+# Copy this file to github-pages-domain and set your domain, or set env GITHUB_PAGES_DOMAIN.
+# Leave unset to use the default *.github.io URL.
+deathstarbattles.ca
