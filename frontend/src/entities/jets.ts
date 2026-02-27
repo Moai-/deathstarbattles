@@ -15,8 +15,7 @@ type AddJetsOpts = {
   outerFadeBias?: number;
 };
 
-
-export const addJets = (eid: number, world: World, opts: AddJetsOpts) => {
+ export const addJets = (eid: number, world: World, opts: AddJetsOpts) => {
   addComponent(world, eid, HasPolarJets);
   const r = Collision.radius[eid];
 
@@ -30,9 +29,10 @@ export const addJets = (eid: number, world: World, opts: AddJetsOpts) => {
 
   HasPolarJets.innerRadius[eid] = innerRadius;
   HasPolarJets.length[eid] = length;
+  HasPolarJets.rotation[eid] = axis;
 
   HasPolarJets.spreadRad[eid] = spreadRad;
-  HasPolarJets.tanHalfSpread[eid] = Math.tan(spreadRad * 0.5);
+  HasPolarJets._tanHalfSpread[eid] = Math.tan(spreadRad * 0.5);
 
   HasPolarJets.deflectAngleRad[eid] = deflect;
   HasPolarJets.jetStrength[eid] = opts.strength ?? 10;
@@ -45,9 +45,9 @@ export const addJets = (eid: number, world: World, opts: AddJetsOpts) => {
   const c = Math.cos(axis);
   const s = Math.sin(axis);
 
-  HasPolarJets.dirX[eid] = c;
-  HasPolarJets.dirY[eid] = s;
+  HasPolarJets._dirX[eid] = c;
+  HasPolarJets._dirY[eid] = s;
 
-  HasPolarJets.perpX[eid] = -s;
-  HasPolarJets.perpY[eid] = c;
+  HasPolarJets._perpX[eid] = -s;
+  HasPolarJets._perpY[eid] = c;
 };

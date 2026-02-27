@@ -15,6 +15,7 @@ import { getSoundManager } from './resourceScene';
 import { drawPathListener } from 'src/util/debug';
 import { resetWorld } from 'bitecs';
 import { FxManager } from './fxManager';
+import { createJetMaintenanceSystem } from 'shared/src/ecs/systems/jet';
 
 export class BaseScene extends Phaser.Scene {
   public world = createGameWorld();
@@ -27,6 +28,7 @@ export class BaseScene extends Phaser.Scene {
   protected pathTrackerSystem = createPathTrackerSystem();
   protected gravitySystem = createGravitySystem();
   protected polarJetSystem = createPolarJetSystem();
+  protected jetMaintenanceSystem = createJetMaintenanceSystem();
   protected collisionSystem = createCollisionSystem();
   protected renderSystem = createRenderSystem(this, this.objectManager);
 
@@ -48,6 +50,7 @@ export class BaseScene extends Phaser.Scene {
     this.pathTrackerSystem(this.world);
     this.gravitySystem(this.world);
     this.polarJetSystem(this.world);
+    this.jetMaintenanceSystem(this.world);
     this.collisionSystem(this.world);
     this.renderSystem(this.world);
     this.fxManager.update();

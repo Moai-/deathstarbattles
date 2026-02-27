@@ -25,9 +25,7 @@ export class FxManager {
         const blackHoles = buildColliderCache(this.scene.world).filter(
           (o) => getType(o.eid) === ObjectTypes.BLACK_HOLE
         );
-        if (blackHoles.length) {
-          (blackHoleFX as BlackHolePipeline).updateHoles(blackHoles);
-        }
+        (blackHoleFX as BlackHolePipeline).updateHoles(blackHoles);
       }
     });
   }

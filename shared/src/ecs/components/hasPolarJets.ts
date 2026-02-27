@@ -8,14 +8,8 @@ export const HasPolarJets = {
   // Geometry
   innerRadius: new Float32Array(MAX_ENTITIES),
   length: new Float32Array(MAX_ENTITIES),
-  tanHalfSpread: new Float32Array(MAX_ENTITIES),
   spreadRad: new Float32Array(MAX_ENTITIES),
-
-  // Precomputed basis (so we don't sin/cos every loop)
-  dirX: new Float32Array(MAX_ENTITIES),
-  dirY: new Float32Array(MAX_ENTITIES),
-  perpX: new Float32Array(MAX_ENTITIES),
-  perpY: new Float32Array(MAX_ENTITIES),
+  rotation: new Float32Array(MAX_ENTITIES),
 
   // Shaping
   corePow: new Float32Array(MAX_ENTITIES),
@@ -24,6 +18,18 @@ export const HasPolarJets = {
 
   // Deflection angle
   deflectAngleRad: new Float32Array(MAX_ENTITIES),
+  
+  // Precomputed basis (so we don't sin/cos every loop)
+  _dirX: new Float32Array(MAX_ENTITIES),
+  _dirY: new Float32Array(MAX_ENTITIES),
+  _perpX: new Float32Array(MAX_ENTITIES),
+  _perpY: new Float32Array(MAX_ENTITIES),
+  _tanHalfSpread: new Float32Array(MAX_ENTITIES),
+
+  // Dirty flags
+  _prevRotation: new Float32Array(MAX_ENTITIES),
+  _prevSpread: new Float32Array(MAX_ENTITIES),
+  
 };
 
 nameComponent(HasPolarJets, 'HasPolarJets');

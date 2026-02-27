@@ -6,6 +6,7 @@ import { AffectedByJets } from "../components/affectedByJets";
 
 const JET_EPS = 1e-6;
 
+const jetMaintenanceQueries = [HasPolarJets];
 const jetSourceEntities = [HasPolarJets, Position, Active];
 const jetTargetEntities = [AffectedByJets, Velocity, Position, Active];
 
@@ -127,12 +128,12 @@ export const createPolarJetSystem = () => {
         const strength = HasPolarJets.jetStrength[sid];
         const innerRadius = HasPolarJets.innerRadius[sid];
         const length = HasPolarJets.length[sid];
-        const tanHalf = HasPolarJets.tanHalfSpread[sid];
+        const tanHalf = HasPolarJets._tanHalfSpread[sid];
 
-        const dirX = HasPolarJets.dirX[sid];
-        const dirY = HasPolarJets.dirY[sid];
-        const perpX = HasPolarJets.perpX[sid];
-        const perpY = HasPolarJets.perpY[sid];
+        const dirX = HasPolarJets._dirX[sid];
+        const dirY = HasPolarJets._dirY[sid];
+        const perpX = HasPolarJets._perpX[sid];
+        const perpY = HasPolarJets._perpY[sid];
 
         const corePow = HasPolarJets.corePow[sid] || 2.2;
         const endFadeFrac = HasPolarJets.endFadeFrac[sid] ?? 0.22;
@@ -170,3 +171,26 @@ export const createPolarJetSystem = () => {
   }
 };
 
+export const createJetMaintenanceSystem = () => {
+  return (world: GameWorld) => {
+    const eids = query(world, jetMaintenanceQueries);
+    for (let i = 0; i < eids.length; i++) {
+      const eid = eids[i];
+      const rot = HasPolarJets.rotation[eid];
+      const spread = HasPolarJets.spreadRad[eid];
+      if (rot !== HasPolarJets._prevRotation[eid]) {
+        const c = Math.cos(rot);
+        const s = Math.sin(rot);
+        HasPolarJets._dirX[eid] = c;
+        HasPolarJets._dirY[eid] = s;
+        HasPolarJets._perpX[eid] = -s;
+        HasPolarJets._perpY[eid] = c;
+        HasPolarJets._prevRotation[eid] = rot;
+      }
+      if (spread !== HasPolarJets._prevSpread[eid]) {
+        HasPolarJets._tanHalfSpread[eid] = Math.tan(spread * 0.5);
+        HasPolarJets._prevSpread[eid] = spread;
+      }
+    }
+  }
+}

@@ -42,9 +42,9 @@ const renderNeutronStar: RenderObject = (scene, eid) => {
     falloffPow: 1.5,
     depth: Depths.GFX,
   };
-  const axisAngleRad = Math.atan2(HasPolarJets.dirY[eid], HasPolarJets.dirX[eid]);
-  const jetA = drawJet(scene, { x: 0, y: 0 }, baseCol, axisAngleRad, jetStyle);
-  const jetB = drawJet(scene, { x: 0, y: 0 }, baseCol, axisAngleRad + Math.PI, jetStyle);
+  const rotation = HasPolarJets.rotation[eid];
+  const jetA = drawJet(scene, { x: 0, y: 0 }, baseCol, rotation, jetStyle);
+  const jetB = drawJet(scene, { x: 0, y: 0 }, baseCol, rotation + Math.PI, jetStyle);
   container.add(jetA);
   container.add(jetB);
   container.setDepth(Depths.STARS);

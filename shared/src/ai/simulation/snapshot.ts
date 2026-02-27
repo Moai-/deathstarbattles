@@ -66,13 +66,16 @@ export const buildSnapshot = (
     // Jets
     jetStrength: new Float32Array(n),
     innerRadius: new Float32Array(n),
+    rotation: new Float32Array(n),
     length: new Float32Array(n),
-    tanHalfSpread: new Float32Array(n),
+    _tanHalfSpread: new Float32Array(n),
+    _prevRotation: new Float32Array(n),
+    _prevSpread: new Float32Array(n),
     spreadRad: new Float32Array(n),
-    dirX: new Float32Array(n),
-    dirY: new Float32Array(n),
-    perpX: new Float32Array(n),
-    perpY: new Float32Array(n),
+    _dirX: new Float32Array(n),
+    _dirY: new Float32Array(n),
+    _perpX: new Float32Array(n),
+    _perpY: new Float32Array(n),
     corePow: new Float32Array(n),
     endFadeFrac: new Float32Array(n), 
     outerFadeBias: new Float32Array(n),
@@ -123,12 +126,12 @@ export const buildSnapshot = (
     snap.jetStrength[i] = HasPolarJets.jetStrength[src];
     snap.innerRadius[i] = HasPolarJets.innerRadius[src];
     snap.length[i] = HasPolarJets.length[src];
-    snap.tanHalfSpread[i] = HasPolarJets.tanHalfSpread[src];
+    snap._tanHalfSpread[i] = HasPolarJets._tanHalfSpread[src];
     snap.spreadRad[i] = HasPolarJets.spreadRad[src];
-    snap.dirX[i] = HasPolarJets.dirX[src];
-    snap.dirY[i] = HasPolarJets.dirY[src];
-    snap.perpX[i] = HasPolarJets.perpX[src];
-    snap.perpY[i] = HasPolarJets.perpY[src];
+    snap._dirX[i] = HasPolarJets._dirX[src];
+    snap._dirY[i] = HasPolarJets._dirY[src];
+    snap._perpX[i] = HasPolarJets._perpX[src];
+    snap._perpY[i] = HasPolarJets._perpY[src];
     snap.corePow[i] = HasPolarJets.corePow[src];
     snap.endFadeFrac[i] = HasPolarJets.endFadeFrac[src];
     snap.outerFadeBias[i] = HasPolarJets.outerFadeBias[src];
@@ -167,12 +170,12 @@ export const buffersOf = (s: SimSnapshot) => [
   s.jetStrength.buffer,
   s.innerRadius.buffer,
   s.length.buffer,
-  s.tanHalfSpread.buffer,
+  s._tanHalfSpread.buffer,
   s.spreadRad.buffer,
-  s.dirX.buffer,
-  s.dirY.buffer,
-  s.perpX.buffer,
-  s.perpY.buffer,
+  s._dirX.buffer,
+  s._dirY.buffer,
+  s._perpX.buffer,
+  s._perpY.buffer,
   s.corePow.buffer,
   s.endFadeFrac.buffer,
   s.outerFadeBias.buffer,
@@ -216,12 +219,12 @@ export const restoreSnapshot = (snapshot: SimSnapshot, world: GameWorld) => {
   HasPolarJets.jetStrength.set(snapshot.jetStrength.subarray(0, n), ENTITY_START_CURSOR);
   HasPolarJets.innerRadius.set(snapshot.innerRadius.subarray(0, n), ENTITY_START_CURSOR);
   HasPolarJets.length.set(snapshot.length.subarray(0, n), ENTITY_START_CURSOR);
-  HasPolarJets.tanHalfSpread.set(snapshot.tanHalfSpread.subarray(0, n), ENTITY_START_CURSOR);
+  HasPolarJets._tanHalfSpread.set(snapshot._tanHalfSpread.subarray(0, n), ENTITY_START_CURSOR);
   HasPolarJets.spreadRad.set(snapshot.spreadRad.subarray(0, n), ENTITY_START_CURSOR);
-  HasPolarJets.dirX.set(snapshot.dirX.subarray(0, n), ENTITY_START_CURSOR);
-  HasPolarJets.dirY.set(snapshot.dirY.subarray(0, n), ENTITY_START_CURSOR);
-  HasPolarJets.perpX.set(snapshot.perpX.subarray(0, n), ENTITY_START_CURSOR);
-  HasPolarJets.perpY.set(snapshot.perpY.subarray(0, n), ENTITY_START_CURSOR);
+  HasPolarJets._dirX.set(snapshot._dirX.subarray(0, n), ENTITY_START_CURSOR);
+  HasPolarJets._dirY.set(snapshot._dirY.subarray(0, n), ENTITY_START_CURSOR);
+  HasPolarJets._perpX.set(snapshot._perpX.subarray(0, n), ENTITY_START_CURSOR);
+  HasPolarJets._perpY.set(snapshot._perpY.subarray(0, n), ENTITY_START_CURSOR);
   HasPolarJets.corePow.set(snapshot.corePow.subarray(0, n), ENTITY_START_CURSOR);
   HasPolarJets.endFadeFrac.set(snapshot.endFadeFrac.subarray(0, n), ENTITY_START_CURSOR);
   HasPolarJets.outerFadeBias.set(snapshot.outerFadeBias.subarray(0, n), ENTITY_START_CURSOR);

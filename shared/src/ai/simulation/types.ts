@@ -59,13 +59,16 @@ export interface SimSnapshot {
   // Jets
   jetStrength: Float32Array;
   innerRadius: Float32Array;
+  rotation: Float32Array;
   length: Float32Array;
-  tanHalfSpread: Float32Array;
+  _tanHalfSpread: Float32Array;
   spreadRad: Float32Array;
-  dirX: Float32Array;
-  dirY: Float32Array;
-  perpX: Float32Array;
-  perpY: Float32Array;
+  _dirX: Float32Array;
+  _dirY: Float32Array;
+  _perpX: Float32Array;
+  _perpY: Float32Array;
+  _prevRotation: Float32Array;
+  _prevSpread: Float32Array;
   corePow: Float32Array;
   endFadeFrac: Float32Array;
   outerFadeBias: Float32Array;

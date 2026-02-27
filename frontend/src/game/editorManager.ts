@@ -61,6 +61,7 @@ export default class EditorManager {
   // editor state
   private placementState: PlacementState = null;
   private escapeKey: Phaser.Input.Keyboard.Key | null = null;
+  private shiftKey: Phaser.Input.Keyboard.Key | null = null;
   /** When set, we are in "fire shot" mode for this Death Star eid. */
   private firingFromEid: number | null = null;
   /** Persisted angle/power between firing shots. */
@@ -101,6 +102,7 @@ export default class EditorManager {
   ready() {
     this.enableClickListeners();
     this.escapeKey = this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) ?? null;
+    this.shiftKey = this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT) ?? null;
   }
 
   /** Called from EditorScene each frame; handles Escape to abort placement or fire mode. */
@@ -156,6 +158,7 @@ export default class EditorManager {
     if (!this.placementState) return;
     if (this.placementState.mode === 'add') {
       const eid = this.placementState.ghostEid;
+      const objectType = this.placementState.objectType;
       setPosition(eid, { x, y });
       if (ObjectInfo.type[eid] === ObjectTypes.DEATHSTAR) {
         const multiplier = getDeathStarSizeIndex() + 1;
@@ -163,11 +166,15 @@ export default class EditorManager {
         this.objectManager.refreshObject(eid);
       }
       this.objectManager.setGhost(eid, false);
+      this.placementState = null;
+      if (this.shiftKey?.isDown) {
+        this.startPlaceEntity(objectType);
+      }
     } else {
       setPosition(this.placementState.eid, { x, y });
       this.objectManager.setGhost(this.placementState.eid, false);
+      this.placementState = null;
     }
-    this.placementState = null;
   }
 
   onCollision(eid1: number, eid2: number, wasDestroyed: boolean) {

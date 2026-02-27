@@ -23,14 +23,14 @@ const renderJetBlackHole: RenderObject = (scene, eid) => {
     falloffPow: 1.5,
     depth: Depths.GFX,
   };
-  const axisAngleRad = Math.atan2(HasPolarJets.dirY[eid], HasPolarJets.dirX[eid]);
+  const rotation = HasPolarJets.rotation[eid];
   const baseCol = generateRandomCol(
     { r: 253, g: 40, b: 10 },
     { r: 3, g: 216, b: 51 },
   );
   const cols = generateStarCols(baseCol, 6);
-  const jetA = drawJet(scene, { x: 0, y: 0 }, cols[5], axisAngleRad, jetStyle);
-  const jetB = drawJet(scene, { x: 0, y: 0 }, cols[5], axisAngleRad + Math.PI, jetStyle);
+  const jetA = drawJet(scene, { x: 0, y: 0 }, cols[5], rotation, jetStyle);
+  const jetB = drawJet(scene, { x: 0, y: 0 }, cols[5], rotation + Math.PI, jetStyle);
   const disk = drawAccretionDisk(
     scene,
     { x: 0, y: 0 },
@@ -46,7 +46,7 @@ const renderJetBlackHole: RenderObject = (scene, eid) => {
       depth: Depths.GFX,
     },
   );
-  disk.setRotation(axisAngleRad + Math.PI / 2);
+  disk.setRotation(rotation + Math.PI / 2);
 
   container.add(jetA);
   container.add(jetB);

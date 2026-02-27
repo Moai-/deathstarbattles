@@ -143,7 +143,7 @@ export const DraggableInspectWindow = (props: DraggableInspectWindowProps) => {
                 {Object.entries(c.props ?? {}).length === 0 ? (
                   <div>(no props)</div>
                 ) : (
-                  Object.entries(c.props).map(([propKey, value]) => {
+                  Object.entries(c.props).filter(([propKey]) => propKey[0] !== '_').map(([propKey, value]) => {
                     const inputId = `eid-${win.eid}-${c.key}-${propKey}`;
                     const valueType = typeof value;
 
@@ -179,6 +179,7 @@ export const DraggableInspectWindow = (props: DraggableInspectWindowProps) => {
                         <input
                           id={inputId}
                           type={isNumber ? "number" : "text"}
+                          step={propKey === 'rotation' ? 0.01 : 1}
                           value={isNullish ? "" : String(value)}
                           onChange={(e) =>
                             onEditProp(

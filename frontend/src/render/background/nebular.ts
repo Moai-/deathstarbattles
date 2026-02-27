@@ -24,7 +24,7 @@ export const generateNebular = (
     const x = Phaser.Math.Between(0, width);
     const y = Phaser.Math.Between(0, height);
     const rand = Math.random();
-    drawStar(oldStars, {x, y, big: rand < 0.99})
+    drawStar(oldStars, {x, y, size: rand < 0.99 ? Phaser.Math.FloatBetween(0.3, 5) : Phaser.Math.FloatBetween(5, 9)})
   }
   renderTexture.draw(oldStars);
   oldStars.destroy();
@@ -98,7 +98,7 @@ export const generateNebular = (
     const x = Phaser.Math.Between(0, width);
     const y = Phaser.Math.Between(0, height);
     const rand = Math.random();
-    drawStar(foregroundStars, {x, y, big: rand < 0.99, hue: Phaser.Math.Between(themeHue - 10, themeHue + 10)})
+    drawStar(foregroundStars, {x, y, size: rand < 0.99 ? Phaser.Math.FloatBetween(0.3, 5) : Phaser.Math.FloatBetween(5, 9), hue: Phaser.Math.Between(themeHue - 10, themeHue + 10)})
   }
   renderTexture.draw(foregroundStars);
   foregroundStars.destroy();
