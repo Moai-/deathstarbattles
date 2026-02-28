@@ -22,6 +22,8 @@ import {
 } from 'shared/src/utils';
 import { BaseSceneManager } from './baseSceneManager';
 
+// This manager is capable of running an automatic game with bots.
+// It does not concern itself with players.
 export class BaseGameManager extends BaseSceneManager {
 
   // game state

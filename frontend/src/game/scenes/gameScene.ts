@@ -8,6 +8,7 @@ import { getSoundManager } from './resourceScene';
 import { BaseScene } from './baseScene';
 import { AppScenes } from '../types';
 
+// Runs a game with bots and a single player
 export class GameScene extends BaseScene {
   private gameManager = new GameManager(this, this.world, this.objectManager);
   private cleanupSystem = createCleanupSystem(
@@ -24,6 +25,7 @@ export class GameScene extends BaseScene {
   create() {
     super.create();
     gameBus.on(GameEvents.START_GAME, (config) => {
+      // Do not start until signal and config come in
       this.gameManager.startGame(config);
     });
     this.gameManager.create();

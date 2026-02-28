@@ -8,6 +8,7 @@ import { BaseScene } from './baseScene';
 import {BaseGameManager} from '../managers';
 import { AppScenes } from '../types';
 
+// Runs automatic game between bots
 export class BackgroundScene extends BaseScene {
   private gameManager = new BaseGameManager(this, this.world, this.objectManager);
   private cleanupSystem = createCleanupSystem(
@@ -19,6 +20,7 @@ export class BackgroundScene extends BaseScene {
 
   constructor() {
     super(AppScenes.BACKGROUND);
+    // this.debug = true;
   }
 
   create() {

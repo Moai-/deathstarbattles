@@ -37,15 +37,17 @@ type PlacementState =
   | { mode: 'move'; eid: number; originalX: number; originalY: number }
   | null;
 
+
+// This manager handles the editor. It can't really play the game,
+// although there are a few functions that allow it to execute
+// functions found in the game (like firing a shot)
 export class EditorManager extends BaseSceneManager {
 
   // editor state
   private placementState: PlacementState = null;
   private escapeKey: Phaser.Input.Keyboard.Key | null = null;
   private shiftKey: Phaser.Input.Keyboard.Key | null = null;
-  /** When set, we are in "fire shot" mode for this Death Star eid. */
   private firingFromEid: number | null = null;
-  /** Persisted angle/power between firing shots. */
   private lastAngle = 90;
   private lastPower = 50;
 

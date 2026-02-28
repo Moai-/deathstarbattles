@@ -27,6 +27,8 @@ const config: Phaser.Types.Core.GameConfig = {
   physics: { default: 'arcade' },
 };
 
+// Manages the Phaser app by switching between scenes
+// Basically this is the external point of contact between Phaser and React
 class DSBPhaserApp {
   private game: Phaser.Game | null = null;
   private activeMode: AppModes | null = null;
@@ -37,9 +39,6 @@ class DSBPhaserApp {
         gameBus.once(GameEvents.GAME_LOADED, resolve);
         this.game = new Phaser.Game(config);
       } else {
-        console.log(
-          'attempted to create game when previous game was not destroyed',
-        );
         resolve();
       }
     })
@@ -53,7 +52,6 @@ class DSBPhaserApp {
   }
 
   startMode(mode: AppModes, config?: GameConfig) {
-    console.log(`start mode ${mode}`)
     if (this.activeMode) {
       // Throw when we try to launch a mode without exiting the previous mode first
       throw new Error(`Cannot launch mode ${mode}; mode ${this.activeMode} is active`);
@@ -86,6 +84,11 @@ class DSBPhaserApp {
   stopMode(mode: AppModes) {
     // If current mode isn't the mode we're trying to stop, do nothing
     if (this.activeMode !== mode) {
+      return Promise.resolve();
+    }
+
+    // Noop on null mode
+    if (this.activeMode === null) {
       return Promise.resolve();
     }
     this.activeMode = null;

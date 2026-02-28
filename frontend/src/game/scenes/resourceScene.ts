@@ -2,6 +2,7 @@ import { gameBus, GameEvents } from 'src/util';
 import { AudioManager, audioManifest } from '../managers/audioManager';
 import { AppScenes } from '../types';
 
+// Keep track of static resources here
 export class ResourceScene extends Phaser.Scene {
   private audioManager: AudioManager;
 

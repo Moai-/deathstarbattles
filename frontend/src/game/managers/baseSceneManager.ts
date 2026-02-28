@@ -40,6 +40,9 @@ const getListenerConfig: (incomingConfig?: Partial<ListenerConfig>) => ListenerC
   }
 }
 
+// This is any manager that works with a game scene.
+// It creates all the handlers and variables that a scene might want.
+// However, it does not actually run a game. 
 export class BaseSceneManager {
   // globals
   protected scene: BaseScene;

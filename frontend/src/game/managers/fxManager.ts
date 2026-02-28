@@ -12,13 +12,16 @@ export class FxManager {
 
   create() {
     const renderer = this.getRenderer();
-    console.log('creating fxmanager')
     if (renderer) {
       renderer.pipelines.addPostPipeline('BlackHoleFX', BlackHolePipeline);
       renderer.pipelines.addPostPipeline('FXAA', FXAAPipeline);
       this.scene.cameras.main.setPostPipeline('BlackHoleFX');
       // .setPostPipeline('FXAA');
     }
+  }
+
+  activate() {
+    this.isReady = true;
   }
 
   update() {
@@ -28,12 +31,13 @@ export class FxManager {
         const blackHoles = buildColliderCache(this.scene.world).filter(
           (o) => getType(o.eid) === ObjectTypes.BLACK_HOLE
         );
-        (blackHoleFX as BlackHolePipeline).updateHoles(blackHoles);
+        (blackHoleFX as BlackHolePipeline).updateHoles?.(blackHoles);
       }
     }
   }
 
   destroy() {
+    this.isReady = false;
     const bh = this.getPipeline('BlackHoleFX');
     if (bh) {
       this.getRenderer()!.pipelines.removePostPipeline(bh as BlackHolePipeline);

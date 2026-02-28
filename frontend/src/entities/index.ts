@@ -27,9 +27,9 @@ export const createRandomDeathStar = (world: GameWorld) =>
 export const createRandom: Record<ObjectTypes, (world: GameWorld) => number> = {
   // These two do not get created from the editor
   [ObjectTypes.NONE]: none,
-  [ObjectTypes.DEATHSTAR]: createRandomDeathStar,
   [ObjectTypes.DEATHBEAM]: none,
   // Random object generation index
+  [ObjectTypes.DEATHSTAR]: createRandomDeathStar,
   [ObjectTypes.ASTEROID]: createRandomAsteroid,
   [ObjectTypes.STAR]: createRandomStar,
   [ObjectTypes.BLACK_HOLE]: createRandomBlackHole,

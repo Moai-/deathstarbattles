@@ -34,14 +34,14 @@ import {
   inputsToShot,
 } from '../functions';
 import { getPosition, getRadius } from 'shared/src/utils';
-import { restoreSnapshot } from './snapshot';
+import { restoreSnapshot, sysComponents } from './snapshot';
 
 type Updater = (world: GameWorld, time: number, delta: number) => void;
 
 const MAX_MS = 10000;
 const MS_STEP = 1;
 
-const world = createGameWorld();
+const world = createGameWorld(sysComponents);
 
 let cloneMap = new Map<number, number>();
 let colliders: TargetCache = [];

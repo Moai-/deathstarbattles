@@ -8,6 +8,7 @@ import {
   Active,
   Collision,
 } from 'shared/src/ecs/components';
+import { GravityFalloffType } from 'shared/src/ecs/components/hasGravity';
 
 export const createCollidingBase = (
   world: World,
@@ -26,6 +27,7 @@ export const createCollidingBase = (
 
   Position.x[eid] = x;
   Position.y[eid] = y;
+  HasGravity.falloffType[eid] = GravityFalloffType.INVERSE_SQUARE;
   Collision.radius[eid] = radius;
   ObjectInfo.type[eid] = type;
 

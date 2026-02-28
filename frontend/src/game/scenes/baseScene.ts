@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { createGameWorld } from 'shared/src/ecs/world';
+import { clearWorld, createGameWorld } from 'shared/src/ecs/world';
 import {
   createCollisionSystem,
   createGravitySystem,
@@ -14,12 +14,15 @@ import { gameBus, GameEvents } from 'src/util';
 import { clearBackground } from 'src/render/background';
 import { getSoundManager } from './resourceScene';
 import { drawPathListener } from 'src/util/debug';
-import { resetWorld } from 'bitecs';
 import { FxManager } from '../managers/fxManager';
 import { AppScenes } from '../types';
+import * as sysComponents from 'shared/src/ecs/components';
+import * as renderComponents from 'src/render/components';
 
+
+// Basic scaffolding to run a game, or use game objects
 export class BaseScene extends Phaser.Scene {
-  public world = createGameWorld();
+  public world = createGameWorld([...Object.values(sysComponents), ...Object.values(renderComponents)]);
   public debug = false;
   public fxManager = new FxManager(this);
 
@@ -34,16 +37,19 @@ export class BaseScene extends Phaser.Scene {
   protected renderSystem = createRenderSystem(this, this.objectManager);
 
   constructor(sceneKey: AppScenes) {
-    console.log('construct', sceneKey)
     super({ key: sceneKey, active: false });
     this.world.debug = this.debug;
   }
 
   create() {
-    console.log('create', this.scene.key)
     this.unsubRenderObservers = createRenderObservers(this.world, this.objectManager);
     drawPathListener(this);
     this.fxManager.create();
+    // For some reason, shaders in fxManager need a moment to load
+    // Without the timeout, setting shader uniforms throws
+    setTimeout(() => {
+      this.fxManager.activate();
+    }, 10)
   }
 
   update(time: number, deltaMs: number) {
@@ -61,7 +67,8 @@ export class BaseScene extends Phaser.Scene {
 
   destroy() {
     getSoundManager(this).stopAllSounds('effects');
-    resetWorld(this.world);
+    clearWorld(this.world);
+    // this.world = createGameWorld();
     this.unsubRenderObservers();
     this.fxManager.destroy();
     this.objectManager.destroy();

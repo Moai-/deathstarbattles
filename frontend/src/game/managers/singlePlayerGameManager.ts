@@ -5,6 +5,7 @@ import {
 import { Collision } from 'shared/src/ecs/components';
 import { BaseGameManager } from './baseGameManager';
 
+// This manager allows one player to play the game against bots.
 export class SinglePlayerGameManager extends BaseGameManager {
 
   protected getPlayerInput() {

@@ -1,10 +1,12 @@
 import {
   Active,
   AffectedByGravity,
+  AffectedByJets,
   Collision,
   Destructible,
   HasGravity,
   HasLifetime,
+  HasPolarJets,
   ObjectInfo,
   Position,
   Projectile,
@@ -15,9 +17,22 @@ import { ComponentTags, SimSnapshot } from './types';
 import { addComponent, addEntity, hasComponent, ComponentRef } from 'bitecs';
 import { GameWorld } from 'shared/src/ecs/world';
 import { ENTITY_START_CURSOR } from 'shared/src/consts';
-import { AffectedByJets } from 'shared/src/ecs/components/affectedByJets';
-import { HasPolarJets } from 'shared/src/ecs/components/hasPolarJets';
 
+export const sysComponents = [
+  Active,
+  AffectedByGravity,
+  AffectedByJets,
+  Collision,
+  Destructible,
+  HasGravity,
+  HasLifetime,
+  HasPolarJets,
+  ObjectInfo,
+  Position,
+  Projectile,
+  Velocity,
+  Wormhole,
+]
 
 export const buildSnapshot = (
   eids: Array<number>,

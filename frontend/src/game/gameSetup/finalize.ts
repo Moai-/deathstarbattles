@@ -1,6 +1,7 @@
 import { hasComponent } from 'bitecs';
 import { buildColliderCache } from 'shared/src/ai/functions';
-import { Collision, Wormhole } from 'shared/src/ecs/components';
+import { Collision, HasGravity, Wormhole } from 'shared/src/ecs/components';
+import { GravityFalloffType } from 'shared/src/ecs/components/hasGravity';
 import { GameWorld } from 'shared/src/ecs/world';
 import { Backgrounds, ObjectTypes } from 'shared/src/types';
 import {
@@ -9,6 +10,7 @@ import {
   getHyperLocus,
   getPosition,
   getType,
+  getRadius,
 } from 'shared/src/utils';
 import { generateBackground } from 'src/render/background';
 import { generateBackgroundShards } from 'src/render/background/shardTunnel';
@@ -58,12 +60,13 @@ export const finalizeSetup = (
   }
 
   // INFLATE
-  if (stationSize > 1) {
+  // if (stationSize > 1) {
     objectsInWorld
       .filter((o) => getType(o.eid) === ObjectTypes.DEATHSTAR)
       .map((o) => o.eid)
       .forEach((eid) => {
-        Collision.radius[eid] = Collision.radius[eid] * stationSize;
+        Collision.radius[eid] = Collision.radius[eid] * 5;
+        // Collision.radius[eid] = Collision.radius[eid] * stationSize;
       });
-  }
+  // }
 };

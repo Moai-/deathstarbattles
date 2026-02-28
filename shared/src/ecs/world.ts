@@ -1,9 +1,12 @@
 import {
   // addComponent,
   addEntity,
+  ComponentRef,
   createWorld,
   entityExists,
+  getWorldComponents,
   registerComponents,
+  resetWorld,
   World,
 } from 'bitecs';
 import { ObjectMovements } from '../types';
@@ -17,13 +20,12 @@ export interface GameWorld extends World {
   debug: boolean;
 }
 
-export const createGameWorld = () => {
+export const createGameWorld = (components: Array<ComponentRef>) => {
   const world = createWorld() as GameWorld;
   world.time = 0;
   world.delta = 0;
   world.movements = null;
-  const comps = Object.values(components);
-  registerComponents(world, comps);
+  registerComponents(world, components);
   // make sure NULL_ENTITY exists
   // This is the ECS equivalent of null, do not add components to this
   if (!entityExists(world, NULL_ENTITY)) {
@@ -31,5 +33,15 @@ export const createGameWorld = () => {
   }
   return world;
 };
+
+export const clearWorld = (world: GameWorld) => {
+  resetWorld(world);
+  getWorldComponents(world).forEach((comp) => {
+    const props = Object.keys(comp);
+    props.forEach((prop) => {
+      (comp[prop] as Float32Array).fill(0);
+    })
+  })
+}
 
 export { NULL_ENTITY };

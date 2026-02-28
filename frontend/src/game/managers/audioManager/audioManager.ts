@@ -1,6 +1,7 @@
 import { gameBus, GameEvents } from 'src/util';
 import { AudioCategory, audioManifest } from './manifest';
 
+// Manages audio, although not very well
 export class AudioManager {
   private allSounds: Map<string, Phaser.Sound.BaseSound> = new Map();
   private effectsVolume = 1;

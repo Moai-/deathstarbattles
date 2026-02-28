@@ -8,6 +8,7 @@ type ProjectileReference = {
   playerId: number;
 };
 
+// This manager creates, keeps track of, and removes projectiles
 export class ProjectileManager {
   private world: GameWorld;
   private activeProjectiles: Array<ProjectileReference> = [];
