@@ -20,7 +20,7 @@ export class BackgroundScene extends BaseScene {
 
   constructor() {
     super(AppScenes.BACKGROUND);
-    // this.debug = true;
+    this.debug = true;
   }
 
   create() {

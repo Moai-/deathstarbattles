@@ -36,10 +36,6 @@ export class BaseGameManager extends BaseSceneManager {
   protected numTurn = 0;
   protected isHyperspace = false;
 
-  // named returns
-  protected static DID_END_TURN = true;
-  protected static DID_NOT_END_TURN = false;
-
   ready() {
     super.ready();
     this.numTurn = 0;

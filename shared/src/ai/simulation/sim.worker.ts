@@ -1,6 +1,7 @@
 import { createGameWorld, GameWorld } from 'shared/src/ecs/world';
 import { SimMessage, SimMessageType } from './types';
 import {
+  query,
   addComponent,
   addEntity,
   entityExists,
@@ -29,7 +30,6 @@ import {
 } from 'shared/src/ecs/systems';
 import { SimShotResult, TargetCache, TurnInput } from 'shared/src/types';
 import {
-  buildColliderCache,
   getSquaredDistance,
   inputsToShot,
 } from '../functions';
@@ -37,6 +37,20 @@ import { getPosition, getRadius } from 'shared/src/utils';
 import { restoreSnapshot, sysComponents } from './snapshot';
 
 type Updater = (world: GameWorld, time: number, delta: number) => void;
+
+export const collidingEntities = [Collision, Position, Active];
+const getColliders = (world: GameWorld) => query(world, collidingEntities) as Array<number>;
+
+const buildColliderCache = (world: GameWorld): TargetCache =>
+  getColliders(world).map((o) => ({
+    eid: o,
+    breaks: hasComponent(world, o, Destructible),
+    x: Position.x[o],
+    y: Position.y[o],
+    r: getRadius(o),
+    r2: Math.pow(getRadius(o), 2),
+  }));
+
 
 const MAX_MS = 10000;
 const MS_STEP = 1;
@@ -82,7 +96,6 @@ const runSimulation = (
   updateSystems: Updater,
 ): SimShotResult => {
   const { playerId } = turnInfo;
-
   const targets = colliderCache.filter((t) => t.eid !== playerId);
 
   let closestDestructible = 0;

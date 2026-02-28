@@ -197,54 +197,15 @@ export const buffersOf = (s: SimSnapshot) => [
   s.deflectAngleRad.buffer,
 ];
 
-// With a world snapshot as input, restore all entities within it and populate them
+// With a world snapshot as input, restore all entities within it and populate them.
+// In bitecs 0.4 the worker world may already have entities (e.g. NULL_ENTITY reserve),
+// so we add entities first and then bulk-set data to the actual cloned eids.
 export const restoreSnapshot = (snapshot: SimSnapshot, world: GameWorld) => {
   const cloneMap = new Map<number, number>();
 
   const n = snapshot.count;
 
-  Collision.radius.set(snapshot.radius.subarray(0, n), ENTITY_START_CURSOR);
-  HasGravity.strength.set(
-    snapshot.strength.subarray(0, n),
-    ENTITY_START_CURSOR,
-  );
-  HasGravity.falloffType.set(
-    snapshot.falloffType.subarray(0, n),
-    ENTITY_START_CURSOR,
-  );
-  HasLifetime.createdAt.set(
-    snapshot.createdAt.subarray(0, n),
-    ENTITY_START_CURSOR,
-  );
-  Position.x.set(snapshot.posX.subarray(0, n), ENTITY_START_CURSOR);
-  Position.y.set(snapshot.posY.subarray(0, n), ENTITY_START_CURSOR);
-  Projectile.parent.set(snapshot.parent.subarray(0, n), ENTITY_START_CURSOR);
-  Projectile.lastCollisionTarget.set(
-    snapshot.lastCollisionTarget.subarray(0, n),
-    ENTITY_START_CURSOR,
-  );
-  Velocity.x.set(snapshot.velX.subarray(0, n), ENTITY_START_CURSOR);
-  Velocity.y.set(snapshot.velY.subarray(0, n), ENTITY_START_CURSOR);
-  Wormhole.teleportTarget.set(
-    snapshot.teleportTarget.subarray(0, n),
-    ENTITY_START_CURSOR,
-  );
-  Wormhole.exitType.set(snapshot.exitType.subarray(0, n), ENTITY_START_CURSOR);
-
-  HasPolarJets.jetStrength.set(snapshot.jetStrength.subarray(0, n), ENTITY_START_CURSOR);
-  HasPolarJets.innerRadius.set(snapshot.innerRadius.subarray(0, n), ENTITY_START_CURSOR);
-  HasPolarJets.length.set(snapshot.length.subarray(0, n), ENTITY_START_CURSOR);
-  HasPolarJets._tanHalfSpread.set(snapshot._tanHalfSpread.subarray(0, n), ENTITY_START_CURSOR);
-  HasPolarJets.spreadRad.set(snapshot.spreadRad.subarray(0, n), ENTITY_START_CURSOR);
-  HasPolarJets._dirX.set(snapshot._dirX.subarray(0, n), ENTITY_START_CURSOR);
-  HasPolarJets._dirY.set(snapshot._dirY.subarray(0, n), ENTITY_START_CURSOR);
-  HasPolarJets._perpX.set(snapshot._perpX.subarray(0, n), ENTITY_START_CURSOR);
-  HasPolarJets._perpY.set(snapshot._perpY.subarray(0, n), ENTITY_START_CURSOR);
-  HasPolarJets.corePow.set(snapshot.corePow.subarray(0, n), ENTITY_START_CURSOR);
-  HasPolarJets.endFadeFrac.set(snapshot.endFadeFrac.subarray(0, n), ENTITY_START_CURSOR);
-  HasPolarJets.outerFadeBias.set(snapshot.outerFadeBias.subarray(0, n), ENTITY_START_CURSOR);
-  HasPolarJets.deflectAngleRad.set(snapshot.deflectAngleRad.subarray(0, n), ENTITY_START_CURSOR);
-
+  // 1. Add entities and components first so cloned eids match addEntity() return order.
   for (let i = 0; i < n; i++) {
     const eid = snapshot.eid[i];
     const clonedEid = addEntity(world);
@@ -303,6 +264,52 @@ export const restoreSnapshot = (snapshot: SimSnapshot, world: GameWorld) => {
     if (tag & ComponentTags.AffectedByJets) {
       addComponent(world, clonedEid, AffectedByJets);
     }
+  }
+
+  // 2. Bulk-set component data to the first cloned eid (not ENTITY_START_CURSOR, which may be already used).
+  const startEid = n > 0 ? cloneMap.get(snapshot.eid[0])! : ENTITY_START_CURSOR;
+
+  Collision.radius.set(snapshot.radius.subarray(0, n), startEid);
+  HasGravity.strength.set(
+    snapshot.strength.subarray(0, n),
+    startEid,
+  );
+  HasGravity.falloffType.set(
+    snapshot.falloffType.subarray(0, n),
+    startEid,
+  );
+  HasLifetime.createdAt.set(
+    snapshot.createdAt.subarray(0, n),
+    startEid,
+  );
+  Position.x.set(snapshot.posX.subarray(0, n), startEid);
+  Position.y.set(snapshot.posY.subarray(0, n), startEid);
+  Velocity.x.set(snapshot.velX.subarray(0, n), startEid);
+  Velocity.y.set(snapshot.velY.subarray(0, n), startEid);
+  Wormhole.exitType.set(snapshot.exitType.subarray(0, n), startEid);
+
+  HasPolarJets.jetStrength.set(snapshot.jetStrength.subarray(0, n), startEid);
+  HasPolarJets.innerRadius.set(snapshot.innerRadius.subarray(0, n), startEid);
+  HasPolarJets.length.set(snapshot.length.subarray(0, n), startEid);
+  HasPolarJets._tanHalfSpread.set(snapshot._tanHalfSpread.subarray(0, n), startEid);
+  HasPolarJets.spreadRad.set(snapshot.spreadRad.subarray(0, n), startEid);
+  HasPolarJets._dirX.set(snapshot._dirX.subarray(0, n), startEid);
+  HasPolarJets._dirY.set(snapshot._dirY.subarray(0, n), startEid);
+  HasPolarJets._perpX.set(snapshot._perpX.subarray(0, n), startEid);
+  HasPolarJets._perpY.set(snapshot._perpY.subarray(0, n), startEid);
+  HasPolarJets.corePow.set(snapshot.corePow.subarray(0, n), startEid);
+  HasPolarJets.endFadeFrac.set(snapshot.endFadeFrac.subarray(0, n), startEid);
+  HasPolarJets.outerFadeBias.set(snapshot.outerFadeBias.subarray(0, n), startEid);
+  HasPolarJets.deflectAngleRad.set(snapshot.deflectAngleRad.subarray(0, n), startEid);
+
+  // 3. Remap entity references (original eids -> cloned eids) for parent, lastCollisionTarget, teleportTarget.
+  for (let i = 0; i < n; i++) {
+    const clonedEid = cloneMap.get(snapshot.eid[i])!;
+    Projectile.parent[clonedEid] = cloneMap.get(snapshot.parent[i]) ?? 0;
+    Projectile.lastCollisionTarget[clonedEid] =
+      cloneMap.get(snapshot.lastCollisionTarget[i]) ?? 0;
+    Wormhole.teleportTarget[clonedEid] =
+      cloneMap.get(snapshot.teleportTarget[i]) ?? 0;
   }
 
   return cloneMap;

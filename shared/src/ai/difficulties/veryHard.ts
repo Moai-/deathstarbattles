@@ -33,6 +33,7 @@ const generateVeryHardTurn: TurnGenerator = async (
   simulateShot,
 ) => {
   const playerId = playerInfo.id;
+  console.log('simulation for player', playerId);
 
   // 1. Analyze last shot for stations that teleported onto it
   // Fire if you find any of these stations
