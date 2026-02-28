@@ -23,9 +23,17 @@ const WinrarScreen: React.FC = () => {
     <WinnerScreen>
       <WinnerContent>
         <h1 style={{ color: toHTMLHex(col) }}>Player {playerId + 1} wins!</h1>
-        <NeonButton onClick={() => setGameState(GameState.MAIN_MENU)}>
-          Menu
-        </NeonButton>
+        <div style={{display: 'flex', gap: '10px'}}>
+          <NeonButton onClick={() => setGameState(GameState.MAIN_MENU)}>
+            Menu
+          </NeonButton>
+          <NeonButton onClick={() => setGameState(GameState.INGAME)}>
+            Play again
+          </NeonButton>
+          <NeonButton onClick={() => setGameState(GameState.CONFIG_GAME)}>
+            Change settings
+          </NeonButton>
+        </div>
       </WinnerContent>
     </WinnerScreen>
   );

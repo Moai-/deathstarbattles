@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { DropdownGroup, SetupScreenContainer, SimpleSetup } from 'src/ui/styled/containers';
+import { DropdownGroup, SetupScreenContainer, SimpleSetup, TopLeftButton } from 'src/ui/styled/containers';
 import { SetupHeader } from 'src/ui/styled/text';
 import styled from 'styled-components';
-import { NeonButton } from '../styled';
+import { MiniButton, NeonButton } from '../styled';
 import { PlayerSetup } from 'shared/src/types';
 import { GameState, useGameState } from './context';
 import { playerCols } from 'shared/src/utils';
 import { getScenarioTypes } from 'src/content/scenarios';
+import { FaSignOutAlt } from 'react-icons/fa';
 
 export const DropdownRow = styled.div`
   display: flex;
@@ -89,6 +90,11 @@ export const SetupScreen: React.FC = () => {
 
   return (
     <SetupScreenContainer>
+      <TopLeftButton>
+        <MiniButton onClick={() => setGameState(GameState.MAIN_MENU)}>
+          <FaSignOutAlt />
+        </MiniButton>
+      </TopLeftButton>
       <SetupHeader>Game Setup</SetupHeader>
       <SimpleSetup>
         <DropdownGroup>

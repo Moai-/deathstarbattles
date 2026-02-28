@@ -13,9 +13,13 @@ export class FxManager {
   create() {
     const renderer = this.getRenderer();
     if (renderer) {
-      renderer.pipelines.addPostPipeline('BlackHoleFX', BlackHolePipeline);
-      renderer.pipelines.addPostPipeline('FXAA', FXAAPipeline);
-      this.scene.cameras.main.setPostPipeline('BlackHoleFX');
+      if (!renderer.pipelines.has('BlackHoleFX')) {
+        renderer.pipelines.addPostPipeline('BlackHoleFX', BlackHolePipeline);
+      }
+      if (!renderer.pipelines.has('FXAA')) {
+        renderer.pipelines.addPostPipeline('FXAA', FXAAPipeline);
+      }
+      this.scene.cameras.main.setPostPipeline('BlackHoleFX')
       // .setPostPipeline('FXAA');
     }
   }
@@ -38,14 +42,19 @@ export class FxManager {
 
   destroy() {
     this.isReady = false;
-    const bh = this.getPipeline('BlackHoleFX');
-    if (bh) {
-      this.getRenderer()!.pipelines.removePostPipeline(bh as BlackHolePipeline);
+    
+    const cam = this.scene.cameras?.main;
+    if (cam) {
+      cam.removePostPipeline('BlackHoleFX');
+      cam.removePostPipeline('FXAA');
+      // or cam.resetPostPipeline(true); // if you want to wipe all post FX
     }
-    const fxaa = this.getPipeline('FXAA');
-    if (fxaa) {
-      this.getRenderer()!.pipelines.removePostPipeline(fxaa as FXAAPipeline);
+    const renderer = this.getRenderer();
+    if (renderer) {
+      if (renderer.pipelines.has('BlackHoleFX')) renderer.pipelines.remove('BlackHoleFX')
+      if (renderer.pipelines.has('FXAA')) renderer.pipelines.remove('FXAA');
     }
+
   }
 
   private getPipeline(name: string) {

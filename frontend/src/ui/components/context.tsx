@@ -23,6 +23,7 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [gameState, setGameState] = useState<GameState>(GameState.FIRST_START);
   const [winnerData, setWinnerData] = useState<WinnerData | null>(null);
+  const [lastConfig, setLastConfig] = useState<GameConfig | null>(null);
 
   // Functions to run when performing specific switches
   const handleStateSwitch = async (nextState:GameState, config?: GameConfig) => {
@@ -35,9 +36,7 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
       // Next state isn't one where the background game should be running.
       // We should shut the scene off, and unsubscribe from GAME_END.
       gameBus.off(GameEvents.GAME_END);
-      console.log('stopping bg mode')
       await App.stopMode(AppModes.BACKGROUND);
-      console.log('bg mode stopped')
     }
 
     if (nextState !== GameState.EDITOR) {
@@ -53,8 +52,9 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
 
     if (nextState === GameState.INGAME) {
       // Actual playable game is launching.
+      const conf = config || lastConfig;
 
-      if (!config) {
+      if (!conf) {
         // This state switch can only happen when we have a config.
         throw new Error('Tried to start game without game config');
       }
@@ -70,19 +70,21 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
         App.stopMode(AppModes.GAME);
       });
 
-      // Start the game with provided config.
-      App.startMode(AppModes.GAME, config);
+      // Remember this config
+      setLastConfig(conf);
+
+      // Start the game with provided or saved config.
+      App.startMode(AppModes.GAME, conf);
     }
 
     if (nextState === GameState.EDITOR) {
       // Game editor is launching.
       // Not much we need to do here -- just launch the editor scene.
-      console.log('starting editor')
       App.startMode(AppModes.EDITOR);
     }
 
-    if (nextState === GameState.MAIN_MENU) {
-      // Main menu: let's launch the background game.
+    if (backgroundGameStates.includes(nextState)) {
+      // Main menu or config: let's launch the background game.
       App.startMode(AppModes.BACKGROUND);
     }
 

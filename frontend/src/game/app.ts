@@ -52,6 +52,10 @@ class DSBPhaserApp {
   }
 
   startMode(mode: AppModes, config?: GameConfig) {
+    if (this.activeMode === mode) {
+      // Launch a mode that's already running; no-op
+      return Promise.resolve();
+    }
     if (this.activeMode) {
       // Throw when we try to launch a mode without exiting the previous mode first
       throw new Error(`Cannot launch mode ${mode}; mode ${this.activeMode} is active`);

@@ -115,6 +115,7 @@ export const createPolarJetSystem = () => {
     const sources = query(world, jetSourceEntities);
     const targets = query(world, jetTargetEntities);
 
+    // Affect items affected by jets
     for (const eid of targets) {
       const px = Position.x[eid];
       const py = Position.y[eid];
@@ -167,13 +168,9 @@ export const createPolarJetSystem = () => {
       Velocity.y[eid] += acc.ay * dt;
     }
 
-    return world;
-  }
-};
-
-export const createJetMaintenanceSystem = () => {
-  return (world: GameWorld) => {
     const eids = query(world, jetMaintenanceQueries);
+
+    // Update pre-computed variables if non-computed ones change
     for (let i = 0; i < eids.length; i++) {
       const eid = eids[i];
       const rot = HasPolarJets.rotation[eid];
@@ -192,5 +189,7 @@ export const createJetMaintenanceSystem = () => {
         HasPolarJets._prevSpread[eid] = spread;
       }
     }
+
+    return world;
   }
-}
+};
