@@ -6,23 +6,18 @@ import { GameState, useGameState } from './context';
 const WinrarScreen: React.FC = () => {
   const { setGameState, winnerData } = useGameState();
 
-  if (!winnerData) {
-    return (
-      <WinnerScreen>
-        <WinnerContent>
-          <h1 style={{ color: 'white' }}>Nobody won! Total annihilation!</h1>
-          <NeonButton onClick={() => setGameState(GameState.MAIN_MENU)}>
-            Menu
-          </NeonButton>
-        </WinnerContent>
-      </WinnerScreen>
-    );
+  const renderWinnerInfo = () => {
+    if (!winnerData) {
+      return (<h1 style={{ color: 'white' }}>Nobody won! Total annihilation!</h1>)
+    }
+    const { playerId, col } = winnerData;
+    return (<h1 style={{ color: toHTMLHex(col) }}>Player {playerId + 1} wins!</h1>)
   }
-  const { playerId, col } = winnerData;
+
   return (
     <WinnerScreen>
       <WinnerContent>
-        <h1 style={{ color: toHTMLHex(col) }}>Player {playerId + 1} wins!</h1>
+        {renderWinnerInfo()}
         <div style={{display: 'flex', gap: '10px'}}>
           <NeonButton onClick={() => setGameState(GameState.MAIN_MENU)}>
             Menu
