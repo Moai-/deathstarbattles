@@ -3,7 +3,7 @@ import Explosion, {
   laserCols,
   stationCols,
 } from 'src/render/animations/explosion';
-import { getSoundManager } from './resourceScene';
+import { getSoundManager } from 'src/game/scenes/resourceScene';
 import { getPosition, getRadius, getProjectileOwner } from 'shared/src/utils';
 import { removeProjectile } from 'src/entities/deathStar';
 

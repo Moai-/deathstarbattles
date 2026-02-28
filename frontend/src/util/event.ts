@@ -1,6 +1,7 @@
-import mitt from 'mitt';
+import mitt, { type Emitter } from 'mitt';
 import { AnyPoint, Backgrounds, GameConfig, ObjectTypes, OtherActions } from 'shared/src/types';
 import { SerializedEntity } from 'shared/src/utils';
+import { AppScenes } from 'src/game';
 
 type WinnerData = { col: number; playerId: number };
 
@@ -84,6 +85,7 @@ export enum GameEvents {
   SET_VOLUME = 'setvolume',
   // lifecycle
   SCENE_LOADED = 'sceneloaded',
+  SCENE_UNLOADED = 'sceneunloaded',
   START_GAME = 'startgame',
   GAME_LOADED = 'gameloaded',
   GAME_REMOVED = 'gameremoved',
@@ -131,6 +133,7 @@ type EventData = {
   // lifecycle
   [GameEvents.SCENE_LOADED]: void;
   [GameEvents.START_GAME]: GameConfig;
+  [GameEvents.SCENE_UNLOADED]: AppScenes;
   [GameEvents.GAME_REMOVED]: void;
   [GameEvents.GAME_LOADED]: void;
   [GameEvents.GAME_END]: Array<WinnerData>;
@@ -166,4 +169,22 @@ type EventData = {
   [GameEvents.ED_ENTITY_HOVERED]: SelectionClick;
 };
 
-export const gameBus = mitt<EventData>();
+type GameBus = Emitter<EventData> & {
+  once<Key extends keyof EventData>(type: Key, handler: (data: EventData[Key]) => void): void;
+};
+
+const bus = mitt<EventData>();
+
+(bus as GameBus).once = function once<Key extends keyof EventData>(
+  type: Key,
+  handler: (data: EventData[Key]) => void
+): void {
+  const wrapper = (data: EventData[Key]) => {
+    bus.off(type, wrapper);
+    handler(data);
+  };
+  bus.on(type, wrapper);
+};
+
+export const gameBus = bus as GameBus;
+

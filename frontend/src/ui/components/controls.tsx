@@ -12,7 +12,6 @@ import { toggleFullscreen } from '../functions/toggleFullscreen';
 import { gameBus, GameEvents } from 'src/util';
 import { OtherActions } from 'shared/src/types';
 import { GameState, useGameState } from './context';
-import { stopMainScene } from 'src/game';
 import { ControlSection, ControlSectionDesktop, DesktopButton, DesktopControl, EndTurnButton, MobileLeftControl, MobileRightControl, SliderSection } from '../styled/controls';
 import { useBreakpoints } from '../hooks/useBreakpoints';
 
@@ -82,9 +81,7 @@ const ControlPanel: React.FC = () => {
   };
 
   const backToMenu = () => {
-    stopMainScene().then(() => {
-      setGameState(GameState.MAIN_MENU);
-    });
+    setGameState(GameState.MAIN_MENU);
   };
 
   if (isMobile && isLandscape) {

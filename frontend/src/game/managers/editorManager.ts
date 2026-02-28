@@ -1,9 +1,3 @@
-import { GameWorld } from 'shared/src/ecs/world';
-import { GameObjectManager } from '../render/objectManager';
-import { FiringIndicator } from './firingIndicator';
-import { PlayerInputHandler } from './playerInput';
-import { ProjectileManager } from './projectileManager';
-import { CollisionHandler } from './collisionHandler';
 import {
   GameState,
 } from 'shared/src/types';
@@ -12,13 +6,10 @@ import {
   getComponentName,
   getPosition,
   getRadius,
-  noop,
   serializeComponents,
   setPosition,
 } from 'shared/src/utils';
 import { NULL_ENTITY } from 'shared/src/ecs/world';
-import { SimManager } from 'shared/src/ai/simulation/manager';
-import { EditorScene } from './editorScene';
 import { createRandom } from 'src/entities';
 import { query, getAllEntities, removeEntity, getEntityComponents, removeComponent, addComponent, hasComponent, entityExists } from 'bitecs';
 import { ObjectTypes } from 'shared/src/types';
@@ -36,27 +27,17 @@ import { DEFAULT_DEATHSTAR_RADIUS } from 'src/entities/deathStar';
 
 import { gameBus, GameEvents } from 'src/util';
 import { setEditorBackground } from 'src/render/background';
-import { getSoundManager } from './resourceScene';
+import { getSoundManager } from '../scenes/resourceScene';
 import * as ecsComponents from 'shared/src/ecs/components';
 import { getDeathStarSizeIndex, getRemovedDestructibleEids, clearRemovedDestructibleEids, addRemovedDestructibleEid, getPersistTrails, getLabelTrails, getShotHistory, recordShot } from 'src/ui/components/editor';
+import { BaseSceneManager } from './baseSceneManager';
 
 type PlacementState =
   | { mode: 'add'; objectType: ObjectTypes; ghostEid: number }
   | { mode: 'move'; eid: number; originalX: number; originalY: number }
   | null;
 
-export default class EditorManager {
-  // globals
-  private scene: EditorScene;
-  private world: GameWorld;
-
-  // game components
-  private indicator: FiringIndicator;
-  private inputHandler: PlayerInputHandler;
-  private collisionHandler: CollisionHandler;
-  private projectileManager: ProjectileManager;
-  private objectManager: GameObjectManager;
-  private simManager: SimManager;
+export class EditorManager extends BaseSceneManager {
 
   // editor state
   private placementState: PlacementState = null;
@@ -70,42 +51,13 @@ export default class EditorManager {
 
   private static posQuery = [Position];
 
-  constructor(
-    scene: EditorScene,
-    world: GameWorld,
-    objectManager: GameObjectManager,
-  ) {
-    this.scene = scene;
-    this.world = world;
-    this.objectManager = objectManager;
-    this.indicator = new FiringIndicator(scene);
-    this.projectileManager = new ProjectileManager(world);
-    this.simManager = new SimManager();
-    this.collisionHandler = new CollisionHandler(world, scene);
-    this.inputHandler = new PlayerInputHandler();
-  }
-
-  create() {
-    this.clearECS();
-    this.indicator.create();
-    this.inputHandler.create();
-    this.setUpListeners();
-  }
-
-  destroy() {
-    this.clearListeners();
-    this.indicator.destroy();
-    this.inputHandler.destroy();
-    this.projectileManager.destroy();
-  }
-
   ready() {
+    super.ready();
     this.enableClickListeners();
     this.escapeKey = this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) ?? null;
     this.shiftKey = this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT) ?? null;
   }
 
-  /** Called from EditorScene each frame; handles Escape to abort placement or fire mode. */
   update() {
     if (this.escapeKey?.isDown) {
       if (this.placementState) {
@@ -117,7 +69,6 @@ export default class EditorManager {
     }
   }
 
-  /** Start placement mode: ghost follows pointer until left-click (place) or right-click/escape (abort). */
   startPlaceEntity(objectType: ObjectTypes) {
     const creator = createRandom[objectType];
     if (!creator) return;
@@ -132,7 +83,6 @@ export default class EditorManager {
     this.placementState = { mode: 'add', objectType, ghostEid: eid };
   }
 
-  /** Start move mode: entity ghost follows pointer until left-click (commit) or right-click/escape (abort). */
   startMoveEntity(eid: number) {
     const pos = getPosition(eid);
     this.objectManager.setGhost(eid, true);
@@ -177,19 +127,9 @@ export default class EditorManager {
     }
   }
 
-  onCollision(eid1: number, eid2: number, wasDestroyed: boolean) {
-    return this.collisionHandler.handleCollision(eid1, eid2, wasDestroyed);
-  }
-
-  onCleanup(eid: number) {
-    this.projectileManager.removeProjectile(eid);
-  }
-
   private enableClickListeners() {
     this.scene.input.on('pointerdown', this.handlePointerDown, this);
     this.scene.input.on('pointermove', this.handlePointerMove, this);
-    this.scene.input.on('pointerup', this.handlePointerUp, this);
-    this.scene.input.on('pointerupoutside', this.handlePointerUp, this);
   }
 
   private disableClickListeners() {
@@ -249,36 +189,16 @@ export default class EditorManager {
     });
   }
 
-  private handlePointerUp() {}
-
-  private setUpListeners() {
-    // Set a tiny delay on post combat phase to allow collision manager
-    // to properly resolve all destroyed stations
-    this.projectileManager.setCleanupCallback(() => {
-      // Currently blank
-    });
-    this.projectileManager.setSingleCleanupCallback((eid) =>
-      this.objectManager.removeBoundaryIndicator(eid!),
-    );
-    this.collisionHandler.setProjectileDestroyedCallback((eid) => {
-      this.projectileManager.removeProjectile(eid);
-      this.objectManager.removeBoundaryIndicator(eid);
-    });
-    this.collisionHandler.setTargetDestroyedCallback((eid) => {
-      // Currently blank
-    });
-    this.inputHandler.setOnEndTurnCallback(() => {
-      // Currently blank
-    });
-    this.indicator.setGetTargetIdCallback(
-      () => {
-        // Currently blank
-        return 1;
+  protected setUpListeners() {
+    const {objectManager, projectileManager, inputHandler} = this;
+    super.setUpListeners({
+      singleCleanupCallback: (eid) => objectManager.removeBoundaryIndicator(eid!),
+      projectileDestroyedCallback: (eid) => {
+        projectileManager.removeProjectile(eid);
+        objectManager.removeBoundaryIndicator(eid);
       }
-    );
-    this.indicator.setAnglePowerListener((angle, power) =>
-      this.inputHandler.setAnglePower(angle, power),
-    );
+    })
+
     gameBus.on(GameEvents.ED_UI_PROP_CHANGED, ({eid, compIdx, propName, newVal}) => {
       const thisComp = getEntityComponents(this.world, eid)[compIdx];
       if (thisComp) {
@@ -321,14 +241,8 @@ export default class EditorManager {
     );
   }
 
-  private clearListeners() {
-    this.projectileManager.setCleanupCallback(noop);
-    this.projectileManager.setSingleCleanupCallback(noop);
-    this.collisionHandler.setProjectileDestroyedCallback(noop);
-    this.collisionHandler.setTargetDestroyedCallback(noop);
-    this.inputHandler.setOnEndTurnCallback(noop);
-    this.indicator.setAnglePowerListener(noop);
-    this.indicator.setGetTargetIdCallback(() => 0);
+  protected clearListeners() {
+    super.clearListeners();
     gameBus.off(GameEvents.ED_UI_PROP_CHANGED);
     gameBus.off(GameEvents.ED_UI_DELETE_ENTITY);
     gameBus.off(GameEvents.ED_UI_REMOVE_COMPONENT);
@@ -387,17 +301,12 @@ export default class EditorManager {
     }
   }
 
-  private clearECS() {
-    getAllEntities(this.world).forEach((ent) => void(removeEntity(this.world, ent)));
-  }
-
   getGameState() {
     return {
       lastTurnShots: this.world.movements,
     } as GameState;
   }
 
-  /** Enter fire-shot mode: show Phaser indicator for the given Death Star eid. */
   private startFireShot(eid: number) {
     this.firingFromEid = eid;
     this.indicator.radius = 30 * (Collision.radius[eid] / 8);
@@ -415,13 +324,11 @@ export default class EditorManager {
     });
   }
 
-  /** Sync angle/power to input handler and indicator (same as game). */
   private syncAnglePower(angle: number, power: number) {
     this.inputHandler.setAnglePower(angle, power);
     this.indicator.updateVector(angle, power);
   }
 
-  /** Fire the shot, remove indicator, play sound, exit fire mode. */
   private confirmFireShot(eid: number, angle: number, power: number) {
     this.lastAngle = angle;
     this.lastPower = power;
@@ -429,7 +336,6 @@ export default class EditorManager {
     if (!getPersistTrails() && projEid !== undefined) {
       this.objectManager.removeChildren(projEid);
     }
-    // When persist is on we do not clear trails; trail.ts will dim previous trail
     if (getLabelTrails() && projEid !== undefined) {
       const history = getShotHistory(eid);
       const colorIndex = history.length % playerCols.length;
@@ -444,7 +350,6 @@ export default class EditorManager {
     sm.playSound('elecTravelHum');
   }
 
-  /** Remove indicator and clear fire mode; notify UI. */
   private exitFireMode() {
     this.indicator.removeIndicator();
     this.firingFromEid = null;

@@ -1,4 +1,4 @@
-import { BaseScene } from 'src/game/baseScene';
+import { BaseScene } from 'src/game/scenes/baseScene';
 
 export enum Depths {
   BOTTOM,

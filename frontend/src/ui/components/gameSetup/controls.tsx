@@ -1,7 +1,6 @@
 import { NeonButton } from 'src/ui/styled';
 import { useSetup } from './context';
 import { useScenario } from './scenarioContext';
-import { startGameWithConfig } from 'src/ui/functions/gameManagement';
 import { GameState, useGameState } from '../context';
 import { getScenarioTypes } from 'src/content/scenarios';
 
@@ -10,8 +9,7 @@ export const SetupControls: React.FC = () => {
   const { items, scenario } = useScenario();
   const { setGameState } = useGameState();
   const startGame = () => {
-    setGameState(GameState.INGAME);
-    startGameWithConfig({
+    setGameState(GameState.INGAME, {
       justBots: false,
       players,
       items,

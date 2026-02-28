@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GameState, useGameState } from "../context";
-import { startEditor } from "../../functions/gameManagement";
 import { gameBus, GameEvents } from "src/util";
 import { SelectionClick } from "src/util/event";
 import { SerializedEntity } from "shared/src/utils";
 import { ObjectTypes } from "shared/src/types";
 import { SelectionMenu } from "./SelectionMenu";
-import { stopEditorScene } from "src/game";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import { FiringPanel } from "./FiringPanel";
 import { DraggableInspectWindow } from "./DraggableInspectWindow";
@@ -125,7 +123,6 @@ export const EditorScreen = () => {
         }))
       );
     });
-    startEditor();
 
     return () => {
       gameBus.off(GameEvents.ED_ENTITY_CLICKED);
@@ -342,113 +339,112 @@ export const EditorScreen = () => {
 
   const handleBack = useCallback(() => {
     setGameState(GameState.MAIN_MENU);
-    stopEditorScene();
   }, [setGameState]);
 
   return (
     <EditorOptionsProvider>
-    <div>
-      <button onClick={handleBack}>back</button>
-      <button ref={addButtonRef} onClick={openAddEntityMenu}>
-        add
-      </button>
-      <button ref={optionsButtonRef} onClick={openOptionsMenu}>
-        options
-      </button>
-      {renderSelectionMenu()}
-      <TrailLegendTooltip hoverPayload={hoverPayload} />
+      <div>
+        <button onClick={handleBack}>back</button>
+        <button ref={addButtonRef} onClick={openAddEntityMenu}>
+          add
+        </button>
+        <button ref={optionsButtonRef} onClick={openOptionsMenu}>
+          options
+        </button>
+        {renderSelectionMenu()}
+        <TrailLegendTooltip hoverPayload={hoverPayload} />
 
-      {firingFrom != null && (
-        <FiringPanel
-          position={firingFrom.panelPosition}
-          eid={firingFrom.eid}
-          initialAngle={firingFrom.initialAngle}
-          initialPower={firingFrom.initialPower}
-          onFire={(eid, angle, power) => {
-            saveFiringPanelPositionAnd(() => {
-              gameBus.emit(GameEvents.ED_UI_FIRE_SHOT_CONFIRM, {
-                eid,
-                angle,
-                power,
-              });
-            });
-          }}
-          onCancel={() => {
-            saveFiringPanelPositionAnd(() => {
-              gameBus.emit(GameEvents.ED_UI_FIRE_SHOT_CANCEL);
-            });
-          }}
-          onMove={(x, y) =>
-            setFiringFrom((prev) =>
-              prev != null ? { ...prev, panelPosition: { x, y } } : null
-            )
-          }
-        />
-      )}
-
-      {windowsList.map((w) => (
-        <DraggableInspectWindow
-          key={w.eid}
-          win={w}
-          onClose={(eid) => {
-            setInspectWindows((prev) => {
-              if (!prev.has(eid)) {
-                return prev;
-              }
-              const next = new Map(prev);
-              next.delete(eid);
-              return next;
-            });
-          }}
-          onToggleCollapse={(eid) => {
-            setInspectWindows((prev) =>
-              updateInspectWindow(prev, eid, (cur) => ({
-                ...cur,
-                collapsed: !cur.collapsed,
-              }))
-            );
-          }}
-          onMove={(eid, x, y) => {
-            setInspectWindows((prev) =>
-              updateInspectWindow(prev, eid, (cur) => ({ ...cur, x, y }))
-            );
-          }}
-          onResize={(eid, width, height) => {
-            setInspectWindows((prev) =>
-              updateInspectWindow(prev, eid, (cur) => ({ ...cur, width, height }))
-            );
-          }}
-          onEditProp={(eid, compKey, propName, nextVal) => {
-            setInspectWindows((prev) =>
-              updateInspectWindow(prev, eid, (cur) => {
-                const comps = cur.components.map((c, compIdx) => {
-                  if (c.key !== compKey) {
-                    return c;
-                  }
-                  gameBus.emit(GameEvents.ED_UI_PROP_CHANGED, {
-                    eid,
-                    compIdx,
-                    propName,
-                    newVal: nextVal,
-                  });
-                  return {
-                    ...c,
-                    props: {
-                      ...(c.props ?? {}),
-                      [propName]: nextVal,
-                    },
-                  };
+        {firingFrom != null && (
+          <FiringPanel
+            position={firingFrom.panelPosition}
+            eid={firingFrom.eid}
+            initialAngle={firingFrom.initialAngle}
+            initialPower={firingFrom.initialPower}
+            onFire={(eid, angle, power) => {
+              saveFiringPanelPositionAnd(() => {
+                gameBus.emit(GameEvents.ED_UI_FIRE_SHOT_CONFIRM, {
+                  eid,
+                  angle,
+                  power,
                 });
-                return { ...cur, components: comps };
-              })
-            );
-          }}
-          onRemoveComponent={(eid, compKey) => {
-            gameBus.emit(GameEvents.ED_UI_REMOVE_COMPONENT, { eid, compKey });
-          }}
-        />
-      ))}
-    </div>
+              });
+            }}
+            onCancel={() => {
+              saveFiringPanelPositionAnd(() => {
+                gameBus.emit(GameEvents.ED_UI_FIRE_SHOT_CANCEL);
+              });
+            }}
+            onMove={(x, y) =>
+              setFiringFrom((prev) =>
+                prev != null ? { ...prev, panelPosition: { x, y } } : null
+              )
+            }
+          />
+        )}
+
+        {windowsList.map((w) => (
+          <DraggableInspectWindow
+            key={w.eid}
+            win={w}
+            onClose={(eid) => {
+              setInspectWindows((prev) => {
+                if (!prev.has(eid)) {
+                  return prev;
+                }
+                const next = new Map(prev);
+                next.delete(eid);
+                return next;
+              });
+            }}
+            onToggleCollapse={(eid) => {
+              setInspectWindows((prev) =>
+                updateInspectWindow(prev, eid, (cur) => ({
+                  ...cur,
+                  collapsed: !cur.collapsed,
+                }))
+              );
+            }}
+            onMove={(eid, x, y) => {
+              setInspectWindows((prev) =>
+                updateInspectWindow(prev, eid, (cur) => ({ ...cur, x, y }))
+              );
+            }}
+            onResize={(eid, width, height) => {
+              setInspectWindows((prev) =>
+                updateInspectWindow(prev, eid, (cur) => ({ ...cur, width, height }))
+              );
+            }}
+            onEditProp={(eid, compKey, propName, nextVal) => {
+              setInspectWindows((prev) =>
+                updateInspectWindow(prev, eid, (cur) => {
+                  const comps = cur.components.map((c, compIdx) => {
+                    if (c.key !== compKey) {
+                      return c;
+                    }
+                    gameBus.emit(GameEvents.ED_UI_PROP_CHANGED, {
+                      eid,
+                      compIdx,
+                      propName,
+                      newVal: nextVal,
+                    });
+                    return {
+                      ...c,
+                      props: {
+                        ...(c.props ?? {}),
+                        [propName]: nextVal,
+                      },
+                    };
+                  });
+                  return { ...cur, components: comps };
+                })
+              );
+            }}
+            onRemoveComponent={(eid, compKey) => {
+              gameBus.emit(GameEvents.ED_UI_REMOVE_COMPONENT, { eid, compKey });
+            }}
+          />
+        ))}
+      </div>
     </EditorOptionsProvider>
   );
 };

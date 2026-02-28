@@ -2,7 +2,7 @@ import { AnyPoint } from 'shared/src/types';
 import { getType } from 'shared/src/utils';
 import renderMap from './objects';
 import renderBoundaryIndicator from './objects/boundaryIndicator';
-import { BaseScene } from 'src/game/baseScene';
+import { BaseScene } from 'src/game/scenes/baseScene';
 
 const GHOST_ALPHA = 0.45;
 const GHOST_SCALE = 0.75;
@@ -182,7 +182,6 @@ export class GameObjectManager {
   }
 
   destroy() {
-    console.log('objman destroy')
     this.removeAllBoundaryIndicators();
     this.removeAllChildren();
     this.removeAllObjects();

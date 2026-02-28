@@ -8,14 +8,15 @@ import {
   createPolarJetSystem,
   createJetMaintenanceSystem,
 } from 'shared/src/ecs/systems';
-import { createRenderObservers, createRenderSystem } from '../render/renderSystem';
-import { GameObjectManager } from '../render/objectManager';
+import { createRenderObservers, createRenderSystem } from 'src/render/renderSystem';
+import { GameObjectManager } from 'src/render/objectManager';
 import { gameBus, GameEvents } from 'src/util';
 import { clearBackground } from 'src/render/background';
 import { getSoundManager } from './resourceScene';
 import { drawPathListener } from 'src/util/debug';
 import { resetWorld } from 'bitecs';
-import { FxManager } from './fxManager';
+import { FxManager } from '../managers/fxManager';
+import { AppScenes } from '../types';
 
 export class BaseScene extends Phaser.Scene {
   public world = createGameWorld();
@@ -32,15 +33,17 @@ export class BaseScene extends Phaser.Scene {
   protected collisionSystem = createCollisionSystem();
   protected renderSystem = createRenderSystem(this, this.objectManager);
 
-  constructor(sceneKey: string) {
+  constructor(sceneKey: AppScenes) {
+    console.log('construct', sceneKey)
     super({ key: sceneKey, active: false });
     this.world.debug = this.debug;
   }
 
   create() {
-    this.fxManager.create();
+    console.log('create', this.scene.key)
     this.unsubRenderObservers = createRenderObservers(this.world, this.objectManager);
     drawPathListener(this);
+    this.fxManager.create();
   }
 
   update(time: number, deltaMs: number) {
@@ -65,6 +68,6 @@ export class BaseScene extends Phaser.Scene {
     clearBackground(this);
     gameBus.off(GameEvents.START_GAME);
     gameBus.off(GameEvents.DEBUG_DRAW_PATH);
-    gameBus.emit(GameEvents.GAME_REMOVED);
+    gameBus.emit(GameEvents.SCENE_UNLOADED, this.scene.key as AppScenes)
   }
 }

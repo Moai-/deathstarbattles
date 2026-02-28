@@ -4,7 +4,7 @@ import { Renderable } from 'src/render/components/renderable';
 import { Depths } from 'src/render/types';
 import { gameBus, GameEvents } from 'src/util';
 
-export class FiringIndicator {
+export class FiringIndicatorHandler {
   private scene: Phaser.Scene;
   private circle?: Phaser.GameObjects.Arc;
   private line?: Phaser.GameObjects.Line;

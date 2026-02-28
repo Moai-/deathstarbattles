@@ -1,13 +1,12 @@
 import { gameBus, GameEvents } from 'src/util';
-import { AudioManager, audioManifest } from './audioManager';
-
-const RESOURCE_SCENE = 'ResourceScene';
+import { AudioManager, audioManifest } from '../managers/audioManager';
+import { AppScenes } from '../types';
 
 export class ResourceScene extends Phaser.Scene {
   private audioManager: AudioManager;
 
   constructor() {
-    super({ key: RESOURCE_SCENE, active: true });
+    super({ key: AppScenes.RESOURCE, active: true });
     this.audioManager = new AudioManager(this);
   }
 
@@ -49,5 +48,5 @@ export class ResourceScene extends Phaser.Scene {
 }
 
 export const getSoundManager = (scene: Phaser.Scene) => {
-  return (scene.scene.get(RESOURCE_SCENE) as ResourceScene).sounds();
+  return (scene.scene.get(AppScenes.RESOURCE) as ResourceScene).sounds();
 };

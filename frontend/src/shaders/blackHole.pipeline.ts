@@ -47,6 +47,7 @@ export class BlackHolePipeline extends Phaser.Renderer.WebGL.Pipelines
   private strengths = new Float32Array(MAX_BH);
 
   constructor(game: Phaser.Game) {
+    console.log('construct pipeline')
     super({ game, renderTarget: true, fragShader: frag });
   }
 

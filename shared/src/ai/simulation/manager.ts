@@ -31,6 +31,10 @@ export class SimManager {
     });
   }
 
+  destroy() {
+    this.shutdownWorker();
+  }
+
   shutdownWorker() {
     if (this.worker) {
       this.worker.terminate();

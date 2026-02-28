@@ -1,4 +1,5 @@
 export enum GameState {
+  FIRST_START,
   MAIN_MENU,
   CONFIG_GAME,
   INGAME,

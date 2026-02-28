@@ -1,4 +1,4 @@
-import { fireProjectile, removeProjectile } from '../entities/deathStar';
+import { fireProjectile, removeProjectile } from 'src/entities/deathStar';
 import { GameWorld } from 'shared/src/ecs/world';
 
 type CleanupCallback = (eid?: number) => void;

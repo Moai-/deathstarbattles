@@ -1,6 +1,5 @@
 import Splash from './splash';
 import ControlPanel from './controls';
-import { useStartBackground } from '../hooks/useStartBackground';
 import { GameState } from '../types';
 import WinrarScreen from './winrar';
 import { SetupScreen } from './basicSetup';
@@ -11,11 +10,6 @@ import { EditorScreen } from './editor';
 const App: React.FC = () => {
   useUiInsets();
   const { gameState } = useGameState();
-
-  const displayBg = [GameState.MAIN_MENU, GameState.CONFIG_GAME].includes(
-    gameState,
-  );
-  useStartBackground(displayBg);
 
   return (
     <>

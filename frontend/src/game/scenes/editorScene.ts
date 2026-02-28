@@ -4,7 +4,8 @@ import {
 } from 'shared/src/ecs/systems';
 import { gameBus, GameEvents } from 'src/util';
 import { BaseScene } from './baseScene';
-import EditorManager from './editorManager';
+import {EditorManager} from '../managers';
+import { AppScenes } from '../types';
 
 export class EditorScene extends BaseScene {
   private editorManager = new EditorManager(this, this.world, this.objectManager);
@@ -16,17 +17,15 @@ export class EditorScene extends BaseScene {
   );
 
   constructor() {
-    super('EditorScene');
+    super(AppScenes.EDITOR);
     // this.debug = true;
   }
 
   create() {
     super.create();
-    gameBus.on(GameEvents.START_GAME, () => {
-      this.editorManager.ready();
-    });
     this.editorManager.create();
     gameBus.emit(GameEvents.SCENE_LOADED);
+    this.editorManager.ready();
   }
 
   update(time: number, deltaMs: number) {

@@ -3,13 +3,16 @@ import { buildColliderCache } from 'shared/src/ai/functions';
 import { ObjectTypes } from 'shared/src/types';
 import { getType } from 'shared/src/utils';
 import { FXAAPipeline } from 'src/shaders/fxaa.pipeline';
-import { BaseScene } from './baseScene';
+import { BaseScene } from '../scenes/baseScene';
 
 export class FxManager {
+  private isReady = false;
+
   constructor(private scene: BaseScene) {}
 
   create() {
     const renderer = this.getRenderer();
+    console.log('creating fxmanager')
     if (renderer) {
       renderer.pipelines.addPostPipeline('BlackHoleFX', BlackHolePipeline);
       renderer.pipelines.addPostPipeline('FXAA', FXAAPipeline);
@@ -19,7 +22,7 @@ export class FxManager {
   }
 
   update() {
-    queueMicrotask(() => {
+    if (this.isReady) {
       const blackHoleFX = this.getPipeline('BlackHoleFX');
       if (blackHoleFX) {
         const blackHoles = buildColliderCache(this.scene.world).filter(
@@ -27,7 +30,7 @@ export class FxManager {
         );
         (blackHoleFX as BlackHolePipeline).updateHoles(blackHoles);
       }
-    })
+    }
   }
 
   destroy() {

@@ -2,10 +2,11 @@ import {
   createCleanupSystem,
   createCollisionResolverSystem,
 } from 'shared/src/ecs/systems';
-import GameManager from './gameManager';
+import {SinglePlayerGameManager as GameManager} from '../managers';
 import { gameBus, GameEvents } from 'src/util';
 import { getSoundManager } from './resourceScene';
 import { BaseScene } from './baseScene';
+import { AppScenes } from '../types';
 
 export class GameScene extends BaseScene {
   private gameManager = new GameManager(this, this.world, this.objectManager);
@@ -17,7 +18,7 @@ export class GameScene extends BaseScene {
   );
 
   constructor() {
-    super('GameScene');
+    super(AppScenes.GAME);
   }
 
   create() {

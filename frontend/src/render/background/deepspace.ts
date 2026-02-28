@@ -28,7 +28,12 @@ export const generateDeepSpace = (
   // const rotation = (Math.random() * Math.PI * 2);
   const rotation = Math.random() * 0.1;
   const outerRadius = tenthWidth * 7;
-  const tilt = 0.9;
+  const tilt = Math.random() > 0.5 ? Phaser.Math.FloatBetween(0.1, 0.3) : Phaser.Math.FloatBetween(0.7, 1);
+  const isDark = Math.random() > 0.5;
+  const themeHue = isDark ? Phaser.Math.Between(200, 300): Phaser.Math.Between(33, 66);
+  const lightness = isDark ? Phaser.Math.Between(110, 140): Phaser.Math.Between(80, 110);
+  const saturation = isDark ? Phaser.Math.Between(40, 80): Phaser.Math.Between(120, 150);
+
 
   // 1. Old background stars
   const farawayStars = scene.add.graphics();
@@ -51,14 +56,13 @@ export const generateDeepSpace = (
   oldStars.destroy();
 
   // 2. Foreground galaxy
-  const themeHue = Phaser.Math.Between(200, 300);
   const tex = drawGalaxyComposite(scene, {
     outerRadius,
     tilt,
     rotation,
     hue: themeHue,
-    lightness: 110,
-    // saturation: 50,
+    lightness,
+    saturation,
     armCount: Phaser.Math.Between(2, 8),
     armStrength: Phaser.Math.FloatBetween(0.5, 1),
     armTwist: Phaser.Math.FloatBetween(6, 14),

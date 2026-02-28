@@ -3,7 +3,6 @@ import { DropdownGroup, SetupScreenContainer, SimpleSetup } from 'src/ui/styled/
 import { SetupHeader } from 'src/ui/styled/text';
 import styled from 'styled-components';
 import { NeonButton } from '../styled';
-import { startGameWithConfig } from '../functions/gameManagement';
 import { PlayerSetup } from 'shared/src/types';
 import { GameState, useGameState } from './context';
 import { playerCols } from 'shared/src/utils';
@@ -77,7 +76,7 @@ export const SetupScreen: React.FC = () => {
       });
     }
     const scenarioSetup = types[scenarioIdx];
-    startGameWithConfig({
+    setGameState(GameState.INGAME, {
       justBots: false,
       players,
       maxItems: isMax ? amount : undefined,
@@ -86,7 +85,6 @@ export const SetupScreen: React.FC = () => {
       itemRules: scenarioSetup.items,
       stationSize: size,
     });
-    setGameState(GameState.INGAME);
   };
 
   return (
