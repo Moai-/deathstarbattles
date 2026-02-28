@@ -1,13 +1,14 @@
-import { ShotInfo, TurnGenerator } from 'shared/src/types';
+import { ShotInfo, SimShotResult, TurnGenerator } from 'shared/src/types';
 import { oneIn } from 'shared/src/utils';
+import { getPosition } from 'shared/src/utils';
 import {
   shotTurn,
   checkDangerousShots,
   hyperspaceTurn,
   getClosestDestructible,
   computeFirstShot,
-  // addError,
-  // isStuck,
+  getBlockingObstacle,
+  getTangentShots,
   explore,
   analyzeShot,
   shotSequencer,
@@ -16,10 +17,11 @@ import {
 /**
  * Very hard ("megabot")
  * – If ANY station is now sitting on our previous trajectory: re-fire previous shot
- * - Check right next to you ("naive shot"). If you can hit someone there, do it
- * - If a miss, then -- if we had a previous shot -- check if naive shot or previous shot is closer
+ * - If line-of-sight to target is blocked by a planet: try tangent/lob shots first (shoot around the planet)
+ * - Else: try naive direct shot first
+ * - If a miss, then -- if we had a previous shot -- check if naive/tangent or previous shot is closer
  * - Fire a volley at whichever target was chosen above
- * - If we had a miss, try an exploratory shot.
+ * - If we had a miss, try an exploratory shot
  * - If this shot misses, we teleport away 1/3 of the time if we're in danger
  * - If we're still there: compare shots from first volley and exploratory shot
  * - Fire a second volley at whichever target is closest to whichever shot from above
@@ -33,10 +35,8 @@ const generateVeryHardTurn: TurnGenerator = async (
   simulateShot,
 ) => {
   const playerId = playerInfo.id;
-  console.log('simulation for player', playerId);
 
   // 1. Analyze last shot for stations that teleported onto it
-  // Fire if you find any of these stations
   let shotInfo: ShotInfo | null = null;
   if (lastTurnInput && gameState.lastTurnShots?.[playerId]) {
     shotInfo = analyzeShot(
@@ -45,38 +45,74 @@ const generateVeryHardTurn: TurnGenerator = async (
     );
 
     if (shotInfo.willHit && shotInfo.destructible) {
-      // console.log('player %s performs last shot as it will hit', playerId);
       return shotTurn(playerId, lastTurnInput);
     }
   }
 
-  // 2. Identify closest target and try the naive approach first
+  // 2. Identify closest target
   const targetEid = getClosestDestructible(world, playerId);
-
   const targetData = { ownEid: playerId, targetEid };
-  const naiveShot = computeFirstShot(targetData);
-  const naiveSim = await simulateShot({ playerId, ...naiveShot });
+  const shooterPos = getPosition(playerId);
+  const targetPos = getPosition(targetEid);
 
-  if (naiveSim.willHit) {
-    return shotTurn(playerId, naiveShot, [naiveSim.shotTrail]);
+  // 3. If target is behind a planet, try tangent/lob shots first (gravity-bend around planet)
+  const blocker = getBlockingObstacle(world, shooterPos, targetPos, targetEid);
+  let initialShot: { angle: number; power: number };
+  let naiveSim: Awaited<ReturnType<typeof simulateShot>>;
+
+  if (blocker) {
+    const tangentCandidates = getTangentShots(
+      shooterPos,
+      blocker.x,
+      blocker.y,
+      blocker.r,
+    );
+    const sims: Array<SimShotResult> = [];
+    const candidateShots = tangentCandidates.map((raw) => ({playerId, ...raw}));
+    for (let i = 0; i < candidateShots.length; i++) {
+      sims.push(await simulateShot(candidateShots[i]));
+    }
+
+    const best = sims.reduce((a, b) =>
+      a.willHit
+        ? a
+        : b.willHit
+          ? b
+          : a.closestDist2 <= b.closestDist2
+            ? a
+            : b,
+    );
+    const bestIdx = sims.indexOf(best);
+    initialShot = tangentCandidates[bestIdx];
+    naiveSim = best;
+  } else {
+    initialShot = computeFirstShot(targetData);
+    naiveSim = await simulateShot({ playerId, ...initialShot });
   }
 
-  // 3. Missed. Check if our last shot or the naive shot went closest to a target,
+  if (naiveSim.willHit) {
+    return shotTurn(playerId, initialShot, [naiveSim.shotTrail]);
+  }
+
+  // 4. Missed. Check if our last shot or the initial shot went closest to a target,
   // then fire a volley of simulated shots
-  const isNaiveCloser = shotInfo
+  const isInitialCloser = shotInfo
     ? naiveSim.closestDist2 < shotInfo.closestDist2
     : true;
 
-  const input = isNaiveCloser ? { playerId, ...naiveShot } : lastTurnInput!;
-  const target = isNaiveCloser
+  const input = isInitialCloser
+    ? { playerId, ...initialShot }
+    : lastTurnInput!;
+  const target = isInitialCloser
     ? targetData
     : { ...targetData, targetEid: naiveSim.closestDestructible };
 
+  const firstVolleySteps = blocker ? 5 : 3; // extra correction steps when shooting around a planet
   const { paths, sim: firstVolley } = await shotSequencer(
     target,
     input,
     simulateShot,
-    3,
+    firstVolleySteps,
     [naiveSim],
   );
 
@@ -84,7 +120,7 @@ const generateVeryHardTurn: TurnGenerator = async (
     return shotTurn(playerId, firstVolley.input, paths);
   }
 
-  // 4. Missed first volley. Let's fire an explorer shot and see how close it gets.
+  // 5. Missed first volley. Fire an explorer shot and see how close it gets.
   const exploratoryShot = explore(firstVolley.input);
   const exploreSim = await simulateShot({ playerId, ...exploratoryShot });
 
@@ -132,7 +168,8 @@ const generateVeryHardTurn: TurnGenerator = async (
     return hyperspaceTurn(playerId);
   }
 
-  const [closestShot] = [naiveSim, firstVolley, exploreSim, secondVolley].sort(
+  const allShots = [naiveSim, firstVolley, exploreSim, secondVolley];
+  const [closestShot] = allShots.sort(
     (a, b) => a.closestDist2 - b.closestDist2,
   );
   return shotTurn(playerId, closestShot.input, allPaths);

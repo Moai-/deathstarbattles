@@ -59,19 +59,19 @@ export const finalizeSetup = (
     }
   }
 
-  console.log('Game starts with the following objects:')
-  objectsInWorld.forEach(({eid}) => {
-    console.log(`%s [%s]: grav %s, rad %s (type %s)`, ObjectTypes[getType(eid)], eid, HasGravity.strength[eid], getRadius(eid), GravityFalloffType[HasGravity.falloffType[eid]])
-  })
+  // console.log('Game starts with the following objects:')
+  // objectsInWorld.forEach(({eid}) => {
+  //   console.log(`%s [%s]: grav %s, rad %s (type %s)`, ObjectTypes[getType(eid)], eid, HasGravity.strength[eid], getRadius(eid), GravityFalloffType[HasGravity.falloffType[eid]])
+  // })
 
   // INFLATE
-  // if (stationSize > 1) {
+  if (stationSize > 1) {
     objectsInWorld
       .filter((o) => getType(o.eid) === ObjectTypes.DEATHSTAR)
       .map((o) => o.eid)
       .forEach((eid) => {
-        Collision.radius[eid] = Collision.radius[eid] * 5;
-        // Collision.radius[eid] = Collision.radius[eid] * stationSize;
+        // Collision.radius[eid] = Collision.radius[eid] * 5;
+        Collision.radius[eid] = Collision.radius[eid] * stationSize;
       });
-  // }
+  }
 };

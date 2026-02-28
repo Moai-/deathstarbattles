@@ -21,6 +21,106 @@ import { buildColliderCache } from './targeting';
 
 const SAMPLE_STEP = 4;
 
+// ---- Line-of-sight blocking and tangent shots (for shooting around planets) ----
+
+/** Closest point on segment A->B to point C: param t in [0,1]. */
+const segmentParamToClosest = (
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number,
+  cx: number,
+  cy: number,
+): number => {
+  const dx = bx - ax;
+  const dy = by - ay;
+  const len2 = dx * dx + dy * dy;
+  if (len2 < 1e-10) return 0;
+  let t = ((cx - ax) * dx + (cy - ay) * dy) / len2;
+  return Math.max(0, Math.min(1, t));
+};
+
+/** True if segment A->B intersects (or is inside) circle at C with radius r. */
+const segmentIntersectsCircle = (
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number,
+  cx: number,
+  cy: number,
+  r: number,
+): boolean => {
+  const t = segmentParamToClosest(ax, ay, bx, by, cx, cy);
+  const px = ax + t * (bx - ax);
+  const py = ay + t * (by - ay);
+  const d2 = (px - cx) ** 2 + (py - cy) ** 2;
+  return d2 <= r * r;
+};
+
+/** First obstacle (non-destructible) blocking the segment shooterPos -> targetPos. Excludes targetEid. */
+export const getBlockingObstacle = (
+  world: GameWorld,
+  shooterPos: AnyPoint,
+  targetPos: AnyPoint,
+  targetEid: number,
+): (TargetCache[0] & { t: number }) | null => {
+  const colliders = buildColliderCache(world);
+  const blockers = colliders.filter(
+    (o) => o.eid !== targetEid && !o.breaks,
+  );
+  let best: (TargetCache[0] & { t: number }) | null = null;
+  let bestT = 2;
+  const ax = shooterPos.x;
+  const ay = shooterPos.y;
+  const bx = targetPos.x;
+  const by = targetPos.y;
+  for (const o of blockers) {
+    const t = segmentParamToClosest(ax, ay, bx, by, o.x, o.y);
+    const px = ax + t * (bx - ax);
+    const py = ay + t * (by - ay);
+    const d2 = (px - o.x) ** 2 + (py - o.y) ** 2;
+    if (d2 <= o.r2 && t < bestT) {
+      bestT = t;
+      best = { ...o, t };
+    }
+  }
+  return best;
+};
+
+const toDeg = (rad: number) => (rad * 180) / Math.PI;
+const SAFETY_DEG = 3; // shoot slightly outside tangent to avoid grazing the planet
+
+/**
+ * Tangent shots from shooter to graze the obstacle circle (left and right).
+ * Use high power so gravity can bend the shot around the planet.
+ * Also returns a "lob" shot (angle between the two tangents) for over-the-top attempts.
+ */
+export const getTangentShots = (
+  shooterPos: AnyPoint,
+  obstacleX: number,
+  obstacleY: number,
+  obstacleR: number,
+): RawTurn[] => {
+  const dx = obstacleX - shooterPos.x;
+  const dy = obstacleY - shooterPos.y;
+  const d = Math.hypot(dx, dy);
+  if (d <= obstacleR + 1e-6) return []; // shooter inside or on circle
+
+  const baseAngle = toDeg(Math.atan2(dy, dx));
+  const deltaDeg = toDeg(Math.asin(obstacleR / d));
+  const leftAngle = baseAngle + deltaDeg + SAFETY_DEG;
+  const rightAngle = baseAngle - deltaDeg - SAFETY_DEG;
+  const power = 98;
+  const lobPower = 100;
+  const lobAngle = (leftAngle + rightAngle) / 2;
+
+  return [
+    { angle: leftAngle, power },
+    { angle: rightAngle, power },
+    { angle: lobAngle, power: lobPower },
+  ] as RawTurn[];
+};
+
 export const analyzeShot = (
   trace: ReadonlyArray<AnyPoint>,
   world: GameWorld,
@@ -128,7 +228,6 @@ export const correctFromLastShot = (
 
 const clamp = (v: number, lo: number, hi: number) =>
   Math.min(Math.max(v, lo), hi);
-const toDeg = (rad: number) => (rad * 180) / Math.PI;
 const dist2 = (a: AnyPoint, b: AnyPoint) => (a.x - b.x) ** 2 + (a.y - b.y) ** 2;
 const dot = (a: AnyPoint, b: AnyPoint) => a.x * b.x + a.y * b.y;
 const perpZ = (a: AnyPoint, b: AnyPoint) => a.x * b.y - a.y * b.x; // 2-D cross product z term
