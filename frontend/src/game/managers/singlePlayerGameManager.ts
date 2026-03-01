@@ -10,26 +10,31 @@ export class SinglePlayerGameManager extends BaseGameManager {
 
   protected getPlayerInput() {
     const playerInfo = this.getActivePlayer();
+    const currentStation = this.getActiveStation();
     if (playerInfo) {
       if (playerInfo.type !== PlayerTypes.HUMAN) {
         this.endTurn();
         return;
       }
     }
+    if (!this.stationsActive[currentStation]) {
+      this.endTurn();
+      return;
+    }
     this.inputHandler.toggleAcceptInput(true);
-    this.indicator.radius = 30 * (Collision.radius[playerInfo.id] / 8);
+    this.indicator.radius = 30 * (Collision.radius[currentStation] / 8);
 
     this.indicator.drawIndicator();
     this.syncAnglePower();
     this.objectManager.hideAllchildren();
 
-    const thisPlayerInput = this.getPreviousTurnInput(playerInfo.id);
+    const thisPlayerInput = this.getPreviousTurnInput(currentStation);
 
     if (thisPlayerInput) {
       const { angle, power } = thisPlayerInput;
       this.syncAnglePower(angle, power);
       if (thisPlayerInput.otherAction !== OtherActions.HYPERSPACE) {
-        const parent = this.projectileManager.getByPlayerId(playerInfo.id);
+        const parent = this.projectileManager.getByPlayerId(currentStation);
         if (parent && !this.isHyperspace) {
           this.objectManager.showChildren(parent.ownId);
         }
@@ -39,9 +44,10 @@ export class SinglePlayerGameManager extends BaseGameManager {
 
   protected async endTurn() {
     const playerInfo = this.getActivePlayer();
-    if (playerInfo.isAlive && playerInfo.type === PlayerTypes.HUMAN) {
+    const currentStation = this.getActiveStation();
+    if (playerInfo.isAlive && playerInfo.type === PlayerTypes.HUMAN && this.stationsActive[currentStation]) {
       this.turnInputs.push({
-        playerId: playerInfo.id,
+        stationId: currentStation,
         angle: this.inputHandler.getCurrentAngle(),
         power: this.inputHandler.getCurrentPower(),
         otherAction: this.inputHandler.getCurrentOtherAction(),

@@ -23,7 +23,7 @@ import generateVeryHardTurn from './veryHard';
  */
 const generateMediumTurn: TurnGenerator = async (
   world,
-  playerInfo,
+  stationId,
   gameState,
   lastTurnInput,
   simulateShot,
@@ -32,44 +32,43 @@ const generateMediumTurn: TurnGenerator = async (
   if (oneIn(10)) {
     return generateVeryHardTurn(
       world,
-      playerInfo,
+      stationId,
       gameState,
       lastTurnInput,
       simulateShot,
     );
   }
 
-  const playerId = playerInfo.id;
 
   // 1. Analyze last shot for stations that teleported onto it
   // Fire if you find any of these stations
   let shotInfo: ShotInfo | null = null;
-  if (lastTurnInput && gameState.lastTurnShots?.[playerId]) {
+  if (lastTurnInput && gameState.lastTurnShots?.[stationId]) {
     shotInfo = analyzeShot(
-      gameState.lastTurnShots[playerId].movementTrace,
+      gameState.lastTurnShots[stationId].movementTrace,
       world,
     );
 
     if (shotInfo.willHit) {
-      return shotTurn(playerId, lastTurnInput);
+      return shotTurn(stationId, lastTurnInput);
     }
   }
 
   // 2. One third of the time, check for danger and run
   if (oneIn(3) && gameState.lastTurnShots) {
-    if (checkDangerousShots(playerId, gameState.lastTurnShots)) {
-      return hyperspaceTurn(playerId);
+    if (checkDangerousShots(stationId, gameState.lastTurnShots)) {
+      return hyperspaceTurn(stationId);
     }
   }
 
   // 3. One eighth of the time, run
   // This prevents being stuck in a position where you can't hit or get hit
   if (oneIn(8)) {
-    return hyperspaceTurn(playerId);
+    return hyperspaceTurn(stationId);
   }
 
   // 4. If we need fresh aim (target teleported, first shot), do this
-  const targetEid = getClosestDestructible(world, playerId);
+  const targetEid = getClosestDestructible(world, stationId);
 
   const needFreshAim =
     !lastTurnInput || // first turn
@@ -77,17 +76,17 @@ const generateMediumTurn: TurnGenerator = async (
     shotInfo.closestDestructible !== targetEid; // our original target warped away
 
   if (needFreshAim) {
-    const inputs = computeFirstShot({ ownEid: playerId, targetEid });
-    return shotTurn(playerId, addError(inputs, 10, 5));
+    const inputs = computeFirstShot({ ownEid: stationId, targetEid });
+    return shotTurn(stationId, addError(inputs, 10, 5));
   }
 
   // 5. Otherwise, try to correct your aim based on your last shot
   const inputs = correctShot(
-    { ownEid: playerId, targetEid },
+    { ownEid: stationId, targetEid },
     lastTurnInput,
     shotInfo!,
   );
-  return shotTurn(playerId, addError(inputs, 2, 1));
+  return shotTurn(stationId, addError(inputs, 2, 1));
 };
 
 export default generateMediumTurn;

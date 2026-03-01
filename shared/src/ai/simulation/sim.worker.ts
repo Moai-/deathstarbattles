@@ -74,7 +74,7 @@ self.onmessage = (ev: MessageEvent<SimMessage>) => {
     case SimMessageType.SIMULATE: {
       const ipt = {
         ...turnInput!,
-        playerId: cloneMap.get(turnInput!.playerId)!,
+        stationId: cloneMap.get(turnInput!.stationId)!,
       };
       const simRes = runSimulation(ipt, colliders, updater);
       const result = {
@@ -95,8 +95,8 @@ const runSimulation = (
   colliderCache: TargetCache,
   updateSystems: Updater,
 ): SimShotResult => {
-  const { playerId } = turnInfo;
-  const targets = colliderCache.filter((t) => t.eid !== playerId);
+  const { stationId } = turnInfo;
+  const targets = colliderCache.filter((t) => !excludeEids.includes(t.eid));
 
   let closestDestructible = 0;
   let hitsEid = 0;
@@ -180,7 +180,7 @@ const runSimulation = (
     // );
   }
   const shotTrail =
-    (world.movements && [...world.movements[playerId].movementTrace]) || [];
+    (world.movements && [...world.movements[stationId].movementTrace]) || [];
 
   world.movements = null;
   const input = {
@@ -194,7 +194,7 @@ const runSimulation = (
 
   return {
     hitsEid,
-    hitsSelf: hitsEid === playerId,
+    hitsSelf: hitsEid === stationId,
     destructible,
     willHit,
     closestDestructible,
@@ -214,7 +214,7 @@ const runSimulation = (
 // Spawn a projectile and fire it
 const fireProjectile = (input: TurnInput) => {
   const proj = addEntity(world);
-  const { playerId } = input;
+  const { stationId } = input;
   addComponent(world, proj, Position);
   addComponent(world, proj, Velocity);
   addComponent(world, proj, Collision);
@@ -223,10 +223,10 @@ const fireProjectile = (input: TurnInput) => {
   addComponent(world, proj, HasLifetime);
   addComponent(world, proj, Active);
 
-  Collision.radius[proj] = Collision.radius[input.playerId] / 8;
-  Projectile.parent[proj] = input.playerId;
+  Collision.radius[proj] = Collision.radius[stationId] / 8;
+  Projectile.parent[proj] = stationId;
   HasLifetime.createdAt[proj] = 0;
-  inputsToShot(playerId, proj, input);
+  inputsToShot(stationId, proj, input);
   return proj;
 };
 

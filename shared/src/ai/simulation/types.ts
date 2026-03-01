@@ -38,6 +38,7 @@ export interface SimSnapshot {
 
   // ObjectInfo
   type: Uint8Array;
+  owner: Uint8Array;
 
   // Position
   posX: Float32Array;

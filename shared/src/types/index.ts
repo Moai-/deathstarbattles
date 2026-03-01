@@ -49,7 +49,7 @@ export interface AnyPoint {
 }
 
 export type TurnInput = {
-  playerId: number;
+  stationId: number;
   angle: number;
   power: number;
   otherAction?: OtherActions | null;
@@ -61,9 +61,10 @@ export type ClearanceFunction = (a: number, b: number) => number;
 export type GameObject = { x: number; y: number; radius: number; eid: number };
 
 export type PlayerInfo = {
+  idx: number;
   isAlive: boolean;
   type: PlayerTypes;
-  id: number;
+  stationEids: Array<number>;
 };
 
 export type GameSetupResult = {
@@ -85,7 +86,7 @@ export type GameState = {
 
 export type TurnGenerator = (
   world: GameWorld,
-  playerInfo: PlayerInfo,
+  stationId: number,
   gameState: GameState,
   lastTurnInput: TurnInput | null,
   simulator: (t: TurnInput) => Promise<SimShotResult>,
@@ -127,6 +128,7 @@ export interface ScenarioItemRule {
 export type GameConfig = {
   justBots?: boolean;
   players?: Array<PlayerSetup>;
+  stationPerPlayer?: number;
   items?: Array<ScenarioItem>;
   itemRules?: Array<ScenarioItemRule>;
   background?: Backgrounds;
@@ -142,6 +144,7 @@ export type TargetCacheEntry = {
   r: number;
   r2: number;
   breaks: boolean;
+  ally?: boolean;
 };
 
 export type TargetCache = Array<TargetCacheEntry>;

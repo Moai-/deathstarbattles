@@ -60,6 +60,7 @@ export const buildSnapshot = (
 
     // ObjectInfo
     type: new Uint8Array(n),
+    owner: new Uint8Array(n),
 
     // Position
     posX: new Float32Array(n),
@@ -125,6 +126,7 @@ export const buildSnapshot = (
     snap.createdAt[i] = HasLifetime.createdAt[src];
 
     snap.type[i] = ObjectInfo.type[src];
+    snap.owner[i] = ObjectInfo.owner[src];
 
     snap.posX[i] = Position.x[src];
     snap.posY[i] = Position.y[src];
@@ -169,6 +171,7 @@ export const buffersOf = (s: SimSnapshot) => [
   s.createdAt.buffer,
 
   s.type.buffer,
+  s.owner.buffer,
 
   s.posX.buffer,
   s.posY.buffer,
@@ -214,6 +217,7 @@ export const restoreSnapshot = (snapshot: SimSnapshot, world: GameWorld) => {
     addComponent(world, clonedEid, ObjectInfo);
     ObjectInfo.type[clonedEid] = snapshot.type[i];
     ObjectInfo.cloneOf[clonedEid] = eid;
+    ObjectInfo.owner[clonedEid] = snapshot.owner[i];
 
     const tag = snapshot.componentTags[i];
 

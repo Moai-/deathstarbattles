@@ -13,22 +13,22 @@ export const addError = (turn: RawTurn, angleError = 10, powerError = 3) =>
     ),
   }) as RawTurn;
 
-export const hyperspaceTurn = (playerId: number) =>
+export const hyperspaceTurn = (stationId: number) =>
   ({
-    playerId,
+    stationId,
     angle: 0,
     power: 20,
     otherAction: OtherActions.HYPERSPACE,
   }) as TurnInput;
 
 export const shotTurn = (
-  playerId: number,
+  stationId: number,
   turn: RawTurn,
   paths?: Array<Array<AnyPoint>>,
 ) =>
   ({
     ...turn,
-    playerId,
+    stationId,
     otherAction: null,
     paths,
   }) as TurnInput;

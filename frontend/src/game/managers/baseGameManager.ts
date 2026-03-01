@@ -7,6 +7,7 @@ import {
   PlayerInfo,
   PlayerTypes,
   GameConfig,
+  GameObject,
 } from 'shared/src/types';
 import { Renderable } from 'src/render/components/renderable';
 import Hyperspace from 'src/render/animations/hyperspace';
@@ -27,20 +28,35 @@ import { BaseSceneManager } from './baseSceneManager';
 export class BaseGameManager extends BaseSceneManager {
 
   // game state
-  protected activePlayerIndex = -1;
+  protected activeStationIndex = -1;
   protected players: Array<PlayerInfo> = [];
+  protected stations: Array<number> = [];
+  protected stationOwners: Record<number, number> = {};
+  protected stationsActive: Record<number, boolean> = {};
   protected history: Array<Array<TurnInput>> = [];
   protected turnInputs: Array<TurnInput> = [];
   protected willHyperspace: Array<number> = [];
-  protected active = true;
   protected numTurn = 0;
   protected isHyperspace = false;
 
   ready() {
     super.ready();
     this.numTurn = 0;
-    this.activePlayerIndex = -1;
+    this.activeStationIndex = -1;
     this.turnInputs = [];
+  }
+
+  destroy() {
+    super.destroy();
+    this.players = [];
+    this.stations = [];
+    this.stationOwners = {};
+    this.stationsActive = {};
+    this.history = [];
+    this.turnInputs = [];
+    this.willHyperspace = [];
+    this.numTurn = 0;
+    this.isHyperspace = false;
   }
 
   async startGame(conf: GameConfig) {
@@ -48,6 +64,14 @@ export class BaseGameManager extends BaseSceneManager {
     const { players } = runGameSetup(this.scene, this.world, conf)!;
     this.scene.fxManager.update();
     this.isHyperspace = getHyperLocus(this.world) !== null;
+
+    players.forEach((player) => {
+      player.stationEids.forEach((stationEid) => {
+        this.stationOwners[stationEid] = player.idx;
+        this.stationsActive[stationEid] = true;
+        this.stations.push(stationEid);
+      })
+    })
 
     this.players = players;
 
@@ -67,16 +91,16 @@ export class BaseGameManager extends BaseSceneManager {
 
   protected startTurn() {
 
-    if (this.activePlayerIndex < 0) {
-      this.activePlayerIndex = 0;
+    if (this.activeStationIndex < 0) {
+      this.activeStationIndex = 0;
     }
     const living = this.getLivingPlayers();
     if (living.length < 2) {
       gameBus.emit(
         GameEvents.GAME_END,
         living.map((player) => ({
-          playerId: this.players.findIndex((p) => p.id === player.id),
-          col: Renderable.col[player.id],
+          playerId: player.idx,
+          col: Renderable.col[player.stationEids[0]],
         })),
       );
       return;
@@ -88,43 +112,47 @@ export class BaseGameManager extends BaseSceneManager {
         return;
       }
     }
+    if (!this.stationsActive[this.getActiveStation()]) {
+      this.endTurn();
+      return;
+    }
     this.getPlayerInput();
-    return;
   }
 
   protected async endTurn() {
     const playerInfo = this.getActivePlayer();
-    if (playerInfo.isAlive) {
+    const currentStation = this.getActiveStation();
+    if (playerInfo.isAlive && this.stationsActive[currentStation]) {
       if (playerInfo.type !== PlayerTypes.HUMAN) {
         const lastTurn = this.isHyperspace
           ? null
-          : this.getPreviousTurnInput(playerInfo.id);
-        const thisPlayerInput = await generateTurn(
+          : this.getPreviousTurnInput(currentStation);
+        const thisStationInput = await generateTurn(
           this.world,
-          playerInfo,
+          currentStation,
           this.getGameState(),
           lastTurn,
           (turnInput) => this.simManager.runSimulation(turnInput),
         );
         // console.timeEnd('generate turn for ' + playerInfo.id);
 
-        if (thisPlayerInput.paths) {
+        if (thisStationInput.paths) {
           gameBus.emit(GameEvents.DEBUG_DRAW_PATH, {
-            colour: Renderable.col[thisPlayerInput.playerId],
-            paths: thisPlayerInput.paths,
+            colour: Renderable.col[thisStationInput.stationId],
+            paths: thisStationInput.paths,
           });
         }
-        this.turnInputs.push(thisPlayerInput);
+        this.turnInputs.push(thisStationInput);
       }
     }
 
-    const len = this.players.length;
+    const len = this.stations.length;
 
-    if (this.activePlayerIndex === len - 1) {
-      this.activePlayerIndex = -1;
+    if (this.activeStationIndex === len - 1) {
+      this.activeStationIndex = -1;
       this.firePhase();
     } else {
-      this.activePlayerIndex = this.activePlayerIndex + 1;
+      this.activeStationIndex = this.activeStationIndex + 1;
       this.startTurn();
     }
   }
@@ -135,13 +163,13 @@ export class BaseGameManager extends BaseSceneManager {
     this.projectileManager.reset();
     this.world.movements = null;
     let didFire = false;
-    this.turnInputs.forEach(({ playerId, angle, power, otherAction }) => {
+    this.turnInputs.forEach(({ stationId, angle, power, otherAction }) => {
       if (!otherAction) {
-        this.projectileManager.fireFrom(playerId, angle, power);
+        this.projectileManager.fireFrom(stationId, angle, power);
         didFire = true;
       }
       if (otherAction === OtherActions.HYPERSPACE) {
-        this.willHyperspace.push(playerId);
+        this.willHyperspace.push(stationId);
       }
     });
     this.history.push([...this.turnInputs]);
@@ -159,14 +187,26 @@ export class BaseGameManager extends BaseSceneManager {
     this.turnInputs = [];
     getSoundManager(this.scene).stopSound('elecTravelHum');
     const shouldHyperspace = this.isHyperspace
-      ? this.players
-          .filter((p) => !this.willHyperspace.includes(p.id))
-          .map((p) => p.id)
+      ? this.stations.filter((p) => !this.willHyperspace.includes(p))
       : this.willHyperspace;
-    if (shouldHyperspace.length) {
-      await Promise.all(shouldHyperspace.map(this.useHyperspace.bind(this)));
-      this.willHyperspace = [];
-    }
+  
+    const { width, height } = this.scene.scale;
+
+    const radii = shouldHyperspace.map(getRadius);
+
+    const newPositions = generateNonOverlappingPositions(
+      width,
+      height,
+      radii,
+      objectClearance,
+      this.world,
+    );
+
+    await Promise.all(shouldHyperspace.map((eid, idx) => this.useHyperspace(eid, newPositions[idx])));
+    this.willHyperspace = [];
+
+    // We sneak in an updated map of colliders to the worker during the post-combat pause
+    // This way, restarting the worker and rebuilding collider cache should be unnoticeable
     const beforeRestart = Date.now();
     this.simManager.shutdownWorker();
     await this.simManager.startWorker();
@@ -186,27 +226,24 @@ export class BaseGameManager extends BaseSceneManager {
     );
   }
 
-  protected async useHyperspace(eid: number) {
+  protected async useHyperspace(eid: number, newPosition: GameObject) {
     return new Promise<void>((resolve) => {
-      const playerInfo = this.getPlayerInfo(eid);
+      const playerInfo = this.getPlayerInfoFromStation(eid);
 
       if (!playerInfo || !playerInfo?.isAlive) {
         return resolve();
       }
 
-      const { width, height } = this.scene.scale;
-      const radius = getRadius(eid);
-      const [newPosition] = generateNonOverlappingPositions(
-        width,
-        height,
-        [radius],
-        objectClearance,
-        this.world,
-      );
+      if (!this.stationsActive[eid]) {
+        return resolve();
+      }
+
+      const {radius} = newPosition;
+
       const oldPos = getPosition(eid);
       new Hyperspace(this.scene, oldPos, radius, true).play(
         () => {
-          setPosition(eid, -20, -20);
+          setPosition(eid, -200, -200);
         },
         () => {
           new Hyperspace(this.scene, newPosition, radius, false).play(() => {
@@ -218,12 +255,16 @@ export class BaseGameManager extends BaseSceneManager {
     });
   }
 
-  protected getPlayerInfo(eid: number) {
-    return this.players.find(({ id }) => id === eid);
+  protected getPlayerInfoFromStation(eid: number) {
+    return this.players.find(({ idx }) => idx === this.stationOwners[eid])!;
   }
 
   protected getActivePlayer() {
-    return this.players[this.activePlayerIndex];
+    return this.getPlayerInfoFromStation(this.getActiveStation())
+  }
+
+  protected getActiveStation() {
+    return this.stations[this.activeStationIndex];
   }
 
   protected getLivingPlayers() {
@@ -234,13 +275,24 @@ export class BaseGameManager extends BaseSceneManager {
     if (this.history.length) {
       const lastTurn = this.history[this.history.length - 1];
       const thisPlayerInput = lastTurn.find(
-        (inputs) => inputs.playerId === eid,
+        (inputs) => inputs.stationId === eid,
       );
       if (thisPlayerInput) {
         return thisPlayerInput;
       }
     }
     return null;
+  }
+
+  protected onStationDestroyed(eid: number) {
+    const player = this.getPlayerInfoFromStation(eid);
+    this.stationsActive[eid] = false;
+    player.stationEids = player.stationEids.filter((liveEid) => liveEid !== eid);
+
+    console.log('player %s owns %s stations', player.idx, player.stationEids.length)
+    if (player.stationEids.length === 0) {
+      player.isAlive = false;
+    }
   }
 
   protected setUpListeners() {
@@ -254,9 +306,9 @@ export class BaseGameManager extends BaseSceneManager {
         projectileManager.removeProjectile(eid);
         objectManager.removeBoundaryIndicator(eid);
       },
-      targetDestroyedCallback: (eid) => this.getPlayerInfo(eid)!.isAlive = false,
-      onEndTurnCallback: () => this.endTurn(),
-      getTargetIdCallback: () => this.players[this.activePlayerIndex].id,
+      targetDestroyedCallback: this.onStationDestroyed.bind(this),
+      onEndTurnCallback: this.endTurn.bind(this),
+      getTargetIdCallback: this.getActiveStation.bind(this),
     })
 
   }

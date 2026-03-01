@@ -6,12 +6,14 @@ import { createDeathStar } from 'src/entities/deathStar';
 export const generatePlayers = (
   world: GameWorld,
   playerSetup: Array<PlayerSetup>,
+  stationPerPlayer: number = 1
 ) => {
   const parsedPlayers: Array<PlayerInfo> = [];
   const allRandom = playerSetup.find((p) => p.difficulty === 6);
   const allDifficulties = Phaser.Math.Between(1, 5);
   for (let i = 0; i < playerSetup.length; i++) {
     const { type, difficulty, col } = playerSetup[i];
+    const playerIdx = i + 1;
     let parsedType = 0;
     if (type > 0) {
       if (allRandom) {
@@ -22,11 +24,18 @@ export const generatePlayers = (
         parsedType = difficulty;
       }
     }
+    const stationEids: Array<number> = [];
+    for (let i = 0; i < stationPerPlayer; i++) {
+      stationEids.push(createDeathStar(world, 0, 0, col, playerIdx))
+
+    }
     parsedPlayers.push({
+      idx: playerIdx,
       type: parsedType,
-      id: createDeathStar(world, 0, 0, col),
+      stationEids,
       isAlive: true,
     });
+
   }
   return parsedPlayers;
 };

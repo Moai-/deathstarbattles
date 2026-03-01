@@ -25,6 +25,7 @@ export const createDeathStar = (
   x: number,
   y: number,
   color: number,
+  owner: number,
 ) => {
   const eid = addEntity(world);
   addComponent(world, eid, Position);
@@ -39,6 +40,7 @@ export const createDeathStar = (
   Position.y[eid] = y;
   Collision.radius[eid] = DEFAULT_DEATHSTAR_RADIUS;
   ObjectInfo.type[eid] = ObjectTypes.DEATHSTAR;
+  ObjectInfo.owner[eid] = owner;
   Renderable.col[eid] = colToUi32(color);
 
   const projEid = addEntity(world);

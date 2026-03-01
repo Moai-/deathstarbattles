@@ -13,19 +13,18 @@ import {
  * – Fire in a tight but still noisy arc at the target with 100% power
  * – Hyperspace with 1/8 chance
  */
-const generateEasyTurn: TurnGenerator = async (world, playerInfo) => {
-  const playerId = playerInfo.id;
+const generateEasyTurn: TurnGenerator = async (world, stationId) => {
 
   // 1. Bail randomly
   if (oneIn(8)) {
-    return hyperspaceTurn(playerId);
+    return hyperspaceTurn(stationId);
   }
 
   // 2. Shoot in a tight arc towards closest target
-  const targetEid = getClosestDestructible(world, playerInfo.id);
-  const shotInfo = computeFirstShot({ ownEid: playerId, targetEid });
+  const targetEid = getClosestDestructible(world, stationId);
+  const shotInfo = computeFirstShot({ ownEid: stationId, targetEid });
   const noisyShot = addError(shotInfo);
-  return shotTurn(playerId, noisyShot);
+  return shotTurn(stationId, noisyShot);
 };
 
 export default generateEasyTurn;

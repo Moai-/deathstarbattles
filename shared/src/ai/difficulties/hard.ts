@@ -24,54 +24,53 @@ import {
 
 const generateHardTurn: TurnGenerator = async (
   world,
-  playerInfo,
+  stationId,
   gameState,
   lastTurnInput,
   simulateShot,
 ) => {
-  const playerId = playerInfo.id;
 
   // 1. Analyze last shot for stations that teleported onto it
   // Fire if you find any of these stations
   let shotInfo: ShotInfo | null = null;
-  if (lastTurnInput && gameState.lastTurnShots?.[playerId]) {
+  if (lastTurnInput && gameState.lastTurnShots?.[stationId]) {
     shotInfo = analyzeShot(
-      gameState.lastTurnShots[playerId].movementTrace,
+      gameState.lastTurnShots[stationId].movementTrace,
       world,
     );
 
     if (shotInfo.willHit && shotInfo.destructible) {
-      console.log('player %s performs last shot as it will hit', playerId);
-      return shotTurn(playerId, lastTurnInput);
+      // console.log('player %s performs last shot as it will hit', stationId);
+      return shotTurn(stationId, lastTurnInput);
     }
   }
 
   // 2. One half of the time, check for danger and run
   if (oneIn(2) && gameState.lastTurnShots) {
-    if (checkDangerousShots(playerId, gameState.lastTurnShots)) {
-      return hyperspaceTurn(playerId);
+    if (checkDangerousShots(stationId, gameState.lastTurnShots)) {
+      return hyperspaceTurn(stationId);
     }
   }
 
   // 3. One eighth of the time, run regardless of danger
   // This prevents being stuck in a position where you can't hit or get hit
   if (oneIn(8)) {
-    return hyperspaceTurn(playerId);
+    return hyperspaceTurn(stationId);
   }
 
   // 4. Identify closest target and try the naive approach first
-  const targetEid = getClosestDestructible(world, playerId);
+  const targetEid = getClosestDestructible(world, stationId);
 
-  const targetData = { ownEid: playerId, targetEid };
+  const targetData = { ownEid: stationId, targetEid };
   const naiveShot = computeFirstShot(targetData);
-  const naiveSim = await simulateShot({ playerId, ...naiveShot });
+  const naiveSim = await simulateShot({ stationId, ...naiveShot });
 
   if (naiveSim.willHit) {
-    return shotTurn(playerId, naiveShot, [naiveSim.shotTrail]);
+    return shotTurn(stationId, naiveShot, [naiveSim.shotTrail]);
   }
 
   // 5. Missed. Execute a sequence of 3 shots, see what happens
-  const input = { ...naiveShot, playerId };
+  const input = { ...naiveShot, stationId };
   const { sim, paths } = await shotSequencer(
     targetData,
     input,
@@ -81,22 +80,22 @@ const generateHardTurn: TurnGenerator = async (
   );
 
   if (sim.willHit) {
-    return shotTurn(playerId, sim.input, paths);
+    return shotTurn(stationId, sim.input, paths);
   }
 
   // 6. Missed. Try a wide exploratory shot
   const exploratoryShot = explore(sim.input);
-  const exploreSim = await simulateShot({ playerId, ...exploratoryShot });
+  const exploreSim = await simulateShot({ stationId, ...exploratoryShot });
 
   if (exploreSim.willHit) {
-    return shotTurn(playerId, sim.input, [...paths, exploreSim.shotTrail]);
+    return shotTurn(stationId, sim.input, [...paths, exploreSim.shotTrail]);
   }
 
   // 7. Missed all shots, return closest between naive, exploratory, and sequenced
   const [closestShot] = [naiveSim, exploreSim, sim].sort(
     (a, b) => a.closestDist2 - b.closestDist2,
   );
-  return shotTurn(playerId, closestShot.input, [
+  return shotTurn(stationId, closestShot.input, [
     ...paths,
     exploreSim.shotTrail,
   ]);

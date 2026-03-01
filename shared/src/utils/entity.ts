@@ -47,7 +47,9 @@ export const scrambleWormhole = (eid: number) => {
 };
 
 export const getColliders = (world: GameWorld) => query(world, collidingEntities) as Array<number>;
-export const getTargets = (world: GameWorld) => query(world, targetEntities) as Array<number>;
+export const getTargets = (world: GameWorld, self: number) => 
+  (query(world, targetEntities) as Array<number>)
+  .filter((eid) => ObjectInfo.owner[eid] !== ObjectInfo.owner[self]);
 
 export const getAllObjects: (world: GameWorld) => Array<GameObject> = (world: GameWorld) => {
   const colliders = getColliders(world) ;

@@ -30,7 +30,7 @@ export const runGameSetup = (
       width,
       height,
       objects,
-      bots.map((b) => b.id),
+      bots.flatMap((b) => b.stationEids),
     );
     const size = Phaser.Math.Between(1, 3);
     finalizeSetup(world, scene, bg, size);
@@ -41,8 +41,8 @@ export const runGameSetup = (
   }
 
   // 2. Generate players
-  const players = generatePlayers(world, config.players!);
-  const playerIds = players.map((p) => p.id);
+  const players = generatePlayers(world, config.players!, config.stationPerPlayer);
+  const playerIds = players.flatMap((p) => p.stationEids);
 
   // 3. Determine and generate appropriate item counts
   const items = generateScenarioItems(world, config.itemRules!, {

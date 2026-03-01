@@ -203,6 +203,7 @@ const ControlPanel: React.FC = () => {
         <ValueLabel>Angle: {angle}°</ValueLabel>
       </SliderContainer>
       <SliderContainer>
+        <ValueLabel>Power: {power}%</ValueLabel>
         <FineButton
           onClick={() => adjustValue(setPower, -1, 20, 100)}
           disabled={isHyperspaceOn}
@@ -222,7 +223,6 @@ const ControlPanel: React.FC = () => {
         >
           +
         </FineButton>
-        <ValueLabel>Power: {power}%</ValueLabel>
       </SliderContainer>
       <ControlSectionDesktop>
         <MiniButton onClick={() => toggleFullscreen()}>

@@ -29,30 +29,29 @@ import {
  */
 const generateVeryHardTurn: TurnGenerator = async (
   world,
-  playerInfo,
+  stationId,
   gameState,
   lastTurnInput,
   simulateShot,
 ) => {
-  const playerId = playerInfo.id;
 
   // 1. Analyze last shot for stations that teleported onto it
   let shotInfo: ShotInfo | null = null;
-  if (lastTurnInput && gameState.lastTurnShots?.[playerId]) {
+  if (lastTurnInput && gameState.lastTurnShots?.[stationId]) {
     shotInfo = analyzeShot(
-      gameState.lastTurnShots[playerId].movementTrace,
+      gameState.lastTurnShots[stationId].movementTrace,
       world,
     );
 
     if (shotInfo.willHit && shotInfo.destructible) {
-      return shotTurn(playerId, lastTurnInput);
+      return shotTurn(stationId, lastTurnInput);
     }
   }
 
   // 2. Identify closest target
-  const targetEid = getClosestDestructible(world, playerId);
-  const targetData = { ownEid: playerId, targetEid };
-  const shooterPos = getPosition(playerId);
+  const targetEid = getClosestDestructible(world, stationId);
+  const targetData = { ownEid: stationId, targetEid };
+  const shooterPos = getPosition(stationId);
   const targetPos = getPosition(targetEid);
 
   // 3. If target is behind a planet, try tangent/lob shots first (gravity-bend around planet)
@@ -68,7 +67,7 @@ const generateVeryHardTurn: TurnGenerator = async (
       blocker.r,
     );
     const sims: Array<SimShotResult> = [];
-    const candidateShots = tangentCandidates.map((raw) => ({playerId, ...raw}));
+    const candidateShots = tangentCandidates.map((raw) => ({stationId, ...raw}));
     for (let i = 0; i < candidateShots.length; i++) {
       sims.push(await simulateShot(candidateShots[i]));
     }
@@ -87,11 +86,11 @@ const generateVeryHardTurn: TurnGenerator = async (
     naiveSim = best;
   } else {
     initialShot = computeFirstShot(targetData);
-    naiveSim = await simulateShot({ playerId, ...initialShot });
+    naiveSim = await simulateShot({ stationId, ...initialShot });
   }
 
   if (naiveSim.willHit) {
-    return shotTurn(playerId, initialShot, [naiveSim.shotTrail]);
+    return shotTurn(stationId, initialShot, [naiveSim.shotTrail]);
   }
 
   // 4. Missed. Check if our last shot or the initial shot went closest to a target,
@@ -101,7 +100,7 @@ const generateVeryHardTurn: TurnGenerator = async (
     : true;
 
   const input = isInitialCloser
-    ? { playerId, ...initialShot }
+    ? { stationId, ...initialShot }
     : lastTurnInput!;
   const target = isInitialCloser
     ? targetData
@@ -117,15 +116,15 @@ const generateVeryHardTurn: TurnGenerator = async (
   );
 
   if (firstVolley.willHit) {
-    return shotTurn(playerId, firstVolley.input, paths);
+    return shotTurn(stationId, firstVolley.input, paths);
   }
 
   // 5. Missed first volley. Fire an explorer shot and see how close it gets.
   const exploratoryShot = explore(firstVolley.input);
-  const exploreSim = await simulateShot({ playerId, ...exploratoryShot });
+  const exploreSim = await simulateShot({ stationId, ...exploratoryShot });
 
   if (exploreSim.willHit) {
-    return shotTurn(playerId, exploratoryShot, [
+    return shotTurn(stationId, exploratoryShot, [
       ...paths,
       exploreSim.shotTrail,
     ]);
@@ -137,15 +136,15 @@ const generateVeryHardTurn: TurnGenerator = async (
   // 5. If we didn't, see if we wanna bail -- 1/3 of the time
   const lastTurnShots = gameState.lastTurnShots || null;
   if (!didFindCloserTarget && lastTurnShots) {
-    if (checkDangerousShots(playerId, lastTurnShots) && oneIn(3)) {
-      return hyperspaceTurn(playerId);
+    if (checkDangerousShots(stationId, lastTurnShots) && oneIn(3)) {
+      return hyperspaceTurn(stationId);
     }
   }
 
   // 6. Another volley! See if we want to continue the exploration path or if we'd rather
   // try to pursue the same path as from the first volley
   const nextRaw = didFindCloserTarget ? exploreSim.input : firstVolley.input;
-  const nextInput = { playerId, ...nextRaw };
+  const nextInput = { stationId, ...nextRaw };
   const nextTargetEid = didFindCloserTarget
     ? exploreSim.closestDestructible
     : firstVolley.closestDestructible;
@@ -160,19 +159,19 @@ const generateVeryHardTurn: TurnGenerator = async (
 
   const allPaths = [...paths, exploreSim.shotTrail, ...secondPaths];
   if (secondVolley.willHit) {
-    return shotTurn(playerId, nextInput, allPaths);
+    return shotTurn(stationId, nextInput, allPaths);
   }
 
   // 7. Missed again, drat! Bail half the time, the other half, just brave the closest shot we have
   if (oneIn(2)) {
-    return hyperspaceTurn(playerId);
+    return hyperspaceTurn(stationId);
   }
 
   const allShots = [naiveSim, firstVolley, exploreSim, secondVolley];
   const [closestShot] = allShots.sort(
     (a, b) => a.closestDist2 - b.closestDist2,
   );
-  return shotTurn(playerId, closestShot.input, allPaths);
+  return shotTurn(stationId, closestShot.input, allPaths);
 };
 
 export default generateVeryHardTurn;

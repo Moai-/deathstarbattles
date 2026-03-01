@@ -43,7 +43,7 @@ export const buildTargetCache = (
   player: number,
   world: GameWorld,
 ): TargetCache =>
-  getTargets(world)
+  getTargets(world, player)
     .map((o) => ({
       eid: o,
       breaks: hasComponent(world, o, Destructible),
@@ -52,4 +52,3 @@ export const buildTargetCache = (
       r: getRadius(o),
       r2: Math.pow(getRadius(o), 2),
     }))
-    .filter((o) => o.eid !== player);
