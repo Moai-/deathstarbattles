@@ -57,12 +57,17 @@ const MS_STEP = 1;
 
 const world = createGameWorld(sysComponents);
 
+const isAllyOf = (self: number, other: number) => hasComponent(world, other, ObjectInfo)
+  ? ObjectInfo.owner[self] === ObjectInfo.owner[other]
+  : false;
+
+
 let cloneMap = new Map<number, number>();
 let colliders: TargetCache = [];
 let updater: Updater = () => {};
 
 self.onmessage = (ev: MessageEvent<SimMessage>) => {
-  const { type, snapshot, turnInput } = ev.data;
+  const { type, snapshot, turnInput, numSteps, reset } = ev.data;
 
   switch (type) {
     case SimMessageType.INITIALIZE:
@@ -72,11 +77,14 @@ self.onmessage = (ev: MessageEvent<SimMessage>) => {
       self.postMessage({ type: SimMessageType.INITIALIZE_DONE });
       break;
     case SimMessageType.SIMULATE: {
+      if (reset) {
+        world.movements = {};
+      }
       const ipt = {
         ...turnInput!,
         stationId: cloneMap.get(turnInput!.stationId)!,
       };
-      const simRes = runSimulation(ipt, colliders, updater);
+      const simRes = runSimulation(ipt, colliders, updater, numSteps);
       const result = {
         ...simRes,
         hitsEid: ObjectInfo.cloneOf[simRes.hitsEid],
@@ -94,9 +102,11 @@ const runSimulation = (
   turnInfo: TurnInput,
   colliderCache: TargetCache,
   updateSystems: Updater,
+  numSteps?: number,
 ): SimShotResult => {
   const { stationId } = turnInfo;
-  const targets = colliderCache.filter((t) => !excludeEids.includes(t.eid));
+
+  const targets = colliderCache.filter((t) => !isAllyOf(stationId, t.eid));
 
   let closestDestructible = 0;
   let hitsEid = 0;
@@ -105,12 +115,14 @@ const runSimulation = (
   let bestDist2 = Infinity;
   let closestPoint = { x: 0, y: 0 };
 
+  const maxSteps = numSteps ?? MAX_MS;
+
   // console.log('min buffer at', minBuffer);
   const proj = fireProjectile(turnInfo);
   // let numSteps = 0;
   // const start = Date.now();
 
-  for (let t = 0; t < MAX_MS; t += MS_STEP) {
+  for (let t = 0; t < maxSteps; t += MS_STEP) {
     // console.log('stepping at', dynamicStep);
     // numSteps++;
     let stepClosestd2 = Infinity;
@@ -170,6 +182,7 @@ const runSimulation = (
     //   stepClosestd2,
     // );
   }
+  removeEntity(world, proj);
   const willHit = hitsEid === closestDestructible;
   if (!willHit) {
     // console.log(
@@ -179,6 +192,8 @@ const runSimulation = (
     //   Date.now() - start,
     // );
   }
+
+  
   const shotTrail =
     (world.movements && [...world.movements[stationId].movementTrace]) || [];
 

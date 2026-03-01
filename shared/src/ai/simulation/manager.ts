@@ -1,5 +1,5 @@
 import { GameWorld } from 'shared/src/ecs/world';
-import { SimMessage, SimMessageType } from './types';
+import { SimMessage, SimMessageType, SimOptions } from './types';
 import { buffersOf, buildSnapshot } from './snapshot';
 import { SimShotResult, TurnInput } from 'shared/src/types';
 
@@ -71,10 +71,10 @@ export class SimManager {
     });
   }
 
-  async runSimulation(turnInput: TurnInput) {
+  async runSimulation(turnInput: TurnInput, simOptions: SimOptions = {}) {
     return new Promise<SimShotResult>((resolve, reject) => {
       if (!this.isReady || !this.worker) {
-        return reject('SimManager: worker does not exist or is not ready');
+        return reject('SimManager.runSimulation: worker does not exist or is not ready');
       }
       this.isReady = false;
       this.worker.onmessage = (evt) => {
@@ -84,12 +84,12 @@ export class SimManager {
           resolve(message.result!);
         }
       };
-      this.worker.postMessage({ type: SimMessageType.SIMULATE, turnInput });
+      this.worker.postMessage({ type: SimMessageType.SIMULATE, turnInput, ...simOptions });
     });
   }
 
   private handleError(err: ErrorEvent) {
-    console.log('Worker encountered an error');
+    console.trace('Worker encountered an error');
     console.log(err);
   }
 }

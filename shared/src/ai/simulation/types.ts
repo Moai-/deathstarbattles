@@ -89,4 +89,12 @@ export type SimMessage = {
   type: SimMessageType;
   result?: SimShotResult;
   turnInput?: TurnInput;
+  numSteps?: number;
+  reset?: boolean;
 };
+
+export type SimOptions = {
+  numSteps?: number;
+  
+  reset?: boolean;
+}

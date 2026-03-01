@@ -1,18 +1,27 @@
-import { OtherActions } from 'shared/src/types';
+import { AnyPoint, OtherActions, SimShotResult, TurnInput } from 'shared/src/types';
 import { getPosition, getRadius, ui32ToCol } from 'shared/src/utils';
 import { Renderable } from 'src/render/components/renderable';
 import { Depths } from 'src/render/types';
 import { gameBus, GameEvents } from 'src/util';
 
+type SimulateShotFn = (tn: TurnInput) => Promise<SimShotResult>;
+
 export class FiringIndicatorHandler {
   private scene: Phaser.Scene;
+
   private circle?: Phaser.GameObjects.Arc;
   private line?: Phaser.GameObjects.Line;
   private square?: Phaser.GameObjects.Rectangle;
+  private ghostTrail?: Phaser.GameObjects.Graphics;
+
   private getTargetId: () => number = () => 0;
   private onAnglePowerUpdate: (angle: number, power: number) => void = () => {};
+  private simulateShot: SimulateShotFn | null = null;
+  private simReqId = 0;
+  private simTimer?: number;
   private isUsingHyperspace = false;
   private isDragging = false;
+  private inflight = false;
 
   public radius: number;
 
@@ -38,6 +47,10 @@ export class FiringIndicatorHandler {
     });
   }
 
+  setSimulateShotCallback(cb: SimulateShotFn) {
+    this.simulateShot = cb;
+  }
+
   setGetTargetIdCallback(cb: () => number) {
     this.getTargetId = cb;
   }
@@ -51,10 +64,12 @@ export class FiringIndicatorHandler {
     if (this.isUsingHyperspace) {
       this.circle?.setVisible(false);
       this.line?.setVisible(false);
+      this.ghostTrail?.setVisible(false); 
       this.drawHyperspaceSquare();
     } else {
       this.circle?.setVisible(true);
       this.line?.setVisible(true);
+      this.ghostTrail?.setVisible(true);
       this.clearHyperspaceSquare();
     }
   }
@@ -84,13 +99,17 @@ export class FiringIndicatorHandler {
       .setDepth(Depths.INTERFACE);
     this.line = this.scene.add.line(0, 0, 0, 0, 0, 0, 0xffffff).setOrigin(0, 0);
     this.line.setDepth(Depths.INTERFACE);
+    this.ghostTrail = this.scene.add.graphics();
+    this.ghostTrail.setDepth(Depths.INTERFACE);
   }
 
   removeIndicator() {
     this.circle?.destroy();
     this.line?.destroy();
+    this.ghostTrail?.destroy();
     this.circle = undefined;
     this.line = undefined;
+    this.ghostTrail = undefined;
     this.clearHyperspaceSquare();
   }
 
@@ -110,6 +129,7 @@ export class FiringIndicatorHandler {
     const dy = Math.sin(angleRad) * length;
 
     this.line.setTo(x, y, x + dx, y + dy);
+    this.scheduleGhostSim(angleDeg, clampedPower);
   }
 
   destroy() {
@@ -122,6 +142,27 @@ export class FiringIndicatorHandler {
     this.scene.input.off('pointerup');
     this.scene.input.off('pointeroutside');
     this.removeIndicator();
+  }
+
+  private async scheduleGhostSim(angleDeg: number, power: number) {
+    if (this.inflight) return;
+    if (this.isUsingHyperspace) return;
+    if (!this.ghostTrail) return;
+    if (!this.simulateShot) return;
+
+    if (this.simTimer) window.clearTimeout(this.simTimer);
+
+    const {simulateShot} = this;
+
+    const gfx = this.ghostTrail;
+
+    if (!simulateShot || !gfx) return;
+    this.inflight = true;
+    const res = await simulateShot({ angle: angleDeg, power, stationId: this.getTargetId() });
+
+    this.drawGhostTrail(res.shotTrail);
+    this.inflight = false;
+
   }
 
   private handlePointerDown(p: Phaser.Input.Pointer) {
@@ -163,4 +204,60 @@ export class FiringIndicatorHandler {
       this.updateVector(angle, power);
     }
   }
+
+
+  private drawGhostTrail(trail: Array<AnyPoint>) {
+    const gfx = this.ghostTrail;
+    if (!gfx) return;
+
+    gfx.clear();
+
+    if (!trail || trail.length < 2) return;
+
+    // Tune these to taste
+    const col = 0xffffff;
+    const lineWidth = 2;
+    const baseAlpha = 0.35; // “ghostiness”
+    const maxSegments = 220; // clamp for perf
+
+    // If the sim returns tons of points, downsample evenly
+    const pts = this.downsampleTrail(trail, maxSegments);
+
+    const n = pts.length;
+    const fadeStartIdx = Math.floor(n * 0.5);
+    const fadeSpan = Math.max(1, n - 1 - fadeStartIdx);
+
+    for (let i = 0; i < n - 1; i++) {
+      const a = pts[i];
+      const b = pts[i + 1];
+
+      // Alpha: solid for first half, then linearly fades to 0 at the end
+      let segmentAlpha = 1;
+      if (i >= fadeStartIdx) {
+        const t = (i - fadeStartIdx) / fadeSpan; // 0..1
+        segmentAlpha = 1 - t;
+      }
+
+      const alpha = baseAlpha * segmentAlpha;
+      if (alpha <= 0.001) continue;
+
+      gfx.lineStyle(lineWidth, col, alpha);
+      gfx.beginPath();
+      gfx.moveTo(a.x, a.y);
+      gfx.lineTo(b.x, b.y);
+      gfx.strokePath();
+    }
+}
+
+private downsampleTrail(trail: Array<AnyPoint>, maxPoints: number) {
+  if (trail.length <= maxPoints) return trail;
+
+  const out: Array<AnyPoint> = [];
+  const step = (trail.length - 1) / (maxPoints - 1);
+  for (let i = 0; i < maxPoints; i++) {
+    const idx = Math.round(i * step);
+    out.push(trail[idx]);
+  }
+  return out;
+}
 }

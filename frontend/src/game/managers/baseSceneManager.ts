@@ -12,6 +12,7 @@ import {
 } from 'shared/src/utils';
 import { SimManager } from 'shared/src/ai/simulation/manager';
 import { BaseScene } from '../scenes/baseScene';
+import { GHOST_SHOT_STEPS } from 'shared/src/consts';
 
 type ListenerConfig = {
   cleanupCallback: () => void,
@@ -113,6 +114,7 @@ export class BaseSceneManager {
     this.indicator.setAnglePowerListener((angle, power) => 
       this.inputHandler.setAnglePower(angle, power)
     );
+    this.indicator.setSimulateShotCallback((tn) => this.simManager.runSimulation(tn, {numSteps: GHOST_SHOT_STEPS, reset: true}))
   }
 
   protected clearListeners() {

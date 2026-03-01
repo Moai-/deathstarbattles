@@ -25,7 +25,6 @@ export class SinglePlayerGameManager extends BaseGameManager {
     this.indicator.radius = 30 * (Collision.radius[currentStation] / 8);
 
     this.indicator.drawIndicator();
-    this.syncAnglePower();
     this.objectManager.hideAllchildren();
 
     const thisPlayerInput = this.getPreviousTurnInput(currentStation);
@@ -33,13 +32,17 @@ export class SinglePlayerGameManager extends BaseGameManager {
     if (thisPlayerInput) {
       const { angle, power } = thisPlayerInput;
       this.syncAnglePower(angle, power);
+
       if (thisPlayerInput.otherAction !== OtherActions.HYPERSPACE) {
         const parent = this.projectileManager.getByPlayerId(currentStation);
         if (parent && !this.isHyperspace) {
           this.objectManager.showChildren(parent.ownId);
         }
       }
+    } else {
+      this.syncAnglePower();
     }
+
   }
 
   protected async endTurn() {

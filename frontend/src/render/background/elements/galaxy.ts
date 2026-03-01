@@ -169,7 +169,6 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
 
     const ang = localRnd() * Math.PI * 2;
 
-    // Turbulence/jitter similar “feel” to your accretion disk
     const turb = lerp(0.35, 1.0, coreFuzz);
     const jitter = turb * coreRadius * 0.22 * (0.25 + 0.75 * (1 - t));
 
@@ -276,7 +275,7 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
   // Total clumps per arm: more = smoother, slower
   const clumpsPerArm = Math.floor(lerp(55, 110, armStrength));
 
-  // Optional "arm haze" underneath clumps to make arms read as continuous
+  // "arm haze" underneath clumps to make arms read as continuous
   const hazePasses = 2;
 
   // Base phase so arms aren't always aligned the same way
@@ -531,11 +530,4 @@ export const drawGalaxyComposite = (scene: Phaser.Scene, opts: GalaxyCompositeOp
   drawBulgeSphere(rotation + Math.PI, sphereB.sx, sphereB.sy);
   
   return renderTexture;
-}
-
-export const getGalaxyPreset = (opts?: GalaxyCompositeOptions) => {
-  const presets: Record<string, GalaxyCompositeOptions> = {
-
-  }
-  return presets;
 }
