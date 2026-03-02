@@ -9,15 +9,16 @@ import {
   resetWorld,
   World,
 } from 'bitecs';
-import { ObjectMovements } from '../types';
+import { ObjectMovements, TraceBuffer } from '../types';
 import { NULL_ENTITY } from '../consts';
-import * as components from './components';
 
 export interface GameWorld extends World {
   time: number;
   delta: number;
   movements: ObjectMovements | null;
   debug: boolean;
+  traceBuffer: TraceBuffer | null;
+  traceBufferIdx: number;
 }
 
 export const createGameWorld = (components: Array<ComponentRef>) => {
@@ -25,6 +26,8 @@ export const createGameWorld = (components: Array<ComponentRef>) => {
   world.time = 0;
   world.delta = 0;
   world.movements = null;
+  world.traceBuffer = null;
+  world.traceBufferIdx = 0;
   registerComponents(world, components);
   // make sure NULL_ENTITY exists
   // This is the ECS equivalent of null, do not add components to this
@@ -36,6 +39,11 @@ export const createGameWorld = (components: Array<ComponentRef>) => {
 
 export const clearWorld = (world: GameWorld) => {
   resetWorld(world);
+  world.time = 0;
+  world.delta = 0;
+  world.movements = null;
+  world.traceBuffer = null;
+  world.traceBufferIdx = 0;
   getWorldComponents(world).forEach((comp) => {
     const props = Object.keys(comp);
     props.forEach((prop) => {

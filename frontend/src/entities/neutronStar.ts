@@ -18,7 +18,7 @@ export const createNeutronStar = (
 ) => {
   const eid = createCollidingBase(world, x, y, radius, ObjectTypes.NEUTRON_STAR);
   Collision.radius[eid] = radius;
-  HasGravity.strength[eid] = (radius + 20) * 1500;
+  HasGravity.strength[eid] = (radius + 20) * 1000;
   addJets(eid, world, {
     axisAngleRad: Phaser.Math.FloatBetween(0, Math.PI * 2),
     spreadRad: Phaser.Math.DegToRad(12),

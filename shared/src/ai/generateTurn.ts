@@ -7,24 +7,25 @@ import generateVeryHardTurn from './difficulties/veryHard';
 
 const generateTurn: TurnGenerator = (
   w,
-  playerInfo,
+  stationId,
   gameState,
   turn,
   simulator,
+  type,
 ) => {
-  switch (playerInfo.type) {
+  switch (type) {
     case PlayerTypes.BOT_TRIVIAL:
-      return generateTrivialTurn(w, playerInfo, gameState, turn, simulator);
+      return generateTrivialTurn(w, stationId, gameState, turn, simulator);
     case PlayerTypes.BOT_EASY:
-      return generateEasyTurn(w, playerInfo, gameState, turn, simulator);
+      return generateEasyTurn(w, stationId, gameState, turn, simulator);
     case PlayerTypes.BOT_MEDIUM:
-      return generateMediumTurn(w, playerInfo, gameState, turn, simulator);
+      return generateMediumTurn(w, stationId, gameState, turn, simulator);
     case PlayerTypes.BOT_HARD:
-      return generateHardTurn(w, playerInfo, gameState, turn, simulator);
+      return generateHardTurn(w, stationId, gameState, turn, simulator);
     case PlayerTypes.BOT_INSANE:
-      return generateVeryHardTurn(w, playerInfo, gameState, turn, simulator);
+      return generateVeryHardTurn(w, stationId, gameState, turn, simulator);
     default:
-      return generateTrivialTurn(w, playerInfo, gameState, turn, simulator);
+      return generateTrivialTurn(w, stationId, gameState, turn, simulator);
   }
 };
 

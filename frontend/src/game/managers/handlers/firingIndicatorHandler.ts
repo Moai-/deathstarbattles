@@ -1,5 +1,5 @@
-import { AnyPoint, OtherActions, SimShotResult, TurnInput } from 'shared/src/types';
-import { getPosition, getRadius, ui32ToCol } from 'shared/src/utils';
+import { AnyPoint, OtherActions, SimShotResult, TraceBuffer, TurnInput } from 'shared/src/types';
+import { getPosition, getRadius, isVisible, ui32ToCol } from 'shared/src/utils';
 import { Renderable } from 'src/render/components/renderable';
 import { Depths } from 'src/render/types';
 import { gameBus, GameEvents } from 'src/util';
@@ -16,12 +16,15 @@ export class FiringIndicatorHandler {
 
   private getTargetId: () => number = () => 0;
   private onAnglePowerUpdate: (angle: number, power: number) => void = () => {};
-  private simulateShot: SimulateShotFn | null = null;
-  private simReqId = 0;
-  private simTimer?: number;
   private isUsingHyperspace = false;
   private isDragging = false;
-  private inflight = false;
+
+  private simulateShot: SimulateShotFn | null = null;
+  private isSimulating = false;
+  private traceBuffer: TraceBuffer = {
+    x: new Int16Array(500),
+    y: new Int16Array(500)
+  }
 
   public radius: number;
 
@@ -45,6 +48,10 @@ export class FiringIndicatorHandler {
         this.toggleHyperspace(false);
       }
     });
+  }
+
+  getBuffer() {
+    return this.traceBuffer;
   }
 
   setSimulateShotCallback(cb: SimulateShotFn) {
@@ -145,23 +152,28 @@ export class FiringIndicatorHandler {
   }
 
   private async scheduleGhostSim(angleDeg: number, power: number) {
-    if (this.inflight) return;
+    if (this.isSimulating) return;
     if (this.isUsingHyperspace) return;
     if (!this.ghostTrail) return;
     if (!this.simulateShot) return;
-
-    if (this.simTimer) window.clearTimeout(this.simTimer);
 
     const {simulateShot} = this;
 
     const gfx = this.ghostTrail;
 
     if (!simulateShot || !gfx) return;
-    this.inflight = true;
+    this.isSimulating = true;
+    // console.time('shotsim')
     const res = await simulateShot({ angle: angleDeg, power, stationId: this.getTargetId() });
+    // console.timeEnd('shotsim')
 
-    this.drawGhostTrail(res.shotTrail);
-    this.inflight = false;
+    if (res.buffer) {
+      this.traceBuffer.x = new Int16Array(res.buffer.x);
+      this.traceBuffer.y = new Int16Array(res.buffer.y);
+    }
+
+    this.drawGhostTrail(res.pointCount);
+    this.isSimulating = false;
 
   }
 
@@ -206,30 +218,31 @@ export class FiringIndicatorHandler {
   }
 
 
-  private drawGhostTrail(trail: Array<AnyPoint>) {
+  private drawGhostTrail(count: number) {
     const gfx = this.ghostTrail;
     if (!gfx) return;
 
     gfx.clear();
 
-    if (!trail || trail.length < 2) return;
-
-    // Tune these to taste
     const col = 0xffffff;
     const lineWidth = 2;
-    const baseAlpha = 0.35; // “ghostiness”
-    const maxSegments = 220; // clamp for perf
+    const baseAlpha = 0.35;
 
-    // If the sim returns tons of points, downsample evenly
-    const pts = this.downsampleTrail(trail, maxSegments);
-
-    const n = pts.length;
+    
+    const n = count;
+    if (n < 2) {
+      return;
+    }
     const fadeStartIdx = Math.floor(n * 0.5);
     const fadeSpan = Math.max(1, n - 1 - fadeStartIdx);
 
     for (let i = 0; i < n - 1; i++) {
-      const a = pts[i];
-      const b = pts[i + 1];
+      const a = {x: this.traceBuffer.x[i], y: this.traceBuffer.y[i]};
+      const b = {x: this.traceBuffer.x[i + 1], y: this.traceBuffer.y[i + 1]};
+
+      if (!isVisible(a) || !isVisible(b)) {
+        continue;
+      }
 
       // Alpha: solid for first half, then linearly fades to 0 at the end
       let segmentAlpha = 1;
@@ -247,17 +260,6 @@ export class FiringIndicatorHandler {
       gfx.lineTo(b.x, b.y);
       gfx.strokePath();
     }
-}
-
-private downsampleTrail(trail: Array<AnyPoint>, maxPoints: number) {
-  if (trail.length <= maxPoints) return trail;
-
-  const out: Array<AnyPoint> = [];
-  const step = (trail.length - 1) / (maxPoints - 1);
-  for (let i = 0; i < maxPoints; i++) {
-    const idx = Math.round(i * step);
-    out.push(trail[idx]);
   }
-  return out;
-}
+
 }

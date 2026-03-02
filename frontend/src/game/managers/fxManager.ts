@@ -19,7 +19,8 @@ export class FxManager {
       if (!renderer.pipelines.has('FXAA')) {
         renderer.pipelines.addPostPipeline('FXAA', FXAAPipeline);
       }
-      this.scene.cameras.main.setPostPipeline('BlackHoleFX')
+      this.scene.cameras.main?.setPostPipeline('BlackHoleFX')
+
       // .setPostPipeline('FXAA');
     }
   }
@@ -47,7 +48,6 @@ export class FxManager {
     if (cam) {
       cam.removePostPipeline('BlackHoleFX');
       cam.removePostPipeline('FXAA');
-      // or cam.resetPostPipeline(true); // if you want to wipe all post FX
     }
     const renderer = this.getRenderer();
     if (renderer) {

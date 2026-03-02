@@ -1,4 +1,4 @@
-import { TurnInput, SimShotResult } from 'shared/src/types';
+import { TurnInput, SimShotResult, TraceBuffer, TransferableTraceBuffer } from 'shared/src/types';
 
 export enum ComponentTags {
   AffectedByGravity= 1 << 0, // eslint-disable-line
@@ -88,13 +88,12 @@ export type SimMessage = {
   snapshot?: SimSnapshot;
   type: SimMessageType;
   result?: SimShotResult;
+  buffer?: TransferableTraceBuffer;
   turnInput?: TurnInput;
   numSteps?: number;
-  reset?: boolean;
 };
 
 export type SimOptions = {
   numSteps?: number;
-  
-  reset?: boolean;
+  buffer?: TraceBuffer;
 }

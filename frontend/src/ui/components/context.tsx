@@ -12,6 +12,7 @@ interface GameStateContextProps {
   gameState: GameState;
   setGameState: (value: GameState, config?: GameConfig) => void;
   winnerData: WinnerData | null;
+  lastConfig: GameConfig | null;
 }
 
 const GameStateContext = createContext<GameStateContextProps | undefined>(
@@ -28,14 +29,12 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
   // Functions to run when performing specific switches
   const handleStateSwitch = async (nextState:GameState, config?: GameConfig) => {
 
-    console.log(`${GameState[gameState]} -> ${GameState[nextState]}`)
+    // console.log(`${GameState[gameState]} -> ${GameState[nextState]}`)
 
     // We handle termination states first -- this way, when we launch scenes
     // afterward, we know for sure we will have a clean slate.
     if (!backgroundGameStates.includes(nextState)) {
       // Next state isn't one where the background game should be running.
-      // We should shut the scene off, and unsubscribe from GAME_END.
-      gameBus.off(GameEvents.GAME_END);
       await App.stopMode(AppModes.BACKGROUND);
     }
 
@@ -44,9 +43,13 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
       await App.stopMode(AppModes.EDITOR)
     }
 
-    // We do NOT handle stopping the main game scene.
-    // Instead, that's handled in the GAME_END listener
-    // of the main game (see below).
+    // Exit game -- gotta check if we are currently ingame.
+    // Otherwise the GAME_END listener gets unset, which is used
+    // for background game to get it to repeat.
+    if (gameState === GameState.INGAME && nextState !== GameState.INGAME) {
+      gameBus.off(GameEvents.GAME_END);
+      await App.stopMode(AppModes.GAME);
+    }
 
     // Now we can handle starting the various scenes.
 
@@ -64,10 +67,8 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
         const winner = winnerData[0];
         setWinnerData(winner);
 
-        // We're going to do our own cleanup, so we will directly set the game state.
-        setGameState(GameState.SCORESCREEN);
+        handleStateSwitch(GameState.SCORESCREEN);
         gameBus.off(GameEvents.GAME_END);
-        App.stopMode(AppModes.GAME);
       });
 
       // Remember this config
@@ -99,7 +100,7 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
   })
 
   return (
-    <GameStateContext.Provider value={{ gameState, setGameState: handleStateSwitch, winnerData }}>
+    <GameStateContext.Provider value={{ gameState, setGameState: handleStateSwitch, winnerData, lastConfig }}>
       {children}
     </GameStateContext.Provider>
   );

@@ -127,14 +127,16 @@ export class BaseGameManager extends BaseSceneManager {
         const lastTurn = this.isHyperspace
           ? null
           : this.getPreviousTurnInput(currentStation);
+        console.time('generate turn for ' + currentStation)
         const thisStationInput = await generateTurn(
           this.world,
           currentStation,
           this.getGameState(),
           lastTurn,
           (turnInput) => this.simManager.runSimulation(turnInput),
+          playerInfo.type
         );
-        // console.timeEnd('generate turn for ' + playerInfo.id);
+        console.timeEnd('generate turn for ' + currentStation);
 
         if (thisStationInput.paths) {
           gameBus.emit(GameEvents.DEBUG_DRAW_PATH, {
@@ -289,7 +291,6 @@ export class BaseGameManager extends BaseSceneManager {
     this.stationsActive[eid] = false;
     player.stationEids = player.stationEids.filter((liveEid) => liveEid !== eid);
 
-    console.log('player %s owns %s stations', player.idx, player.stationEids.length)
     if (player.stationEids.length === 0) {
       player.isAlive = false;
     }

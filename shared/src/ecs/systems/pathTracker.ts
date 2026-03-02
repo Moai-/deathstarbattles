@@ -20,6 +20,11 @@ export const createPathTrackerSystem = () => {
       };
       const { x, y } = getPosition(eid);
       world.movements![shooter].movementTrace.push({ x, y });
+      if (world.traceBuffer) {
+        world.traceBuffer.x[world.traceBufferIdx] = x;
+        world.traceBuffer.y[world.traceBufferIdx] = y;
+        world.traceBufferIdx = world.traceBufferIdx + 1;
+      }
     }
 
     return world;

@@ -114,7 +114,7 @@ export class BaseSceneManager {
     this.indicator.setAnglePowerListener((angle, power) => 
       this.inputHandler.setAnglePower(angle, power)
     );
-    this.indicator.setSimulateShotCallback((tn) => this.simManager.runSimulation(tn, {numSteps: GHOST_SHOT_STEPS, reset: true}))
+    this.indicator.setSimulateShotCallback((tn) => this.simManager.runSimulation(tn, {numSteps: GHOST_SHOT_STEPS, buffer: this.indicator.getBuffer()}))
   }
 
   protected clearListeners() {

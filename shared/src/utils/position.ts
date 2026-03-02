@@ -1,5 +1,6 @@
+import { BASE_HEIGHT, BASE_WIDTH } from '../consts';
 import { GameWorld } from '../ecs/world';
-import { ClearanceFunction, GameObject } from '../types';
+import { AnyPoint, ClearanceFunction, GameObject } from '../types';
 import { getAllObjects, getPosition, getRadius } from './entity';
 import { getRandomBetween } from './random';
 
@@ -176,3 +177,13 @@ export const doObjectsOverlap = (eid1: number, eid2: number) => {
   const r2 = getRadius(eid2);
   return doCirclesOverlap(x1, y1, r1, x2, y2, r2);
 };
+
+export const isVisible = (point: AnyPoint) => {
+  if (point.x < 0 || point.y < 0) {
+    return false;
+  }
+  if (point.x > BASE_WIDTH || point.y > BASE_HEIGHT) {
+    return false;
+  }
+  return true;
+}

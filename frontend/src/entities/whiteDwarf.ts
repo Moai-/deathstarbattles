@@ -17,7 +17,7 @@ export const createWhiteDwarf = (
 ) => {
   const eid = createCollidingBase(world, x, y, radius, ObjectTypes.WHITE_DWARF);
   Collision.radius[eid] = radius;
-  HasGravity.strength[eid] = (radius + 20) * 1500;
+  HasGravity.strength[eid] = (radius + 20) * 1000;
   Renderable.col[eid] = generateRandomCol(
     { r: 230, g: 230, b: 230 },
     { r: 25, g: 25, b: 25 },

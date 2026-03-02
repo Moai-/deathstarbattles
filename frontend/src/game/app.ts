@@ -95,6 +95,7 @@ class DSBPhaserApp {
     if (this.activeMode === null) {
       return Promise.resolve();
     }
+
     this.activeMode = null;
     const scene = modeScenes[mode];
     return this.stopScene(scene);

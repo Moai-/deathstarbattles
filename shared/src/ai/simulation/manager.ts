@@ -84,7 +84,14 @@ export class SimManager {
           resolve(message.result!);
         }
       };
-      this.worker.postMessage({ type: SimMessageType.SIMULATE, turnInput, ...simOptions });
+      const options = simOptions.buffer
+        ? {...simOptions, buffer: { x: simOptions.buffer.x.buffer, y: simOptions.buffer.y.buffer}}
+        : {...simOptions};
+
+      const buffers = simOptions.buffer
+        ? [simOptions.buffer.x.buffer, simOptions.buffer.y.buffer]
+        : [];
+      this.worker.postMessage({ type: SimMessageType.SIMULATE, turnInput, ...options }, buffers);
     });
   }
 

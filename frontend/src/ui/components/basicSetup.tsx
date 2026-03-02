@@ -49,18 +49,20 @@ const amounts: Array<{ label: string; amount: number; isMax: boolean }> = [
   { label: 'Up to 30', amount: 30, isMax: true },
 ];
 
+
 const stationCountOptions = [1, 2, 3, 4];
 
 const maxPlayersPerStationCount = [12, 6, 4, 3]
 
 export const SetupScreen: React.FC = () => {
+  const { setGameState, lastConfig } = useGameState();
+  
   const [botCount, setBotCount] = useState('7');
   const [difficulty, setDifficulty] = useState('3');
   const [objectCount, setObjectCount] = useState('10');
   const [stationSize, setStationSize] = useState('2');
   const [stationCount, setStationCount] = useState('1');
   const [scenario, setScenario] = useState('0');
-  const { setGameState } = useGameState();
   const types = getScenarioTypes();
 
   const start = () => {

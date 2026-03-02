@@ -80,6 +80,16 @@ export type ObjectMovements = {
   };
 };
 
+export type TraceBuffer = {
+  x: Int16Array,
+  y: Int16Array,
+}
+
+export type TransferableTraceBuffer = {
+  x: ArrayBuffer;
+  y: ArrayBuffer;
+}
+
 export type GameState = {
   lastTurnShots: ObjectMovements | null;
 };
@@ -90,6 +100,7 @@ export type TurnGenerator = (
   gameState: GameState,
   lastTurnInput: TurnInput | null,
   simulator: (t: TurnInput) => Promise<SimShotResult>,
+  type?: PlayerTypes,
 ) => Promise<TurnInput>;
 
 export type ShotInfo = {
@@ -106,7 +117,9 @@ export type SimShotResult = ShotInfo & {
   collisionT: number | null;
   input: RawTurn;
   shotTrail: Array<AnyPoint>;
+  buffer?: TransferableTraceBuffer;
   hitsSelf: boolean;
+  pointCount: number;
 };
 
 export type RawTurn = Pick<TurnInput, 'angle' | 'power'>;

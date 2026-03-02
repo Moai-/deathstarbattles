@@ -3,6 +3,7 @@ import {
 } from 'shared/src/types';
 import {
   doCirclesOverlap,
+  getColliders,
   getComponentName,
   getPosition,
   getRadius,
@@ -50,6 +51,8 @@ export class EditorManager extends BaseSceneManager {
   private firingFromEid: number | null = null;
   private lastAngle = 90;
   private lastPower = 50;
+  private workerUpdating = false;
+  private workerUpdateRequested = false;
 
   private static posQuery = [Position];
 
@@ -58,6 +61,7 @@ export class EditorManager extends BaseSceneManager {
     this.enableClickListeners();
     this.escapeKey = this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) ?? null;
     this.shiftKey = this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT) ?? null;
+    this.simManager.startWorker().then(this.updateWorker.bind(this));
   }
 
   update() {
@@ -89,6 +93,23 @@ export class EditorManager extends BaseSceneManager {
     const pos = getPosition(eid);
     this.objectManager.setGhost(eid, true);
     this.placementState = { mode: 'move', eid, originalX: pos.x, originalY: pos.y };
+  }
+
+  private async updateWorker() {
+    if (this.workerUpdating) {
+      this.workerUpdateRequested = true;
+      return;
+    }
+    this.workerUpdating = true;
+    await this.simManager.initializeWorker(
+      getColliders(this.world),
+      this.world,
+    );
+    this.workerUpdating = false;
+    if (this.workerUpdateRequested) {
+      this.workerUpdateRequested = false;
+      await this.updateWorker();
+    }
   }
 
   private abortPlacement() {
@@ -127,6 +148,7 @@ export class EditorManager extends BaseSceneManager {
       this.objectManager.setGhost(this.placementState.eid, false);
       this.placementState = null;
     }
+    this.updateWorker();
   }
 
   private enableClickListeners() {
@@ -192,7 +214,7 @@ export class EditorManager extends BaseSceneManager {
   }
 
   protected setUpListeners() {
-    const {objectManager, projectileManager, inputHandler} = this;
+    const {objectManager, projectileManager} = this;
     super.setUpListeners({
       singleCleanupCallback: (eid) => objectManager.removeBoundaryIndicator(eid!),
       projectileDestroyedCallback: (eid) => {
@@ -207,14 +229,17 @@ export class EditorManager extends BaseSceneManager {
         thisComp[propName][eid] = newVal;
         this.objectManager.refreshObject(eid);
       }
+      this.updateWorker();
     });
 
     gameBus.on(GameEvents.ED_UI_DELETE_ENTITY, ({ eid }) => {
       removeEntity(this.world, eid);
       gameBus.emit(GameEvents.ED_PH_DELETE_ENTITY, { eid });
+      this.updateWorker();
     });
     gameBus.on(GameEvents.ED_UI_REMOVE_COMPONENT, ({ eid, compKey }) => {
       this.removeEntityComponent(eid, compKey);
+      this.updateWorker();
     });
 
     gameBus.on(GameEvents.ED_UI_START_PLACE_ENTITY, ({ objectType }) => {

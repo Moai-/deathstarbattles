@@ -7,6 +7,7 @@ import {
   entityExists,
   hasComponent,
   removeEntity,
+  resetWorld,
 } from 'bitecs';
 import {
   Active,
@@ -67,30 +68,53 @@ let colliders: TargetCache = [];
 let updater: Updater = () => {};
 
 self.onmessage = (ev: MessageEvent<SimMessage>) => {
-  const { type, snapshot, turnInput, numSteps, reset } = ev.data;
+  const { type, snapshot, turnInput, numSteps, buffer } = ev.data;
 
   switch (type) {
     case SimMessageType.INITIALIZE:
+      // resetWorld(world);
       cloneMap = restoreSnapshot(snapshot!, world);
       colliders = buildColliderCache(world);
       updater = setupSystems();
       self.postMessage({ type: SimMessageType.INITIALIZE_DONE });
       break;
     case SimMessageType.SIMULATE: {
-      if (reset) {
-        world.movements = {};
-      }
       const ipt = {
         ...turnInput!,
         stationId: cloneMap.get(turnInput!.stationId)!,
       };
+
+      if (buffer) {
+        world.traceBufferIdx = 0;
+        world.traceBuffer = {
+          x: new Int16Array(buffer.x),
+          y: new Int16Array(buffer.y)
+        }
+      } else {
+        world.traceBuffer = null;
+      }
+      
       const simRes = runSimulation(ipt, colliders, updater, numSteps);
+
+
+      const buf = world.traceBuffer
+        ? { buffer: { x: world.traceBuffer.x.buffer, y: world.traceBuffer.y.buffer }}
+        : {};
+      
+      const transfer = world.traceBuffer
+        ? [world.traceBuffer.x.buffer, world.traceBuffer.y.buffer]
+        : [];
+
       const result = {
         ...simRes,
+        ...buf,
         hitsEid: ObjectInfo.cloneOf[simRes.hitsEid],
         closestDestructible: ObjectInfo.cloneOf[simRes.closestDestructible],
       };
-      self.postMessage({ type: SimMessageType.SIMULATE_DONE, result });
+      
+      self.postMessage({ type: SimMessageType.SIMULATE_DONE, result}, {
+        transfer
+      });
       break;
     }
   }
@@ -194,8 +218,9 @@ const runSimulation = (
   }
 
   
-  const shotTrail =
-    (world.movements && [...world.movements[stationId].movementTrace]) || [];
+  const shotTrail = world.traceBuffer
+    ? []
+    : (world.movements && [...world.movements[stationId].movementTrace]) || [];
 
   world.movements = null;
   const input = {
@@ -207,6 +232,20 @@ const runSimulation = (
     hitsEid && hasComponent(world, hitsEid, Destructible)
   );
 
+  const pointCount = world.traceBuffer
+    ? world.traceBufferIdx - 1
+    : shotTrail.length;
+
+  const firstPoint = world.traceBuffer
+    ? {x: world.traceBuffer.x[0], y: world.traceBuffer.y[0]}
+    : shotTrail[0];
+
+  const lastPoint = world.traceBuffer
+    ? {x: world.traceBuffer.x[pointCount], y: world.traceBuffer.y[pointCount]}
+    : shotTrail[shotTrail.length - 1];
+
+  // console.log('point count', pointCount)
+
   return {
     hitsEid,
     hitsSelf: hitsEid === stationId,
@@ -215,11 +254,8 @@ const runSimulation = (
     closestDestructible,
     closestPoint,
     closestDist2: bestDist2,
-    shotDist2: getSquaredDistance(
-      shotTrail[0],
-      shotTrail[shotTrail.length - 1],
-    ),
-
+    shotDist2: getSquaredDistance(firstPoint, lastPoint),
+    pointCount,
     collisionT,
     input,
     shotTrail,
