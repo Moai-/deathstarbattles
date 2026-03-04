@@ -43,12 +43,10 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
       await App.stopMode(AppModes.EDITOR)
     }
 
-    // Exit game -- gotta check if we are currently ingame.
-    // Otherwise the GAME_END listener gets unset, which is used
-    // for background game to get it to repeat.
-    if (gameState === GameState.INGAME && nextState !== GameState.INGAME) {
-      gameBus.off(GameEvents.GAME_END);
+    // Exit game and remove stale listener, if any.
+    if (nextState !== GameState.INGAME) {
       await App.stopMode(AppModes.GAME);
+      gameBus.off(GameEvents.GAME_END);
     }
 
     // Now we can handle starting the various scenes.

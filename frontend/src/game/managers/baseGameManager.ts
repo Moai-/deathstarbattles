@@ -89,11 +89,7 @@ export class BaseGameManager extends BaseSceneManager {
     this.endTurn();
   }
 
-  protected startTurn() {
-
-    if (this.activeStationIndex < 0) {
-      this.activeStationIndex = 0;
-    }
+  protected checkEndgameCondition() {
     const living = this.getLivingPlayers();
     if (living.length < 2) {
       gameBus.emit(
@@ -103,6 +99,17 @@ export class BaseGameManager extends BaseSceneManager {
           col: Renderable.col[player.stationEids[0]],
         })),
       );
+      return true;
+    }
+    return false;
+  }
+
+  protected startTurn() {
+
+    if (this.activeStationIndex < 0) {
+      this.activeStationIndex = 0;
+    }
+    if (this.checkEndgameCondition()) {
       return;
     }
     const playerInfo = this.getActivePlayer();
@@ -127,7 +134,7 @@ export class BaseGameManager extends BaseSceneManager {
         const lastTurn = this.isHyperspace
           ? null
           : this.getPreviousTurnInput(currentStation);
-        console.time('generate turn for ' + currentStation)
+        // console.time('generate turn for ' + currentStation)
         const thisStationInput = await generateTurn(
           this.world,
           currentStation,
@@ -136,7 +143,7 @@ export class BaseGameManager extends BaseSceneManager {
           (turnInput) => this.simManager.runSimulation(turnInput),
           playerInfo.type
         );
-        console.timeEnd('generate turn for ' + currentStation);
+        // console.timeEnd('generate turn for ' + currentStation);
 
         if (thisStationInput.paths) {
           gameBus.emit(GameEvents.DEBUG_DRAW_PATH, {

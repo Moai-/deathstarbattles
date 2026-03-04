@@ -60,17 +60,17 @@ export const EndTurnButton = styled(NeonButton)`
   height: 25px;
 `;
 
-export const StyledSlider = styled.input.attrs<{vertical?: boolean}>({ type: 'range' })`
+export const StyledSlider = styled.input.attrs<{$isVertical?: boolean}>({ type: 'range' })`
   -webkit-appearance: none;
-  width: ${({vertical}) => vertical ? '8px' : ''};
-  height: ${({vertical}) => vertical ? '' : '8px'};
+  width: ${({$isVertical}) => $isVertical ? '8px' : ''};
+  height: ${({$isVertical}) => $isVertical ? '' : '8px'};
   background: #00ffff;
   border-radius: 4px;
   outline: none;
   margin: 0 5px;
   transition: background 0.3s;
   flex: 1;
-  ${({vertical}) => vertical ? 'writing-mode: vertical-lr; transform: rotate(180deg);' : ''}
+  ${({$isVertical}) => $isVertical ? 'writing-mode: vertical-lr; transform: rotate(180deg);' : ''}
 
   &::-webkit-slider-thumb {
     -webkit-appearance: none;

@@ -9,7 +9,7 @@ export const Wormhole = {
 nameComponent(Wormhole, 'Wormhole');
 
 export enum ExitTypes {
-  PAIRED,
   RANDOM,
+  PAIRED,
   PAIRED_GIANT,
 }

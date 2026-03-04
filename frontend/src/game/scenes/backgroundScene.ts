@@ -5,12 +5,12 @@ import {
 import { gameBus, GameEvents } from 'src/util';
 import { getSoundManager } from './resourceScene';
 import { BaseScene } from './baseScene';
-import {BaseGameManager} from '../managers';
 import { AppScenes } from '../types';
+import { BackgroundGameManager } from '../managers/backgroundGameManager';
 
 // Runs automatic game between bots
 export class BackgroundScene extends BaseScene {
-  private gameManager = new BaseGameManager(this, this.world, this.objectManager);
+  private gameManager = new BackgroundGameManager(this, this.world, this.objectManager);
   private cleanupSystem = createCleanupSystem(
     this.gameManager.onCleanup.bind(this.gameManager),
   );
@@ -28,10 +28,6 @@ export class BackgroundScene extends BaseScene {
     this.gameManager.create();
     getSoundManager(this).playSound('songLoop');
     gameBus.emit(GameEvents.SCENE_LOADED);
-    gameBus.once(GameEvents.GAME_END, () => {
-      this.destroy();
-      this.create();
-    })
     this.gameManager.startGame({ justBots: true });
   }
 

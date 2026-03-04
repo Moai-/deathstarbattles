@@ -104,7 +104,7 @@ const ControlPanel: React.FC = () => {
           </ControlSection>
           <SliderSection>
             <StyledSlider
-              vertical
+              $isVertical
               min={-180}
               max={180}
               value={Math.floor(angle)}
@@ -144,7 +144,7 @@ const ControlPanel: React.FC = () => {
           </ControlSection>
           <SliderSection>
             <StyledSlider
-              vertical
+              $isVertical
               min={20}
               max={100}
               value={Math.floor(power)}

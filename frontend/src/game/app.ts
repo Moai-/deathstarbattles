@@ -54,6 +54,7 @@ class DSBPhaserApp {
   startMode(mode: AppModes, config?: GameConfig) {
     if (this.activeMode === mode) {
       // Launch a mode that's already running; no-op
+      console.log(`Tried to launch mode ${mode}, but it's already running`)
       return Promise.resolve();
     }
     if (this.activeMode) {
@@ -62,6 +63,8 @@ class DSBPhaserApp {
     }
     return new Promise<void>((resolve) => {
       const sceneName = modeScenes[mode];
+      console.log(`Launching mode ${mode}`)
+
       switch(mode) {
         case AppModes.BACKGROUND: 
         case AppModes.EDITOR: {
@@ -88,13 +91,10 @@ class DSBPhaserApp {
   stopMode(mode: AppModes) {
     // If current mode isn't the mode we're trying to stop, do nothing
     if (this.activeMode !== mode) {
+      console.log(`Tried to stop mode ${mode}, but current mode is ${this.activeMode}`)
       return Promise.resolve();
     }
-
-    // Noop on null mode
-    if (this.activeMode === null) {
-      return Promise.resolve();
-    }
+    console.log(`Stopping mode ${mode}`)
 
     this.activeMode = null;
     const scene = modeScenes[mode];
