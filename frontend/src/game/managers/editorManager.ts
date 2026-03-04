@@ -1,5 +1,7 @@
 import {
+  Backgrounds,
   GameState,
+  SerializedScenario,
 } from 'shared/src/types';
 import {
   doCirclesOverlap,
@@ -7,7 +9,6 @@ import {
   getComponentName,
   getPosition,
   getRadius,
-  serializeComponents,
   setPosition,
 } from 'shared/src/utils';
 import { NULL_ENTITY } from 'shared/src/ecs/world';
@@ -24,10 +25,13 @@ import { Active } from 'shared/src/ecs/components/active';
 import { LeavesTrail } from 'src/render/components/leavesTrail';
 import { colToUi32 } from 'shared/src/utils';
 import { playerCols } from 'shared/src/utils/colour';
+import { serializeComponents, serializeScenario } from 'shared/src/ecs/serde/serialize';
+import { instantiateScenario } from 'shared/src/ecs/serde/deserialize';
 import { DEFAULT_DEATHSTAR_RADIUS } from 'src/entities/deathStar';
 
 import { gameBus, GameEvents } from 'src/util';
 import { setEditorBackground } from 'src/render/background';
+import { SCENARIO_STORAGE_KEY_PREFIX } from 'src/ui/components/editor/utils';
 import { getSoundManager } from '../scenes/resourceScene';
 import * as ecsComponents from 'shared/src/ecs/components';
 import { getDeathStarSizeIndex, getRemovedDestructibleEids, clearRemovedDestructibleEids, addRemovedDestructibleEid, getPersistTrails, getLabelTrails, getShotHistory, recordShot } from 'src/ui/components/editor';
@@ -47,6 +51,7 @@ export class EditorManager extends BaseSceneManager {
   // editor state
   private placementState: PlacementState = null;
   private escapeKey: Phaser.Input.Keyboard.Key | null = null;
+  private currentBackground: Backgrounds = Backgrounds.NONE;
   private shiftKey: Phaser.Input.Keyboard.Key | null = null;
   private firingFromEid: number | null = null;
   private lastAngle = 90;
@@ -115,6 +120,7 @@ export class EditorManager extends BaseSceneManager {
   private abortPlacement() {
     if (!this.placementState) return;
     if (this.placementState.mode === 'add') {
+      removeComponent(this.world, this.placementState.ghostEid, Active);
       removeEntity(this.world, this.placementState.ghostEid);
       this.objectManager.removeObject(this.placementState.ghostEid);
     } else {
@@ -190,6 +196,8 @@ export class EditorManager extends BaseSceneManager {
     gameBus.emit(GameEvents.ED_ENTITY_CLICKED, payload);
   }
 
+  
+
   private handlePointerMove(pointer: Phaser.Input.Pointer) {
     if (this.placementState) {
       const eid = this.placementState.mode === 'add' ? this.placementState.ghostEid : this.placementState.eid;
@@ -263,8 +271,13 @@ export class EditorManager extends BaseSceneManager {
     gameBus.on(GameEvents.ED_UI_OPTIONS_ALL_DESTRUCTIBLE, ({ enabled }) =>
       this.setAllDestructible(enabled),
     );
-    gameBus.on(GameEvents.ED_UI_OPTIONS_BACKGROUND, ({ bgType }) =>
-      setEditorBackground(this.scene, bgType),
+    gameBus.on(GameEvents.ED_UI_OPTIONS_BACKGROUND, ({ bgType }) => {
+      this.currentBackground = bgType;
+      setEditorBackground(this.scene, bgType);
+    });
+    gameBus.on(GameEvents.ED_UI_SAVE_SCENARIO, ({ name }) => this.saveScenario(name));
+    gameBus.on(GameEvents.ED_UI_LOAD_SCENARIO, ({ scenarioKey }) =>
+      this.loadScenario(scenarioKey),
     );
   }
 
@@ -284,7 +297,41 @@ export class EditorManager extends BaseSceneManager {
     gameBus.off(GameEvents.ED_UI_OPTIONS_DEATHSTAR_SIZE);
     gameBus.off(GameEvents.ED_UI_OPTIONS_ALL_DESTRUCTIBLE);
     gameBus.off(GameEvents.ED_UI_OPTIONS_BACKGROUND);
+    gameBus.off(GameEvents.ED_UI_SAVE_SCENARIO);
+    gameBus.off(GameEvents.ED_UI_LOAD_SCENARIO);
     this.disableClickListeners();
+  }
+
+  private saveScenario(name: string) {
+    const scenario = serializeScenario(this.world, this.currentBackground, name);
+    const key = SCENARIO_STORAGE_KEY_PREFIX + name;
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(key, JSON.stringify(scenario));
+    }
+  }
+
+  private loadScenario(scenarioKey: string) {
+    if (typeof localStorage === 'undefined') return;
+    const raw = localStorage.getItem(scenarioKey);
+    if (!raw) return;
+    let scenario: SerializedScenario;
+    try {
+      scenario = JSON.parse(raw);
+    } catch {
+      return;
+    }
+    const eids = getAllEntities(this.world);
+    for (const eid of eids) {
+      removeEntity(this.world, eid);
+    }
+    this.objectManager.removeAllBoundaryIndicators();
+    this.objectManager.removeAllChildren();
+    this.objectManager.removeAllObjects();
+    instantiateScenario(scenario, this.world);
+    setEditorBackground(this.scene, scenario.background);
+    this.currentBackground = scenario.background;
+    this.updateWorker();
+    gameBus.emit(GameEvents.ED_SCENARIO_LOADED);
   }
 
   private static projectileQuery = [Projectile];

@@ -8,7 +8,6 @@ import { generateNebular } from './nebular';
 
 export { Backgrounds };
 
-/** Destroy any scene object using the background texture, then remove the texture. */
 const destroyBackgroundImage = (scene: Phaser.Scene) => {
   const list = scene.children.getAll();
   for (let i = list.length - 1; i >= 0; i--) {

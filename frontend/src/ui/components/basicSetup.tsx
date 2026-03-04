@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { DropdownGroup, SetupScreenContainer, SimpleSetup, TopLeftButton } from 'src/ui/styled/containers';
 import { SetupHeader } from 'src/ui/styled/text';
 import styled from 'styled-components';
@@ -8,6 +8,7 @@ import { GameState, useGameState } from './context';
 import { playerCols } from 'shared/src/utils';
 import { getScenarioTypes } from 'src/content/scenarios';
 import { FaSignOutAlt } from 'react-icons/fa';
+import { SCENARIO_STORAGE_KEY_PREFIX } from 'src/ui/components/editor/utils';
 
 export const DropdownRow = styled.div`
   display: flex;
@@ -64,15 +65,26 @@ export const SetupScreen: React.FC = () => {
   const [stationCount, setStationCount] = useState('1');
   const [scenario, setScenario] = useState('0');
   const types = getScenarioTypes();
+  const savedScenarioKeys = useMemo(() => {
+    if (typeof localStorage === 'undefined') return [];
+    return Object.keys(localStorage).filter((k) =>
+      k.startsWith(SCENARIO_STORAGE_KEY_PREFIX),
+    );
+  }, []);
+  const scenarioOptions = useMemo(() => {
+    const builtIn = types.map(({ name }, idx) => ({ value: String(idx), label: name }));
+    const saved = savedScenarioKeys.map((key) => ({
+      value: key,
+      label: key.slice(SCENARIO_STORAGE_KEY_PREFIX.length),
+    }));
+    return [...builtIn, ...saved];
+  }, [types, savedScenarioKeys]);
+  const isSavedScenario = scenario.startsWith(SCENARIO_STORAGE_KEY_PREFIX);
 
   const start = () => {
     const players: Array<PlayerSetup> = [];
     const maxBots = parseInt(botCount, 10);
     const diff = parseInt(difficulty, 10);
-    const [amountRaw, isMaxRaw] = objectCount.split('|');
-    const amount = parseInt(amountRaw, 10);
-    const isMax = isMaxRaw === 'true';
-    const scenarioIdx = parseInt(scenario, 10);
     const size = parseInt(stationSize);
     players.push({ id: 0, type: 0, difficulty: 0, col: playerCols[0] });
     for (let i = 0; i < maxBots; i++) {
@@ -83,17 +95,31 @@ export const SetupScreen: React.FC = () => {
         col: playerCols[i + 1],
       });
     }
-    const scenarioSetup = types[scenarioIdx];
-    setGameState(GameState.INGAME, {
-      justBots: false,
-      players,
-      maxItems: isMax ? amount : undefined,
-      numItems: !isMax ? amount : undefined,
-      background: scenarioSetup.background,
-      itemRules: scenarioSetup.items,
-      stationSize: size,
-      stationPerPlayer: Number(stationCount),
-    });
+    if (isSavedScenario) {
+      setGameState(GameState.INGAME, {
+        justBots: false,
+        players,
+        savedScenarioKey: scenario,
+        stationSize: size,
+        stationPerPlayer: Number(stationCount),
+      });
+    } else {
+      const [amountRaw, isMaxRaw] = objectCount.split('|');
+      const amount = parseInt(amountRaw, 10);
+      const isMax = isMaxRaw === 'true';
+      const scenarioIdx = parseInt(scenario, 10);
+      const scenarioSetup = types[scenarioIdx];
+      setGameState(GameState.INGAME, {
+        justBots: false,
+        players,
+        maxItems: isMax ? amount : undefined,
+        numItems: !isMax ? amount : undefined,
+        background: scenarioSetup.background,
+        itemRules: scenarioSetup.items,
+        stationSize: size,
+        stationPerPlayer: Number(stationCount),
+      });
+    }
   };
 
   return (
@@ -151,9 +177,9 @@ export const SetupScreen: React.FC = () => {
               value={scenario}
               onChange={(e) => setScenario(e.target.value)}
             >
-              {types.map(({ name }, idx) => (
-                <option key={name} value={idx}>
-                  {name}
+              {scenarioOptions.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {label}
                 </option>
               ))}
             </StyledSelect>
@@ -164,6 +190,7 @@ export const SetupScreen: React.FC = () => {
               id="objectCount"
               value={objectCount}
               onChange={(e) => setObjectCount(e.target.value)}
+              disabled={isSavedScenario}
             >
               {amounts.map(({ label, amount, isMax }) => (
                 <option key={label} value={`${amount}|${isMax}`}>

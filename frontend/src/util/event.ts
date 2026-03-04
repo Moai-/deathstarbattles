@@ -1,6 +1,5 @@
 import mitt, { type Emitter } from 'mitt';
-import { AnyPoint, Backgrounds, GameConfig, ObjectTypes, OtherActions } from 'shared/src/types';
-import { SerializedEntity } from 'shared/src/utils';
+import { AnyPoint, Backgrounds, EditorEntity, GameConfig, ObjectTypes, OtherActions } from 'shared/src/types';
 import { AppScenes } from 'src/game';
 
 type WinnerData = { col: number; playerId: number };
@@ -18,7 +17,7 @@ type DebugPath = {
 
 export type SelectionClick = {
   clickLoc: AnyPoint,
-  entities: Array<SerializedEntity>
+  entities: Array<EditorEntity>
 }
 
 export type EntityIdPayload = {
@@ -33,7 +32,7 @@ export type RemoveComponentPayload = {
 export type ComponentRemovedPayload = {
   eid: number
   name: string
-  components: SerializedEntity['components']
+  components: EditorEntity['components']
 }
 
 export type PropChanged = EntityIdPayload & {
@@ -120,6 +119,9 @@ export enum GameEvents {
   ED_UI_OPTIONS_ALL_DESTRUCTIBLE = 'ed_ui_options_alldestructible',
   ED_UI_OPTIONS_BACKGROUND = 'ed_ui_options_background',
   ED_ENTITY_HOVERED = 'ed_entityhovered',
+  ED_UI_SAVE_SCENARIO = 'ed_ui_savescenario',
+  ED_UI_LOAD_SCENARIO = 'ed_ui_loadscenario',
+  ED_SCENARIO_LOADED = 'ed_scenarioloaded',
 }
 
 type EventData = {
@@ -167,6 +169,9 @@ type EventData = {
   [GameEvents.ED_UI_OPTIONS_ALL_DESTRUCTIBLE]: { enabled: boolean };
   [GameEvents.ED_UI_OPTIONS_BACKGROUND]: { bgType: Backgrounds };
   [GameEvents.ED_ENTITY_HOVERED]: SelectionClick;
+  [GameEvents.ED_UI_SAVE_SCENARIO]: { name: string };
+  [GameEvents.ED_UI_LOAD_SCENARIO]: { scenarioKey: string };
+  [GameEvents.ED_SCENARIO_LOADED]: void;
 };
 
 type GameBus = Emitter<EventData> & {

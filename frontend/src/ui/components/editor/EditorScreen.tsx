@@ -2,8 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GameState, useGameState } from "../context";
 import { gameBus, GameEvents } from "src/util";
 import { SelectionClick } from "src/util/event";
-import { SerializedEntity } from "shared/src/utils";
-import { ObjectTypes } from "shared/src/types";
+import { ObjectTypes, EditorEntity } from "shared/src/types";
 import { SelectionMenu } from "./SelectionMenu";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import { FiringPanel } from "./FiringPanel";
@@ -40,10 +39,10 @@ const updateInspectWindow = (
 export const EditorScreen = () => {
   const { setGameState } = useGameState();
   const [lastClick, setLastClick] = useState<SelectionClick | null>(null);
-  const [activeEntity, setActiveEntity] = useState<SerializedEntity | null>(null);
+  const [activeEntity, setActiveEntity] = useState<EditorEntity | null>(null);
   const [menuKind, setMenuKind] = useState<MenuKind | null>(null);
   const [menuPos, setMenuPos] = useState<{ x: number; y: number } | null>(null);
-  const [menuEntities, setMenuEntities] = useState<Array<SerializedEntity>>([]);
+  const [menuEntities, setMenuEntities] = useState<Array<EditorEntity>>([]);
   const [firingFrom, setFiringFrom] = useState<{
     eid: number;
     x: number;
@@ -66,6 +65,12 @@ export const EditorScreen = () => {
   >(() => new Map());
   const [optionsPanel, setOptionsPanel] = useState<OptionsMenuPanel>("root");
   const [hoverPayload, setHoverPayload] = useState<SelectionClick | null>(null);
+
+  const closeMenus = useCallback(() => {
+    setMenuKind(null);
+    setMenuPos(null);
+    setMenuEntities([]);
+  }, []);
 
   useEffect(() => {
     gameBus.on(GameEvents.ED_ENTITY_CLICKED, (clickPayload) => {
@@ -123,6 +128,10 @@ export const EditorScreen = () => {
         }))
       );
     });
+    gameBus.on(GameEvents.ED_SCENARIO_LOADED, () => {
+      setInspectWindows(() => new Map());
+      closeMenus();
+    });
 
     return () => {
       gameBus.off(GameEvents.ED_ENTITY_CLICKED);
@@ -131,19 +140,14 @@ export const EditorScreen = () => {
       gameBus.off(GameEvents.ED_FIRE_MODE_EXITED);
       gameBus.off(GameEvents.ED_FIRE_SHOT_READY);
       gameBus.off(GameEvents.ED_PH_COMPONENT_REMOVED);
+      gameBus.off(GameEvents.ED_SCENARIO_LOADED);
     };
-  }, []);
+  }, [closeMenus]);
 
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const optionsButtonRef = useRef<HTMLButtonElement>(null);
   const selectionMenuRef = useRef<HTMLDivElement>(null);
   const optionsMenuRef = useRef<HTMLDivElement>(null);
-
-  const closeMenus = useCallback(() => {
-    setMenuKind(null);
-    setMenuPos(null);
-    setMenuEntities([]);
-  }, []);
 
   useOutsideClick(
     [
@@ -180,7 +184,7 @@ export const EditorScreen = () => {
   }, [lastClick, closeMenus]);
 
   const openInspectWindow = useCallback(
-    (entity: SerializedEntity) => {
+    (entity: EditorEntity) => {
       setInspectWindows((prev) => {
         if (prev.has(entity.eid)) {
           return prev;
@@ -237,7 +241,7 @@ export const EditorScreen = () => {
     }
   }, []);
 
-  const onPickEntityFromSelect = useCallback((entity: SerializedEntity) => {
+  const onPickEntityFromSelect = useCallback((entity: EditorEntity) => {
     setActiveEntity(entity);
     setMenuKind("actions");
   }, []);
@@ -256,7 +260,7 @@ export const EditorScreen = () => {
     }
     if (menuKind === "select") {
       return (
-        <SelectionMenu<SerializedEntity>
+        <SelectionMenu<EditorEntity>
           position={menuPos}
           title="Select entity"
           items={menuEntities.map((e) => ({ label: e.name, value: e }))}

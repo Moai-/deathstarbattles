@@ -1,8 +1,9 @@
 import { GameWorld } from 'shared/src/ecs/world';
+import { instantiateScenario } from 'shared/src/ecs/serde/deserialize';
 import { generateRandomBots, generatePlayers } from './genPlayers';
 import { generateScenarioItems } from './genObjects';
-import { placeEntities } from './placeEntities';
-import { Backgrounds, GameConfig, ScenarioType } from 'shared/src/types';
+import { getPlacedFromWorld, placeEntities } from './placeEntities';
+import { Backgrounds, GameConfig, ScenarioType, SerializedScenario } from 'shared/src/types';
 import { getScenarioTypes } from 'src/content/scenarios';
 import { randomFromArray } from 'shared/src/utils';
 import { finalizeSetup } from './finalize';
@@ -44,18 +45,33 @@ export const runGameSetup = (
   const players = generatePlayers(world, config.players!, config.stationPerPlayer);
   const playerIds = players.flatMap((p) => p.stationEids);
 
-  // 3. Determine and generate appropriate item counts
-  const items = generateScenarioItems(world, config.itemRules!, {
-    max: config.maxItems || 20,
-    num: config.numItems,
-  });
+  let objectPlacements: Array<{ x: number; y: number; radius: number; eid: number }>;
+  let bg: Backgrounds;
 
-  // 4. Place everything
-  const objectPlacements = placeEntities(width, height, items, playerIds);
+  if (config.savedScenarioKey && typeof localStorage !== 'undefined') {
+    const raw = localStorage.getItem(config.savedScenarioKey);
+    if (!raw) {
+      throw new Error(`Saved scenario not found: ${config.savedScenarioKey}`);
+    }
+    const scenario: SerializedScenario = JSON.parse(raw);
+    instantiateScenario(scenario, world);
+    const existingPlaced = getPlacedFromWorld(world, playerIds);
+    objectPlacements = placeEntities(width, height, [], playerIds, existingPlaced);
+    bg = scenario.background;
+  } else {
+    // 3. Determine and generate appropriate item counts
+    const items = generateScenarioItems(world, config.itemRules!, {
+      max: config.maxItems || 20,
+      num: config.numItems,
+    });
 
-  // 5. Background generation
-  const bg =
-    config.background === undefined ? Backgrounds.STARS : config.background;
+    // 4. Place everything
+    objectPlacements = placeEntities(width, height, items, playerIds);
+
+    // 5. Background generation
+    bg =
+      config.background === undefined ? Backgrounds.STARS : config.background;
+  }
 
   // 6. Finalize
   const size = config.stationSize === undefined ? 2 : config.stationSize;

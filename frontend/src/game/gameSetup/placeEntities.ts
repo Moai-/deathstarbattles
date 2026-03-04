@@ -1,7 +1,10 @@
+import { getAllEntities } from 'bitecs';
 import { ClearanceFunction, GameObject, ObjectTypes } from 'shared/src/types';
+import { GameWorld } from 'shared/src/ecs/world';
 import {
   generateNonOverlappingPositions,
   generateSupergiantStarPosition,
+  getPosition,
   getRadius,
   getType,
   setPosition,
@@ -20,12 +23,31 @@ const getAdjustedRadius = (eid: number) => {
   }
 };
 
+/** Build placed game objects from existing world entities (e.g. after loading a saved scenario). */
+export const getPlacedFromWorld = (
+  world: GameWorld,
+  excludeEids: Array<number>,
+): Array<GameObject> => {
+  const exclude = new Set(excludeEids);
+  const eids = getAllEntities(world);
+  const out: Array<GameObject> = [];
+  for (const eid of eids) {
+    if (exclude.has(eid)) continue;
+    const r = getRadius(eid);
+    if (r <= 0) continue;
+    const { x, y } = getPosition(eid);
+    out.push({ eid, x, y, radius: getAdjustedRadius(eid) });
+  }
+  return out;
+};
+
 export const placeEntities: (
   width: number,
   height: number,
   items: Array<number>,
   players: Array<number>,
-) => Array<GameObject> = (width, height, items, players) => {
+  existingPlaced?: Array<GameObject>,
+) => Array<GameObject> = (width, height, items, players, existingPlaced) => {
   // Sort by adjusted radius
   const levelObjects: Array<GameObject> = items
     .map((item) => ({ x: 0, y: 0, radius: getAdjustedRadius(item), eid: item }))
@@ -39,7 +61,7 @@ export const placeEntities: (
     eid: item,
   }));
 
-  const placed = [];
+  const placed = existingPlaced ? [...existingPlaced] : [];
 
   let lastSupergiantSide = '';
 

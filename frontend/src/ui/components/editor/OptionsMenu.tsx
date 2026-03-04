@@ -1,12 +1,20 @@
-import { RefObject } from "react";
+import { RefObject, useState, useMemo } from "react";
 import { gameBus, GameEvents } from "src/util";
 import { Backgrounds } from "shared/src/types";
 import {
   useEditorOptions,
   type DeathStarSizeIndex,
 } from "./";
+import { SCENARIO_STORAGE_KEY_PREFIX } from "./utils";
 
-export type OptionsMenuPanel = "root" | "trails" | "deathstars" | "size" | "background";
+export type OptionsMenuPanel =
+  | "root"
+  | "trails"
+  | "deathstars"
+  | "size"
+  | "background"
+  | "save"
+  | "load";
 
 export type OptionsMenuProps = {
   position: { x: number; y: number } | null;
@@ -31,6 +39,13 @@ export function OptionsMenu({
   onClose,
 }: OptionsMenuProps) {
   const options = useEditorOptions();
+  const [saveName, setSaveName] = useState("");
+  const savedScenarioKeys = useMemo(() => {
+    if (typeof localStorage === "undefined") return [];
+    return Object.keys(localStorage).filter((k) =>
+      k.startsWith(SCENARIO_STORAGE_KEY_PREFIX)
+    );
+  }, [panel]);
   if (!position) return null;
 
   const menuStyle: React.CSSProperties = {
@@ -70,7 +85,103 @@ export function OptionsMenu({
               Background
             </button>
           </li>
+          <li>
+            <button type="button" onClick={() => onPanelChange("save")}>
+              Save
+            </button>
+          </li>
+          <li>
+            <button type="button" onClick={() => onPanelChange("load")}>
+              Load
+            </button>
+          </li>
         </ul>
+      </div>
+    );
+  }
+
+  if (panel === "save") {
+    const nameTrimmed = saveName.trim();
+    return (
+      <div ref={menuRef} style={menuStyle}>
+        <div style={{ marginBottom: 6, fontWeight: 600 }}>
+          <button
+            type="button"
+            onClick={() => {
+              setSaveName("");
+              onPanelChange("root");
+            }}
+          >
+            ← Back
+          </button>
+          <span style={{ marginLeft: 6 }}>Save scenario</span>
+        </div>
+        <div style={{ marginBottom: 6 }}>
+          <label style={{ display: "block", marginBottom: 4 }}>Name</label>
+          <input
+            type="text"
+            value={saveName}
+            onChange={(e) => setSaveName(e.target.value)}
+            placeholder="Scenario name"
+            style={{ width: "100%", boxSizing: "border-box" }}
+          />
+        </div>
+        <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+          <button
+            type="button"
+            onClick={() => {
+              setSaveName("");
+              onPanelChange("root");
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={!nameTrimmed}
+            onClick={() => {
+              if (!nameTrimmed) return;
+              gameBus.emit(GameEvents.ED_UI_SAVE_SCENARIO, { name: nameTrimmed });
+              setSaveName("");
+              onClose();
+            }}
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (panel === "load") {
+    return (
+      <div ref={menuRef} style={menuStyle}>
+        <div style={{ marginBottom: 6, fontWeight: 600 }}>
+          {backButton}
+          <span style={{ marginLeft: 6 }}>Load scenario</span>
+        </div>
+        {savedScenarioKeys.length === 0 ? (
+          <div style={{ padding: "4px 0", color: "#666" }}>No saved scenarios</div>
+        ) : (
+          <ul style={{ margin: 0, paddingLeft: 18 }}>
+            {savedScenarioKeys.map((key) => {
+              const name = key.slice(SCENARIO_STORAGE_KEY_PREFIX.length);
+              return (
+                <li key={key}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      gameBus.emit(GameEvents.ED_UI_LOAD_SCENARIO, { scenarioKey: key });
+                      onClose();
+                    }}
+                  >
+                    {name}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
     );
   }

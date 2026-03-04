@@ -148,6 +148,8 @@ export type GameConfig = {
   stationSize?: number;
   maxItems?: number;
   numItems?: number;
+  /** When set, load objects from this localStorage key (saved editor scenario); players still generated normally. */
+  savedScenarioKey?: string;
 };
 
 export type TargetCacheEntry = {
@@ -174,4 +176,28 @@ export enum Backgrounds {
   SHARDS,
   DEEPSPACE,
   NEBULAR,
+}
+
+
+export type SerializedComponent = {
+  key: string;
+  props: {
+    [key: string]: number | any;
+  };
+};
+
+export type SerializedEntity = {
+  eid: number;
+  components: Array<SerializedComponent>;
+};
+
+export type EditorEntity = SerializedEntity & {
+  name: string;
+}
+
+
+export type SerializedScenario = {
+  name: string;
+  background: Backgrounds;
+  objects: Array<SerializedEntity>;
 }
