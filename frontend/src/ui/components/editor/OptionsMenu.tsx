@@ -141,7 +141,7 @@ export function OptionsMenu({
             disabled={!nameTrimmed}
             onClick={() => {
               if (!nameTrimmed) return;
-              gameBus.emit(GameEvents.ED_UI_SAVE_SCENARIO, { name: nameTrimmed });
+              gameBus.emit(EditorEvents.ED_UI_SAVE_SCENARIO, { name: nameTrimmed });
               setSaveName("");
               onClose();
             }}
@@ -171,7 +171,7 @@ export function OptionsMenu({
                   <button
                     type="button"
                     onClick={() => {
-                      gameBus.emit(GameEvents.ED_UI_LOAD_SCENARIO, { scenarioKey: key });
+                      gameBus.emit(EditorEvents.ED_UI_LOAD_SCENARIO, { scenarioKey: key });
                       onClose();
                     }}
                   >
@@ -198,7 +198,7 @@ export function OptionsMenu({
             <button
               type="button"
               onClick={() => {
-                gameBus.emit(GameEvents.ED_UI_CLEAR_TRAILS);
+                gameBus.emit(EditorEvents.ED_UI_CLEAR_TRAILS);
                 options.clearShotHistory();
                 onClose();
               }}
@@ -247,7 +247,7 @@ export function OptionsMenu({
                 onChange={(e) => {
                   const enabled = e.target.checked;
                   options.setAllDestructible(enabled);
-                  gameBus.emit(GameEvents.ED_UI_OPTIONS_ALL_DESTRUCTIBLE, {
+                  gameBus.emit(EditorEvents.ED_UI_OPTIONS_ALL_DESTRUCTIBLE, {
                     enabled,
                   });
                 }}
@@ -283,7 +283,7 @@ export function OptionsMenu({
                   checked={current === idx}
                   onChange={() => {
                     options.setDeathStarSizeIndex(idx);
-                    gameBus.emit(GameEvents.ED_UI_OPTIONS_DEATHSTAR_SIZE, {
+                    gameBus.emit(EditorEvents.ED_UI_OPTIONS_DEATHSTAR_SIZE, {
                       sizeIndex: idx,
                     });
                   }}
@@ -317,7 +317,7 @@ export function OptionsMenu({
               <button
                 type="button"
                 onClick={() => {
-                  gameBus.emit(GameEvents.ED_UI_OPTIONS_BACKGROUND, { bgType: value });
+                  gameBus.emit(EditorEvents.ED_UI_OPTIONS_BACKGROUND, { bgType: value });
                   onClose();
                 }}
               >

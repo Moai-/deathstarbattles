@@ -92,7 +92,9 @@ export enum GameEvents {
   // in-game events
   END_TURN = 'endturn',
   DEBUG_DRAW_PATH = 'debugdrawpath',
+}
 
+export enum EditorEvents {
   // === Editor stuff ===
   // ECS general management
   ED_ADD_ENTITY = 'ed_addentity',
@@ -145,33 +147,33 @@ type EventData = {
 
   // === Editor stuff ===
   // ECS general management
-  [GameEvents.ED_ADD_ENTITY]: AddEntityPayload;
-  [GameEvents.ED_ENTITY_CLICKED]: SelectionClick;
-  [GameEvents.ED_UI_PROP_CHANGED]: PropChanged;
-  [GameEvents.ED_UI_DELETE_ENTITY]: EntityIdPayload;
-  [GameEvents.ED_PH_DELETE_ENTITY]: EntityIdPayload;
-  [GameEvents.ED_UI_REMOVE_COMPONENT]: RemoveComponentPayload;
-  [GameEvents.ED_PH_COMPONENT_REMOVED]: ComponentRemovedPayload;
+  [EditorEvents.ED_ADD_ENTITY]: AddEntityPayload;
+  [EditorEvents.ED_ENTITY_CLICKED]: SelectionClick;
+  [EditorEvents.ED_UI_PROP_CHANGED]: PropChanged;
+  [EditorEvents.ED_UI_DELETE_ENTITY]: EntityIdPayload;
+  [EditorEvents.ED_PH_DELETE_ENTITY]: EntityIdPayload;
+  [EditorEvents.ED_UI_REMOVE_COMPONENT]: RemoveComponentPayload;
+  [EditorEvents.ED_PH_COMPONENT_REMOVED]: ComponentRemovedPayload;
   // Entity placement
-  [GameEvents.ED_UI_START_PLACE_ENTITY]: StartPlaceEntityPayload;
-  [GameEvents.ED_UI_START_MOVE_ENTITY]: StartMoveEntityPayload;
-  [GameEvents.ED_UI_ABORT_PLACE]: void;
-  [GameEvents.ED_PH_ABORT_PLACE]: void;
+  [EditorEvents.ED_UI_START_PLACE_ENTITY]: StartPlaceEntityPayload;
+  [EditorEvents.ED_UI_START_MOVE_ENTITY]: StartMoveEntityPayload;
+  [EditorEvents.ED_UI_ABORT_PLACE]: void;
+  [EditorEvents.ED_PH_ABORT_PLACE]: void;
   // Fire shot
-  [GameEvents.ED_UI_START_FIRE_SHOT]: StartFireShotPayload;
-  [GameEvents.ED_FIRE_SHOT_READY]: FireShotReadyPayload;
-  [GameEvents.ED_UI_FIRE_SHOT_CONFIRM]: FireShotConfirmPayload;
-  [GameEvents.ED_UI_FIRE_SHOT_CANCEL]: void;
-  [GameEvents.ED_FIRE_MODE_EXITED]: void;
+  [EditorEvents.ED_UI_START_FIRE_SHOT]: StartFireShotPayload;
+  [EditorEvents.ED_FIRE_SHOT_READY]: FireShotReadyPayload;
+  [EditorEvents.ED_UI_FIRE_SHOT_CONFIRM]: FireShotConfirmPayload;
+  [EditorEvents.ED_UI_FIRE_SHOT_CANCEL]: void;
+  [EditorEvents.ED_FIRE_MODE_EXITED]: void;
   // Editor options
-  [GameEvents.ED_UI_CLEAR_TRAILS]: void;
-  [GameEvents.ED_UI_OPTIONS_DEATHSTAR_SIZE]: { sizeIndex: number };
-  [GameEvents.ED_UI_OPTIONS_ALL_DESTRUCTIBLE]: { enabled: boolean };
-  [GameEvents.ED_UI_OPTIONS_BACKGROUND]: { bgType: Backgrounds };
-  [GameEvents.ED_ENTITY_HOVERED]: SelectionClick;
-  [GameEvents.ED_UI_SAVE_SCENARIO]: { name: string };
-  [GameEvents.ED_UI_LOAD_SCENARIO]: { scenarioKey: string };
-  [GameEvents.ED_SCENARIO_LOADED]: void;
+  [EditorEvents.ED_UI_CLEAR_TRAILS]: void;
+  [EditorEvents.ED_UI_OPTIONS_DEATHSTAR_SIZE]: { sizeIndex: number };
+  [EditorEvents.ED_UI_OPTIONS_ALL_DESTRUCTIBLE]: { enabled: boolean };
+  [EditorEvents.ED_UI_OPTIONS_BACKGROUND]: { bgType: Backgrounds };
+  [EditorEvents.ED_ENTITY_HOVERED]: SelectionClick;
+  [EditorEvents.ED_UI_SAVE_SCENARIO]: { name: string };
+  [EditorEvents.ED_UI_LOAD_SCENARIO]: { scenarioKey: string };
+  [EditorEvents.ED_SCENARIO_LOADED]: void;
 };
 
 type GameBus = Emitter<EventData> & {

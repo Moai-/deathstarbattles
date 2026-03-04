@@ -73,13 +73,13 @@ export const EditorScreen = () => {
   }, []);
 
   useEffect(() => {
-    gameBus.on(GameEvents.ED_ENTITY_CLICKED, (clickPayload) => {
+    gameBus.on(EditorEvents.ED_ENTITY_CLICKED, (clickPayload) => {
       setLastClick(clickPayload);
     });
-    gameBus.on(GameEvents.ED_ENTITY_HOVERED, (payload) => {
+    gameBus.on(EditorEvents.ED_ENTITY_HOVERED, (payload) => {
       setHoverPayload(payload);
     });
-    gameBus.on(GameEvents.ED_PH_DELETE_ENTITY, ({ eid }) => {
+    gameBus.on(EditorEvents.ED_PH_DELETE_ENTITY, ({ eid }) => {
       setInspectWindows((prev) => {
         const next = new Map(prev);
         next.delete(eid);
@@ -87,7 +87,7 @@ export const EditorScreen = () => {
       });
       closeMenus();
     });
-    gameBus.on(GameEvents.ED_FIRE_MODE_EXITED, () => {
+    gameBus.on(EditorEvents.ED_FIRE_MODE_EXITED, () => {
       const current = firingFromRef.current;
       if (current) {
         setFiringPanelPositionByEid((prev) => {
@@ -98,7 +98,7 @@ export const EditorScreen = () => {
       }
       setFiringFrom(null);
     });
-    gameBus.on(GameEvents.ED_FIRE_SHOT_READY, (payload) => {
+    gameBus.on(EditorEvents.ED_FIRE_SHOT_READY, (payload) => {
       const saved = firingPanelPositionByEidRef.current.get(payload.eid);
       const panelPosition =
         saved ??
@@ -119,7 +119,7 @@ export const EditorScreen = () => {
         panelPosition,
       });
     });
-    gameBus.on(GameEvents.ED_PH_COMPONENT_REMOVED, ({ eid, name, components }) => {
+    gameBus.on(EditorEvents.ED_PH_COMPONENT_REMOVED, ({ eid, name, components }) => {
       setInspectWindows((prev) =>
         updateInspectWindow(prev, eid, (cur) => ({
           ...cur,
@@ -128,19 +128,19 @@ export const EditorScreen = () => {
         }))
       );
     });
-    gameBus.on(GameEvents.ED_SCENARIO_LOADED, () => {
+    gameBus.on(EditorEvents.ED_SCENARIO_LOADED, () => {
       setInspectWindows(() => new Map());
       closeMenus();
     });
 
     return () => {
-      gameBus.off(GameEvents.ED_ENTITY_CLICKED);
-      gameBus.off(GameEvents.ED_ENTITY_HOVERED);
-      gameBus.off(GameEvents.ED_PH_DELETE_ENTITY);
-      gameBus.off(GameEvents.ED_FIRE_MODE_EXITED);
-      gameBus.off(GameEvents.ED_FIRE_SHOT_READY);
-      gameBus.off(GameEvents.ED_PH_COMPONENT_REMOVED);
-      gameBus.off(GameEvents.ED_SCENARIO_LOADED);
+      gameBus.off(EditorEvents.ED_ENTITY_CLICKED);
+      gameBus.off(EditorEvents.ED_ENTITY_HOVERED);
+      gameBus.off(EditorEvents.ED_PH_DELETE_ENTITY);
+      gameBus.off(EditorEvents.ED_FIRE_MODE_EXITED);
+      gameBus.off(EditorEvents.ED_FIRE_SHOT_READY);
+      gameBus.off(EditorEvents.ED_PH_COMPONENT_REMOVED);
+      gameBus.off(EditorEvents.ED_SCENARIO_LOADED);
     };
   }, [closeMenus]);
 
@@ -290,11 +290,11 @@ export const EditorScreen = () => {
             if (action === "inspect") {
               openInspectWindow(activeEntity);
             } else if (action === "delete") {
-              gameBus.emit(GameEvents.ED_UI_DELETE_ENTITY, { eid: activeEntity.eid });
+              gameBus.emit(EditorEvents.ED_UI_DELETE_ENTITY, { eid: activeEntity.eid });
             } else if (action === "move") {
-              gameBus.emit(GameEvents.ED_UI_START_MOVE_ENTITY, { eid: activeEntity.eid });
+              gameBus.emit(EditorEvents.ED_UI_START_MOVE_ENTITY, { eid: activeEntity.eid });
             } else if (action === "fireshot") {
-              gameBus.emit(GameEvents.ED_UI_START_FIRE_SHOT, {
+              gameBus.emit(EditorEvents.ED_UI_START_FIRE_SHOT, {
                 eid: activeEntity.eid,
                 x: posX,
                 y: posY,
@@ -314,7 +314,7 @@ export const EditorScreen = () => {
           title="Add entity"
           items={creatableEntityItems}
           onSelect={(objectType) => {
-            gameBus.emit(GameEvents.ED_UI_START_PLACE_ENTITY, { objectType });
+            gameBus.emit(EditorEvents.ED_UI_START_PLACE_ENTITY, { objectType });
             closeMenus();
           }}
           menuRef={selectionMenuRef}
@@ -366,7 +366,7 @@ export const EditorScreen = () => {
             initialPower={firingFrom.initialPower}
             onFire={(eid, angle, power) => {
               saveFiringPanelPositionAnd(() => {
-                gameBus.emit(GameEvents.ED_UI_FIRE_SHOT_CONFIRM, {
+                gameBus.emit(EditorEvents.ED_UI_FIRE_SHOT_CONFIRM, {
                   eid,
                   angle,
                   power,
@@ -375,7 +375,7 @@ export const EditorScreen = () => {
             }}
             onCancel={() => {
               saveFiringPanelPositionAnd(() => {
-                gameBus.emit(GameEvents.ED_UI_FIRE_SHOT_CANCEL);
+                gameBus.emit(EditorEvents.ED_UI_FIRE_SHOT_CANCEL);
               });
             }}
             onMove={(x, y) =>
@@ -425,7 +425,7 @@ export const EditorScreen = () => {
                     if (c.key !== compKey) {
                       return c;
                     }
-                    gameBus.emit(GameEvents.ED_UI_PROP_CHANGED, {
+                    gameBus.emit(EditorEvents.ED_UI_PROP_CHANGED, {
                       eid,
                       compIdx,
                       propName,
@@ -444,7 +444,7 @@ export const EditorScreen = () => {
               );
             }}
             onRemoveComponent={(eid, compKey) => {
-              gameBus.emit(GameEvents.ED_UI_REMOVE_COMPONENT, { eid, compKey });
+              gameBus.emit(EditorEvents.ED_UI_REMOVE_COMPONENT, { eid, compKey });
             }}
           />
         ))}

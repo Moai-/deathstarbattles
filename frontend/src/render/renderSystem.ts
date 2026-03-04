@@ -34,7 +34,6 @@ export const createRenderSystem = (
   scene: Phaser.Scene,
   objectManager: GameObjectManager,
 ) => {
-  console.log('render system created')
   return (world: GameWorld) => {
 
     const updatedEntities = query(world, renderables);

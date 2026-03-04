@@ -73,7 +73,7 @@ export class EditorManager extends BaseSceneManager {
     if (this.escapeKey?.isDown) {
       if (this.placementState) {
         this.abortPlacement();
-        gameBus.emit(GameEvents.ED_PH_ABORT_PLACE);
+        gameBus.emit(EditorEvents.ED_PH_ABORT_PLACE);
       } else if (this.firingFromEid !== null) {
         this.exitFireMode();
       }
@@ -173,7 +173,7 @@ export class EditorManager extends BaseSceneManager {
     if (this.placementState) {
       if (pointer.rightButtonDown()) {
         this.abortPlacement();
-        gameBus.emit(GameEvents.ED_PH_ABORT_PLACE);
+        gameBus.emit(EditorEvents.ED_PH_ABORT_PLACE);
       } else if (pointer.leftButtonDown()) {
         this.commitPlacement(pointer.x, pointer.y);
       }
@@ -193,7 +193,7 @@ export class EditorManager extends BaseSceneManager {
       clickLoc: { x: pointer.x, y: pointer.y },
       entities: overlappingEntities.map((eid) => serializeComponents(this.world, eid)),
     };
-    gameBus.emit(GameEvents.ED_ENTITY_CLICKED, payload);
+    gameBus.emit(EditorEvents.ED_ENTITY_CLICKED, payload);
   }
 
   
@@ -215,7 +215,7 @@ export class EditorManager extends BaseSceneManager {
         overlappingEntities.push(entity);
       }
     }
-    gameBus.emit(GameEvents.ED_ENTITY_HOVERED, {
+    gameBus.emit(EditorEvents.ED_ENTITY_HOVERED, {
       clickLoc: { x: pointer.x, y: pointer.y },
       entities: overlappingEntities.map((eid) => serializeComponents(this.world, eid)),
     });
@@ -231,7 +231,7 @@ export class EditorManager extends BaseSceneManager {
       }
     })
 
-    gameBus.on(GameEvents.ED_UI_PROP_CHANGED, ({eid, compIdx, propName, newVal}) => {
+    gameBus.on(EditorEvents.ED_UI_PROP_CHANGED, ({eid, compIdx, propName, newVal}) => {
       const thisComp = getEntityComponents(this.world, eid)[compIdx];
       if (thisComp) {
         thisComp[propName][eid] = newVal;
@@ -240,65 +240,65 @@ export class EditorManager extends BaseSceneManager {
       this.updateWorker();
     });
 
-    gameBus.on(GameEvents.ED_UI_DELETE_ENTITY, ({ eid }) => {
+    gameBus.on(EditorEvents.ED_UI_DELETE_ENTITY, ({ eid }) => {
       removeEntity(this.world, eid);
-      gameBus.emit(GameEvents.ED_PH_DELETE_ENTITY, { eid });
+      gameBus.emit(EditorEvents.ED_PH_DELETE_ENTITY, { eid });
       this.updateWorker();
     });
-    gameBus.on(GameEvents.ED_UI_REMOVE_COMPONENT, ({ eid, compKey }) => {
+    gameBus.on(EditorEvents.ED_UI_REMOVE_COMPONENT, ({ eid, compKey }) => {
       this.removeEntityComponent(eid, compKey);
       this.updateWorker();
     });
 
-    gameBus.on(GameEvents.ED_UI_START_PLACE_ENTITY, ({ objectType }) => {
+    gameBus.on(EditorEvents.ED_UI_START_PLACE_ENTITY, ({ objectType }) => {
       this.startPlaceEntity(objectType);
     });
-    gameBus.on(GameEvents.ED_UI_START_MOVE_ENTITY, ({ eid }) => {
+    gameBus.on(EditorEvents.ED_UI_START_MOVE_ENTITY, ({ eid }) => {
       this.startMoveEntity(eid);
     });
     const onAbortPlace = () => this.abortPlacement();
-    gameBus.on(GameEvents.ED_UI_ABORT_PLACE, onAbortPlace);
-    gameBus.on(GameEvents.ED_PH_ABORT_PLACE, onAbortPlace);
-    gameBus.on(GameEvents.ED_UI_START_FIRE_SHOT, ({ eid }) => this.startFireShot(eid));
-    gameBus.on(GameEvents.ED_UI_FIRE_SHOT_CONFIRM, ({ eid, angle, power }) =>
+    gameBus.on(EditorEvents.ED_UI_ABORT_PLACE, onAbortPlace);
+    gameBus.on(EditorEvents.ED_PH_ABORT_PLACE, onAbortPlace);
+    gameBus.on(EditorEvents.ED_UI_START_FIRE_SHOT, ({ eid }) => this.startFireShot(eid));
+    gameBus.on(EditorEvents.ED_UI_FIRE_SHOT_CONFIRM, ({ eid, angle, power }) =>
       this.confirmFireShot(eid, angle, power),
     );
-    gameBus.on(GameEvents.ED_UI_FIRE_SHOT_CANCEL, () => this.exitFireMode());
-    gameBus.on(GameEvents.ED_UI_CLEAR_TRAILS, () => this.clearAllTrails());
-    gameBus.on(GameEvents.ED_UI_OPTIONS_DEATHSTAR_SIZE, ({ sizeIndex }) =>
+    gameBus.on(EditorEvents.ED_UI_FIRE_SHOT_CANCEL, () => this.exitFireMode());
+    gameBus.on(EditorEvents.ED_UI_CLEAR_TRAILS, () => this.clearAllTrails());
+    gameBus.on(EditorEvents.ED_UI_OPTIONS_DEATHSTAR_SIZE, ({ sizeIndex }) =>
       this.applyDeathStarSize(sizeIndex),
     );
-    gameBus.on(GameEvents.ED_UI_OPTIONS_ALL_DESTRUCTIBLE, ({ enabled }) =>
+    gameBus.on(EditorEvents.ED_UI_OPTIONS_ALL_DESTRUCTIBLE, ({ enabled }) =>
       this.setAllDestructible(enabled),
     );
-    gameBus.on(GameEvents.ED_UI_OPTIONS_BACKGROUND, ({ bgType }) => {
+    gameBus.on(EditorEvents.ED_UI_OPTIONS_BACKGROUND, ({ bgType }) => {
       this.currentBackground = bgType;
       setEditorBackground(this.scene, bgType);
     });
-    gameBus.on(GameEvents.ED_UI_SAVE_SCENARIO, ({ name }) => this.saveScenario(name));
-    gameBus.on(GameEvents.ED_UI_LOAD_SCENARIO, ({ scenarioKey }) =>
+    gameBus.on(EditorEvents.ED_UI_SAVE_SCENARIO, ({ name }) => this.saveScenario(name));
+    gameBus.on(EditorEvents.ED_UI_LOAD_SCENARIO, ({ scenarioKey }) =>
       this.loadScenario(scenarioKey),
     );
   }
 
   protected clearListeners() {
     super.clearListeners();
-    gameBus.off(GameEvents.ED_UI_PROP_CHANGED);
-    gameBus.off(GameEvents.ED_UI_DELETE_ENTITY);
-    gameBus.off(GameEvents.ED_UI_REMOVE_COMPONENT);
-    gameBus.off(GameEvents.ED_UI_START_PLACE_ENTITY);
-    gameBus.off(GameEvents.ED_UI_START_MOVE_ENTITY);
-    gameBus.off(GameEvents.ED_UI_ABORT_PLACE);
-    gameBus.off(GameEvents.ED_PH_ABORT_PLACE);
-    gameBus.off(GameEvents.ED_UI_START_FIRE_SHOT);
-    gameBus.off(GameEvents.ED_UI_FIRE_SHOT_CONFIRM);
-    gameBus.off(GameEvents.ED_UI_FIRE_SHOT_CANCEL);
-    gameBus.off(GameEvents.ED_UI_CLEAR_TRAILS);
-    gameBus.off(GameEvents.ED_UI_OPTIONS_DEATHSTAR_SIZE);
-    gameBus.off(GameEvents.ED_UI_OPTIONS_ALL_DESTRUCTIBLE);
-    gameBus.off(GameEvents.ED_UI_OPTIONS_BACKGROUND);
-    gameBus.off(GameEvents.ED_UI_SAVE_SCENARIO);
-    gameBus.off(GameEvents.ED_UI_LOAD_SCENARIO);
+    gameBus.off(EditorEvents.ED_UI_PROP_CHANGED);
+    gameBus.off(EditorEvents.ED_UI_DELETE_ENTITY);
+    gameBus.off(EditorEvents.ED_UI_REMOVE_COMPONENT);
+    gameBus.off(EditorEvents.ED_UI_START_PLACE_ENTITY);
+    gameBus.off(EditorEvents.ED_UI_START_MOVE_ENTITY);
+    gameBus.off(EditorEvents.ED_UI_ABORT_PLACE);
+    gameBus.off(EditorEvents.ED_PH_ABORT_PLACE);
+    gameBus.off(EditorEvents.ED_UI_START_FIRE_SHOT);
+    gameBus.off(EditorEvents.ED_UI_FIRE_SHOT_CONFIRM);
+    gameBus.off(EditorEvents.ED_UI_FIRE_SHOT_CANCEL);
+    gameBus.off(EditorEvents.ED_UI_CLEAR_TRAILS);
+    gameBus.off(EditorEvents.ED_UI_OPTIONS_DEATHSTAR_SIZE);
+    gameBus.off(EditorEvents.ED_UI_OPTIONS_ALL_DESTRUCTIBLE);
+    gameBus.off(EditorEvents.ED_UI_OPTIONS_BACKGROUND);
+    gameBus.off(EditorEvents.ED_UI_SAVE_SCENARIO);
+    gameBus.off(EditorEvents.ED_UI_LOAD_SCENARIO);
     this.disableClickListeners();
   }
 
@@ -331,7 +331,7 @@ export class EditorManager extends BaseSceneManager {
     setEditorBackground(this.scene, scenario.background);
     this.currentBackground = scenario.background;
     this.updateWorker();
-    gameBus.emit(GameEvents.ED_SCENARIO_LOADED);
+    gameBus.emit(EditorEvents.ED_SCENARIO_LOADED);
   }
 
   private static projectileQuery = [Projectile];
@@ -388,7 +388,7 @@ export class EditorManager extends BaseSceneManager {
     this.indicator.drawIndicator();
     this.syncAnglePower(this.lastAngle, this.lastPower);
     const { x, y } = getPosition(eid);
-    gameBus.emit(GameEvents.ED_FIRE_SHOT_READY, {
+    gameBus.emit(EditorEvents.ED_FIRE_SHOT_READY, {
       eid,
       x,
       y,
@@ -428,7 +428,7 @@ export class EditorManager extends BaseSceneManager {
     this.indicator.removeIndicator();
     this.firingFromEid = null;
     this.indicator.setGetTargetIdCallback(() => 0);
-    gameBus.emit(GameEvents.ED_FIRE_MODE_EXITED);
+    gameBus.emit(EditorEvents.ED_FIRE_MODE_EXITED);
   }
 
   private static componentByName: Record<string, object> | null = null;
@@ -452,7 +452,7 @@ export class EditorManager extends BaseSceneManager {
     removeComponent(this.world, eid, comp);
     this.objectManager.refreshObject(eid);
     const serialized = serializeComponents(this.world, eid);
-    gameBus.emit(GameEvents.ED_PH_COMPONENT_REMOVED, {
+    gameBus.emit(EditorEvents.ED_PH_COMPONENT_REMOVED, {
       eid,
       name: serialized.name,
       components: serialized.components,
