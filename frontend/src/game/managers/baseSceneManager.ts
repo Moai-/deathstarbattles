@@ -45,19 +45,28 @@ const getListenerConfig: (incomingConfig?: Partial<ListenerConfig>) => ListenerC
 // It creates all the handlers and variables that a scene might want.
 // However, it does not actually run a game. 
 export class BaseSceneManager {
-  // globals
+  // == globals == 
+  // Reference to the currently running scene
   protected scene: BaseScene;
+  // Reference to the currently active ECS world
   protected world: GameWorld;
 
-  // game components
+  // == game components ==
+  // Handler and renderer for the firing indicator
   protected indicator: FiringIndicatorHandler;
+  // Handler for player input (TODO: probably worth rolling into firing indicator idk)
   protected inputHandler: PlayerInputHandler;
+  // Handler for resolving collisions between projectiles and other objects
   protected collisionHandler: CollisionHandler;
+  // Handler for keeping track of projectiles
   protected projectileManager: ProjectileManager;
+  // Handler for all in-game object renders (TODO: rename so it's clear this has to do with rendering)
   protected objectManager: GameObjectManager;
+  // Handler for the webworker that runs shot simulations
   protected simManager: SimManager;
 
-  // game state
+  // == game state ==
+  // Whether this scene is active or not (TODO: check if I need this, phaser should handle this by itself)
   protected active = true;
 
   constructor(

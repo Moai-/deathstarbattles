@@ -27,17 +27,28 @@ import { BaseSceneManager } from './baseSceneManager';
 // It does not concern itself with players.
 export class BaseGameManager extends BaseSceneManager {
 
-  // game state
+  // Current station index, corresponding to this station's index in the `stations` array
   protected activeStationIndex = -1;
+  // Players in the current game
   protected players: Array<PlayerInfo> = [];
+  // Stations in the current game
   protected stations: Array<number> = [];
+  // Station eid -> owner id number map
   protected stationOwners: Record<number, number> = {};
+  // Station eid -> Whether the station is alive (bool)
   protected stationsActive: Record<number, boolean> = {};
-  protected history: Array<Array<TurnInput>> = [];
+  // Control inputs for just this turn
   protected turnInputs: Array<TurnInput> = [];
+  // A history of all control inputs for each turn
+  protected history: Array<Array<TurnInput>> = [];
+  // A list of eids of stations that will hyperspace this turn
   protected willHyperspace: Array<number> = [];
+  // Current turn idx
   protected numTurn = 0;
+  // Whether we are in a hyperspace-type arena
   protected isHyperspace = false;
+  // There is a 1 sec timeout between each turn. We use this time to do processing stuff
+  protected turnTimeout = 1000;
 
   ready() {
     super.ready();

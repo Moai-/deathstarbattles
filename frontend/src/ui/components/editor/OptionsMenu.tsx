@@ -6,6 +6,7 @@ import {
   type DeathStarSizeIndex,
 } from "./";
 import { SCENARIO_STORAGE_KEY_PREFIX } from "./utils";
+import { EditorEvents } from "src/util/event";
 
 export type OptionsMenuPanel =
   | "root"

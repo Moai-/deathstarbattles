@@ -18,7 +18,6 @@ import { AppScenes } from '../types';
 import * as sysComponents from 'shared/src/ecs/components';
 import * as renderComponents from 'src/render/components';
 
-
 // Basic scaffolding to run a game, or use game objects
 export class BaseScene extends Phaser.Scene {
   public world = createGameWorld([...Object.values(sysComponents), ...Object.values(renderComponents)]);

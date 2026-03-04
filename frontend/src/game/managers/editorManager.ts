@@ -36,6 +36,7 @@ import { getSoundManager } from '../scenes/resourceScene';
 import * as ecsComponents from 'shared/src/ecs/components';
 import { getDeathStarSizeIndex, getRemovedDestructibleEids, clearRemovedDestructibleEids, addRemovedDestructibleEid, getPersistTrails, getLabelTrails, getShotHistory, recordShot } from 'src/ui/components/editor';
 import { BaseSceneManager } from './baseSceneManager';
+import { EditorEvents } from 'src/util/event';
 
 type PlacementState =
   | { mode: 'add'; objectType: ObjectTypes; ghostEid: number }

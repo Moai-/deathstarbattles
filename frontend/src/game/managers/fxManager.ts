@@ -5,6 +5,7 @@ import { getType } from 'shared/src/utils';
 import { FXAAPipeline } from 'src/shaders/fxaa.pipeline';
 import { BaseScene } from '../scenes/baseScene';
 
+// Handles GLSL pipelines -- updates them and manages their lifecycle
 export class FxManager {
   private isReady = false;
 
