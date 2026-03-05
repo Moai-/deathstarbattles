@@ -13,3 +13,11 @@ export function makeId(length = 5) {
 }
 
 export const noop = () => {};
+
+export const wait = (ms?: number) => new Promise<void>((resolve) => {
+  if (ms) {
+    setTimeout(resolve, ms)
+  } else {
+    queueMicrotask(resolve);
+  }
+})

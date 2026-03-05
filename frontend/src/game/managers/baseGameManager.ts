@@ -20,8 +20,12 @@ import {
   generateNonOverlappingPositions,
   getColliders,
   getHyperLocus,
+  wait,
 } from 'shared/src/utils';
 import { BaseSceneManager } from './baseSceneManager';
+
+// There is a 1 sec timeout between each turn. We use this time to do processing stuff
+const TURN_TIME_GAP = 1000;
 
 // This manager is capable of running an automatic game with bots.
 // It does not concern itself with players.
@@ -47,8 +51,8 @@ export class BaseGameManager extends BaseSceneManager {
   protected numTurn = 0;
   // Whether we are in a hyperspace-type arena
   protected isHyperspace = false;
-  // There is a 1 sec timeout between each turn. We use this time to do processing stuff
-  protected turnTimeout = 1000;
+  // How much of the turn gap is remaining
+  protected turnTimeGapRemaining = 0;
 
   ready() {
     super.ready();
@@ -76,13 +80,17 @@ export class BaseGameManager extends BaseSceneManager {
     this.scene.fxManager.update();
     this.isHyperspace = getHyperLocus(this.world) !== null;
 
-    players.forEach((player) => {
-      player.stationEids.forEach((stationEid) => {
-        this.stationOwners[stationEid] = player.idx;
-        this.stationsActive[stationEid] = true;
-        this.stations.push(stationEid);
+    players
+      // Sort so hardest bots are first, followed by easier bots, followed by humans
+      // This lets us hide the bot turn generation time in the 1 second turn cooldown
+      .sort((pa, pb) => pb.type - pa.type) 
+      .forEach((player) => {
+        player.stationEids.forEach((stationEid) => {
+          this.stationOwners[stationEid] = player.idx;
+          this.stationsActive[stationEid] = true;
+          this.stations.push(stationEid);
+        });
       })
-    })
 
     this.players = players;
 
@@ -92,37 +100,26 @@ export class BaseGameManager extends BaseSceneManager {
       this.world,
     );
 
-    this.startTurn();
+    this.startPhase();
   }
 
-  protected getPlayerInput() {
-    // To be overridden by single game manager
-    this.endTurn();
-  }
-
-  protected checkEndgameCondition() {
-    const living = this.getLivingPlayers();
-    if (living.length < 2) {
-      gameBus.emit(
-        GameEvents.GAME_END,
-        living.map((player) => ({
-          playerId: player.idx,
-          col: Renderable.col[player.stationEids[0]],
-        })),
-      );
-      return true;
+  protected async startPhase() {
+    if (!this.active) {
+      return;
     }
-    return false;
-  }
-
-  protected startTurn() {
-
-    if (this.activeStationIndex < 0) {
-      this.activeStationIndex = 0;
+    await wait(this.turnTimeGapRemaining);
+    if (!this.active) {
+      return;
     }
+    this.turnTimeGapRemaining = TURN_TIME_GAP;
+    this.activeStationIndex = 0;
     if (this.checkEndgameCondition()) {
       return;
     }
+    this.startTurn();
+  }
+
+  protected startTurn() {
     const playerInfo = this.getActivePlayer();
     if (playerInfo) {
       if (!playerInfo.isAlive) {
@@ -137,35 +134,40 @@ export class BaseGameManager extends BaseSceneManager {
     this.getPlayerInput();
   }
 
-  protected async endTurn() {
+  protected async getPlayerInput() {
     const playerInfo = this.getActivePlayer();
     const currentStation = this.getActiveStation();
-    if (playerInfo.isAlive && this.stationsActive[currentStation]) {
-      if (playerInfo.type !== PlayerTypes.HUMAN) {
-        const lastTurn = this.isHyperspace
-          ? null
-          : this.getPreviousTurnInput(currentStation);
-        // console.time('generate turn for ' + currentStation)
-        const thisStationInput = await generateTurn(
-          this.world,
-          currentStation,
-          this.getGameState(),
-          lastTurn,
-          (turnInput) => this.simManager.runSimulation(turnInput),
-          playerInfo.type
-        );
-        // console.timeEnd('generate turn for ' + currentStation);
-
-        if (thisStationInput.paths) {
-          gameBus.emit(GameEvents.DEBUG_DRAW_PATH, {
-            colour: Renderable.col[thisStationInput.stationId],
-            paths: thisStationInput.paths,
-          });
-        }
-        this.turnInputs.push(thisStationInput);
-      }
+    if (playerInfo.type === PlayerTypes.HUMAN) {
+      // This will be overridden and handled in the game manager
+      return;
     }
+    const lastTurn = this.isHyperspace
+      ? null
+      : this.getPreviousTurnInput(currentStation);
 
+    const beforeGenerate = Date.now();
+    const thisStationInput = await generateTurn(
+      this.world,
+      currentStation,
+      this.getGameState(),
+      lastTurn,
+      (turnInput) => this.simManager.runSimulation(turnInput),
+      playerInfo.type
+    );
+    const elapsed = Date.now() - beforeGenerate;
+    this.decrementTimeGap(elapsed);
+    
+    if (thisStationInput.paths) {
+      gameBus.emit(GameEvents.DEBUG_DRAW_PATH, {
+        colour: Renderable.col[thisStationInput.stationId],
+        paths: thisStationInput.paths,
+      });
+    }
+    this.turnInputs.push(thisStationInput);
+    this.endTurn();
+  }
+
+  protected async endTurn() {
     const len = this.stations.length;
 
     if (this.activeStationIndex === len - 1) {
@@ -228,22 +230,15 @@ export class BaseGameManager extends BaseSceneManager {
     // We sneak in an updated map of colliders to the worker during the post-combat pause
     // This way, restarting the worker and rebuilding collider cache should be unnoticeable
     const beforeRestart = Date.now();
-    this.simManager.shutdownWorker();
-    await this.simManager.startWorker();
+    // this.simManager.shutdownWorker();
+    // await this.simManager.startWorker();
     await this.simManager.initializeWorker(
       getColliders(this.world),
       this.world,
     );
 
-    const remaining = Date.now() - beforeRestart;
-    setTimeout(
-      () => {
-        if (this.active) {
-          this.startTurn();
-        }
-      },
-      Math.max(1000 - remaining, 0),
-    );
+    this.decrementTimeGap(Date.now() - beforeRestart);
+    this.startPhase();
   }
 
   protected async useHyperspace(eid: number, newPosition: GameObject) {
@@ -275,6 +270,22 @@ export class BaseGameManager extends BaseSceneManager {
     });
   }
 
+  protected checkEndgameCondition() {
+    const living = this.getLivingPlayers();
+    console.log(living, this.players)
+    if (living.length < 2) {
+      gameBus.emit(
+        GameEvents.GAME_END,
+        living.map((player) => ({
+          playerId: player.idx,
+          col: Renderable.col[player.stationEids[0]],
+        })),
+      );
+      return true;
+    }
+    return false;
+  }
+
   protected getPlayerInfoFromStation(eid: number) {
     return this.players.find(({ idx }) => idx === this.stationOwners[eid])!;
   }
@@ -289,6 +300,14 @@ export class BaseGameManager extends BaseSceneManager {
 
   protected getLivingPlayers() {
     return this.players.filter(({ isAlive }) => isAlive);
+  }
+
+  protected decrementTimeGap(ms?: number) {
+    if (ms) {
+      if (this.turnTimeGapRemaining > 0) {
+        this.turnTimeGapRemaining = Math.max(this.turnTimeGapRemaining - ms, 0)
+      }
+    }
   }
 
   protected getPreviousTurnInput(eid: number) {

@@ -8,6 +8,7 @@ import {
   hasComponent,
   removeEntity,
   resetWorld,
+  deleteWorld,
 } from 'bitecs';
 import {
   Active,
@@ -56,7 +57,7 @@ const buildColliderCache = (world: GameWorld): TargetCache =>
 const MAX_MS = 10000;
 const MS_STEP = 1;
 
-const world = createGameWorld(sysComponents);
+let world = createGameWorld(sysComponents);
 
 const isAllyOf = (self: number, other: number) => hasComponent(world, other, ObjectInfo)
   ? ObjectInfo.owner[self] === ObjectInfo.owner[other]
@@ -72,7 +73,8 @@ self.onmessage = (ev: MessageEvent<SimMessage>) => {
 
   switch (type) {
     case SimMessageType.INITIALIZE:
-      // resetWorld(world);
+      deleteWorld(world);
+      world = createGameWorld(sysComponents);
       cloneMap = restoreSnapshot(snapshot!, world);
       colliders = buildColliderCache(world);
       updater = setupSystems();

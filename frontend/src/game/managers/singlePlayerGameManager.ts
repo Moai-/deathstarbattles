@@ -8,19 +8,14 @@ import { BaseGameManager } from './baseGameManager';
 // This manager allows one player to play the game against bots.
 export class SinglePlayerGameManager extends BaseGameManager {
 
-  protected getPlayerInput() {
+  protected async getPlayerInput() {
     const playerInfo = this.getActivePlayer();
-    const currentStation = this.getActiveStation();
-    if (playerInfo) {
-      if (playerInfo.type !== PlayerTypes.HUMAN) {
-        this.endTurn();
-        return;
-      }
-    }
-    if (!this.stationsActive[currentStation]) {
-      this.endTurn();
+    await super.getPlayerInput();
+    if (playerInfo.type !== PlayerTypes.HUMAN) {
       return;
     }
+    const currentStation = this.getActiveStation();
+
     this.inputHandler.toggleAcceptInput(true);
     this.indicator.radius = 30 * (Collision.radius[currentStation] / 8);
 
