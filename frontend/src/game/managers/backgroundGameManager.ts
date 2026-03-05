@@ -7,6 +7,7 @@ export class BackgroundGameManager extends BaseGameManager {
     const didWin = super.checkEndgameCondition();
     if (didWin) {
       queueMicrotask(() => {
+        // Restart the whole scene after winning
         this.scene.destroy();
         this.scene.create();
       });

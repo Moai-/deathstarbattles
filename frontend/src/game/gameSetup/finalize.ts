@@ -1,7 +1,6 @@
 import { hasComponent } from 'bitecs';
 import { buildColliderCache } from 'shared/src/ai/functions';
-import { Collision, HasGravity, Wormhole } from 'shared/src/ecs/components';
-import { GravityFalloffType } from 'shared/src/ecs/components/hasGravity';
+import { Collision, Wormhole } from 'shared/src/ecs/components';
 import { GameWorld } from 'shared/src/ecs/world';
 import { Backgrounds, ObjectTypes } from 'shared/src/types';
 import {
@@ -10,7 +9,6 @@ import {
   getHyperLocus,
   getPosition,
   getType,
-  getRadius,
 } from 'shared/src/utils';
 import { generateBackground } from 'src/render/background';
 import { generateBackgroundShards } from 'src/render/background/shardTunnel';

@@ -80,15 +80,13 @@ const generateVeryHardTurn: TurnGenerator = async (
       sims.push(await simulateShot(candidateShots[i]));
     }
 
-    const best = sims.reduce((a, b) =>
-      a.willHit
-        ? a
-        : b.willHit
-          ? b
-          : a.closestDist2 <= b.closestDist2
-            ? a
-            : b,
-    );
+    let best = sims[0];
+    for (let i = 1; i < sims.length; i++) {
+      const b = sims[i];
+      if (b.willHit && !best.willHit) best = b;
+      else if (!best.willHit && !b.willHit && b.closestDist2 < best.closestDist2)
+        best = b;
+    }
     const bestIdx = sims.indexOf(best);
     initialShot = tangentCandidates[bestIdx];
     naiveSim = best;

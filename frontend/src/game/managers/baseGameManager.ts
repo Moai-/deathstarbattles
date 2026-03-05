@@ -230,8 +230,6 @@ export class BaseGameManager extends BaseSceneManager {
     // We sneak in an updated map of colliders to the worker during the post-combat pause
     // This way, restarting the worker and rebuilding collider cache should be unnoticeable
     const beforeRestart = Date.now();
-    // this.simManager.shutdownWorker();
-    // await this.simManager.startWorker();
     await this.simManager.initializeWorker(
       getColliders(this.world),
       this.world,
@@ -272,7 +270,6 @@ export class BaseGameManager extends BaseSceneManager {
 
   protected checkEndgameCondition() {
     const living = this.getLivingPlayers();
-    console.log(living, this.players)
     if (living.length < 2) {
       gameBus.emit(
         GameEvents.GAME_END,

@@ -161,9 +161,11 @@ export class GameObjectManager {
 
       this.boundaryIndicators.set(eid, indicator);
     }
-    indicator.setRotation(angle - Math.PI / 2);
+    const rot = angle - Math.PI / 2
+    const scale = 1 + distance / 200
+    indicator.setRotation(rot);
     indicator.setPosition(x, y);
-    indicator.setScale(1, 1 + distance / 200);
+    indicator.setScale(1, scale);
   }
 
   removeBoundaryIndicator(eid: number) {

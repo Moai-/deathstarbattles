@@ -29,7 +29,7 @@ export const instantiateScenario = (scenario: SerializedScenario, world: GameWor
     obj.components.forEach((comp) => {
       const Component = compNameMap[comp.key];
       addComponent(world, eid, Component);
-      const propNames = Object.keys(comp.props);
+      const propNames = Object.keys(Component);
       propNames.forEach((propName) => {
         if (REASSIGN_EID_PROPS.includes(propName)) {
           reassignEntities.set(eid, {
@@ -42,7 +42,11 @@ export const instantiateScenario = (scenario: SerializedScenario, world: GameWor
           Component[propName][eid] = 0;
         } else {
           const val = comp.props[propName];
-          Component[propName][eid] = val;
+          if (val) {
+            Component[propName][eid] = val;
+          } else {
+            Component[propName][eid] = 0;
+          }
         }
       })
     });
