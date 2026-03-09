@@ -100,7 +100,7 @@ export const clearWorld = (world: GameWorld) => {
 
 export { NULL_ENTITY };
 
-const createWorldRandomApi = (rng: RandomFn): WorldRandomApi => {
+export const createWorldRandomApi = (rng: RandomFn): WorldRandomApi => {
   return {
     rnd: () => rng(),
     

@@ -12,7 +12,6 @@ import {
   setPosition,
 } from 'shared/src/utils';
 import { NULL_ENTITY } from 'shared/src/ecs/world';
-import { createRandom } from 'src/entities';
 import { query, getAllEntities, removeEntity, getEntityComponents, removeComponent, addComponent, hasComponent, entityExists } from 'bitecs';
 import { ObjectTypes } from 'shared/src/types';
 import { Position } from 'shared/src/ecs/components';
@@ -27,7 +26,6 @@ import { colToUi32 } from 'shared/src/utils';
 import { playerCols } from 'shared/src/utils/colour';
 import { serializeComponents, serializeScenario } from 'shared/src/ecs/serde/serialize';
 import { instantiateScenario } from 'shared/src/ecs/serde/deserialize';
-import { DEFAULT_DEATHSTAR_RADIUS } from 'src/entities/deathStar';
 
 import { gameBus } from 'src/util';
 import { SCENARIO_STORAGE_KEY_PREFIX } from 'src/ui/components/editor/utils';
@@ -36,6 +34,8 @@ import * as ecsComponents from 'shared/src/ecs/components';
 import { getDeathStarSizeIndex, getRemovedDestructibleEids, clearRemovedDestructibleEids, addRemovedDestructibleEid, getPersistTrails, getLabelTrails, getShotHistory, recordShot } from 'src/ui/components/editor';
 import { BaseSceneManager } from './baseSceneManager';
 import { EditorEvents } from 'src/util/event';
+import { BASE_DEATHSTAR_RAD } from 'shared/src/content';
+import { scenarioItemMap } from 'shared/src/content/objectManifest';
 
 type PlacementState =
   | { mode: 'add'; objectType: ObjectTypes; ghostEid: number }
@@ -81,13 +81,13 @@ export class EditorManager extends BaseSceneManager {
   }
 
   startPlaceEntity(objectType: ObjectTypes) {
-    const creator = createRandom[objectType];
+    const creator = scenarioItemMap.get(objectType)?.generator;
     if (!creator) return;
-    const eid = creator(this.world);
+    const eid = creator(this.world, { x: 0, y: 0 });
     if (eid === NULL_ENTITY) return;
     if (ObjectInfo.type[eid] === ObjectTypes.DEATHSTAR) {
       const multiplier = getDeathStarSizeIndex() + 1;
-      Collision.radius[eid] = DEFAULT_DEATHSTAR_RADIUS * multiplier;
+      Collision.radius[eid] = BASE_DEATHSTAR_RAD * multiplier;
     }
     this.objectManager.setPendingGhostEid(eid);
     setPosition(eid, { x: 0, y: 0 });
@@ -141,7 +141,7 @@ export class EditorManager extends BaseSceneManager {
       setPosition(eid, { x, y });
       if (ObjectInfo.type[eid] === ObjectTypes.DEATHSTAR) {
         const multiplier = getDeathStarSizeIndex() + 1;
-        Collision.radius[eid] = DEFAULT_DEATHSTAR_RADIUS * multiplier;
+        Collision.radius[eid] = BASE_DEATHSTAR_RAD * multiplier;
         this.objectManager.refreshObject(eid);
       }
       this.objectManager.setGhost(eid, false);
@@ -348,7 +348,7 @@ export class EditorManager extends BaseSceneManager {
     const eids = getAllEntities(this.world);
     for (const eid of eids) {
       if (ObjectInfo.type[eid] === ObjectTypes.DEATHSTAR) {
-        Collision.radius[eid] = DEFAULT_DEATHSTAR_RADIUS * multiplier;
+        Collision.radius[eid] = BASE_DEATHSTAR_RAD * multiplier;
         this.objectManager.refreshObject(eid);
       }
     }

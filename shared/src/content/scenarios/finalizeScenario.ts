@@ -1,6 +1,6 @@
 import { hasComponent } from "bitecs";
 import { buildColliderCache } from "shared/src/ai/functions";
-import { Collision, Wormhole } from "shared/src/ecs/components";
+import { Collision, Renderable, Wormhole } from "shared/src/ecs/components";
 import { ExitTypes } from "shared/src/ecs/components/wormhole";
 import { GameWorld } from "shared/src/ecs/world";
 import { ObjectTypes } from "shared/src/types";
@@ -58,6 +58,7 @@ const pairWormholes = (eid1: number, eid2: number) => {
   Wormhole.exitType[eid2] = pairType;
   Wormhole.teleportTarget[eid1] = eid2;
   Wormhole.teleportTarget[eid2] = eid1;
+  Renderable.col[eid1] = Renderable.col[eid2];
 };
 
 const chaosifyWormhole = (world: GameWorld, wormholes: Array<number>, eid: number) => {

@@ -1,5 +1,5 @@
 import { EntityGenerator, ObjectPlacement, ObjectTypes, ScenarioItemRule } from 'shared/src/types';
-import { createAnomaly, createAsteroid, createBigWormhole, createBlackHole, createJetBlackHole, createJovian, createNeutronStar, createPlanet, createRedGiant, createStar, createSupergiant, createWhiteDwarf, createWhiteHole, createWormhole } from '../entities';
+import { createAnomaly, createAsteroid, createBigWormhole, createBlackHole, createJetBlackHole, createJovian, createLocus, createNeutronStar, createPlanet, createRedGiant, createStar, createSupergiant, createWhiteDwarf, createWhiteHole, createWormhole } from './entities';
 
 type ScenarioItemArray = Array<{
   key: ObjectTypes,
@@ -23,6 +23,7 @@ export const scenarioItems: ScenarioItemArray = [
   { key: ObjectTypes.BLACK_HOLE, label: 'Black hole', maxAmount: 6, generator: createBlackHole, placement: ObjectPlacement.OUTSKIRTS},
   { key: ObjectTypes.JET_BLACK_HOLE, label: 'Jet Black Hole', maxAmount: 1, generator: createJetBlackHole, placement: ObjectPlacement.DEAD_CENTER },
   { key: ObjectTypes.JOVIAN, label: 'Jovian', maxAmount: 2, generator: createJovian, placement: ObjectPlacement.CLOSE_TO_CENTER},
+  { key: ObjectTypes.LOCUS, label: 'Hyperlocus', maxAmount: 1, generator: createLocus},
   { key: ObjectTypes.NEUTRON_STAR, label: 'Neutron Star', maxAmount: 1, generator: createNeutronStar, placement: ObjectPlacement.DEAD_CENTER },
   { key: ObjectTypes.PLANET, label: 'Planet', generator: createPlanet, maxAmount: 8 },
   { key: ObjectTypes.RED_GIANT, label: 'Red giant', maxAmount: 1, generator: createRedGiant, placement: ObjectPlacement.CLOSE_TO_CENTER },
@@ -30,7 +31,7 @@ export const scenarioItems: ScenarioItemArray = [
   { key: ObjectTypes.SUPERGIANT, label: 'Supergiant', maxAmount: 2, generator: createSupergiant, placement: ObjectPlacement.SUPERGIANT },
   { key: ObjectTypes.WHITE_DWARF, label: 'White dwarf', maxAmount: 10, generator: createWhiteDwarf },
   { key: ObjectTypes.WHITE_HOLE, label: 'Big wormhole', maxAmount: 10, generator: createWhiteHole, },
-  { key: ObjectTypes.WORMHOLE, label: 'Wormhole', maxAmount: 15, generator: createWormhole, },
+  { key: ObjectTypes.WORMHOLE, label: 'Wormhole', maxAmount: 15, generator: createWormhole, placement: ObjectPlacement.OUTSKIRTS },
 ];
 
 export const scenarioItemMap = new Map<ObjectTypes, ScenarioInfo>()
@@ -69,3 +70,4 @@ export const whiteHole = generateObject(ObjectTypes.WHITE_HOLE);
 export const anomaly = generateObject(ObjectTypes.ANOMALY);
 export const neutronStar = generateObject(ObjectTypes.NEUTRON_STAR);
 export const jetBlackHole = generateObject(ObjectTypes.JET_BLACK_HOLE);
+export const locus = generateObject(ObjectTypes.LOCUS);

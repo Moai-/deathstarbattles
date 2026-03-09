@@ -8,7 +8,7 @@ export enum TrailType {
   MANY_BEADS,
 }
 
-const MAX_STRING_DIST = 10;
+const MAX_STRING_DIST = 30;
 export const MAX_STRING_DIST_SQ = MAX_STRING_DIST * MAX_STRING_DIST;
 
 export const LeavesTrail = {

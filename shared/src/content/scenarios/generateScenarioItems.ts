@@ -1,7 +1,7 @@
 import { GameWorld } from 'shared/src/ecs/world';
 import { GameObject, ObjectPlacement, ObjectTypes, ScenarioItemRule, UnplacedGameObject } from 'shared/src/types';
-import { scenarioItemMap } from './objectManifest';
-import { getRadius, getType, setPosition, generateNonOverlappingPositions } from 'shared/src/utils';
+import { scenarioItemMap } from '../objectManifest';
+import { getAllObjects, getRadius, getType, setPosition, generateNonOverlappingPositions } from 'shared/src/utils';
 import { objectClearance, playerClearance } from './placement';
 
 const NULL_POS = {x: 0, y: 0}
@@ -104,25 +104,30 @@ export const generateScenarioItems = (
     }
   }
 
+
   // 4. Generate UnplacedGameObjects and prepare for placement
   // Sort by radius so we place the chonkiest ones first
   const levelObjects: Array<UnplacedGameObject> = items
     .map((item) => ({ radius: getRadius(item), eid: item, placement: getPlacementRule(item, rules) }))
     .sort((a, b) => b.radius - a.radius);
 
+  console.log(levelObjects)
   // Turn players into game objects too
   const playerObjects: Array<UnplacedGameObject> = players
     .map((item) => ({ radius: getRadius(item), eid: item, placement: ObjectPlacement.ANYWHERE }));
 
 
-  // 5. Place objects
-  const placedObjects = generateNonOverlappingPositions(world, levelObjects, objectClearance);
-  const placedPlayers = generateNonOverlappingPositions(world, playerObjects, playerClearance, placedObjects)
+  // 5. Place objects (exclude level object eids from existing so we don't treat
+  //    unpositioned level entities at (0,0) as obstacles, e.g. the supergiant at origin)
+  const levelEids = new Set(levelObjects.map((o) => o.eid));
+  const existingForLevel = getAllObjects(world).filter((o) => !levelEids.has(o.eid));
+  const placedObjects = generateNonOverlappingPositions(world, levelObjects, objectClearance, existingForLevel);
+  const placedPlayers = generateNonOverlappingPositions(world, playerObjects, playerClearance, placedObjects);
 
   const all = [...placedObjects, ...placedPlayers];
 
   all.forEach((obj) => {
-    setPosition(obj.eid, obj)
+    setPosition(obj.eid, obj.x, obj.y)
   })
 
   return all;

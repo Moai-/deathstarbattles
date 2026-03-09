@@ -18,7 +18,7 @@ export const createBigWormhole: EntityGenerator<WormholeProps> = (world, pos, pr
   const eid = createCollidingBase(world, pos, {
     objectType: ObjectTypes.BIG_WORMHOLE,
     radius,
-    gravityStrength: radius * BASE_LINEAR_GRAV,
+    gravityStrength: BASE_LINEAR_GRAV,
     colour: props?.colour ?? world.random.colour(rgb(20, 20, 20), rgb(200, 200, 200))
   });
 

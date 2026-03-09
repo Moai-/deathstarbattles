@@ -1,4 +1,4 @@
-export const BASE_GRAV = 1500;
+export const BASE_GRAV = 500;
 export const BASE_LINEAR_GRAV = 75;
 
 export const ASTEROID_GRAV_MULTIPLIER = 60;

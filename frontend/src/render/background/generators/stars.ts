@@ -19,7 +19,7 @@ export const generateStars: BackgroundGenerator = (scene) => {
     drawStar(world, graphics, {
       x, 
       y, 
-      size: isBig ? Phaser.Math.FloatBetween(0.3, 5) : Phaser.Math.FloatBetween(5, 9)})
+      size: isBig ? world.random.betweenFloat(5, 9) : world.random.betweenFloat(0.3, 5)})
   }
 
   renderTexture.draw(graphics);

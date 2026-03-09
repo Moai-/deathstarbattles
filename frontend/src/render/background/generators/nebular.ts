@@ -20,8 +20,8 @@ export const generateNebular: BackgroundGenerator = (scene) => {
         x, 
         y, 
         size: world.random.oneIn(99) 
-          ? world.random.betweenFloat(0.3, 5) 
-          : world.random.betweenFloat(5, 9)
+          ? world.random.betweenFloat(5, 9)
+          : world.random.betweenFloat(0.3, 5) 
       }
     )
   }
@@ -98,8 +98,8 @@ export const generateNebular: BackgroundGenerator = (scene) => {
         x, 
         y, 
         size: world.random.oneIn(99) 
-          ? world.random.betweenFloat(0.3, 5) 
-          : world.random.betweenFloat(5, 9), 
+          ? world.random.betweenFloat(5, 9) 
+          : world.random.betweenFloat(0.3, 5), 
         hue: world.random.jitter(themeHue, 10)})
   }
   renderTexture.draw(foregroundStars);

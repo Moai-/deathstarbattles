@@ -5,7 +5,7 @@ import Explosion, {
 } from 'src/render/animations/explosion';
 import { getSoundManager } from 'src/game/scenes/resourceScene';
 import { getPosition, getRadius, getProjectileOwner } from 'shared/src/utils';
-import { removeProjectile } from 'src/entities/deathStar';
+import { removeProjectile } from 'shared/src/content/entities/deathStar';
 
 type CollisionCallback = (targetEid: number) => void;
 

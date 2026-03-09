@@ -84,14 +84,13 @@ export const generateDeepSpace: BackgroundGenerator = (scene) => {
   for (let i = 0; i < 500; i++) {
     const x = world.random.between(startX, endX);
     const y = world.random.between(startY, endY);
-    const rand = Math.random();
     drawStar(world, foregroundStars, {
       x, 
       y, 
       bri: world.random.between(5, 10), 
-      size: rand < 0.99 
-        ? world.random.betweenFloat(0.3, 5) 
-        : world.random.betweenFloat(5, 9), 
+      size: world.random.oneIn(99)
+        ? world.random.betweenFloat(5, 9)
+        : world.random.betweenFloat(0.3, 5) , 
       hue: world.random.between(themeHue - 10, themeHue + 10)})
   }
   foregroundTex.draw(foregroundStars);

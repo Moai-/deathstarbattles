@@ -80,21 +80,12 @@ export function generateNonOverlappingPositions(
   world: GameWorld,
   objects: UnplacedGameObject[],
   clearanceFn: ClearanceFunction,
-  existing: Array<GameObject> = [],
+  existing: Array<GameObject> = getAllObjects(world),
 ): Array<GameObject> {
-  const placed: Array<GameObject> = getAllObjects(world);
+  const placed: Array<GameObject> = [];
 
   let lastSupergiantSide = '';
-  const generateBigCandidate = (radius: number) => {
-    if (lastSupergiantSide) {
-      const otherSide = getOppositeSide(lastSupergiantSide as Side);
-      const {x, y} = generateSupergiantStarPosition(world, radius, otherSide);
-      return {x, y}
-    }
-    const {x, y, side} = generateSupergiantStarPosition(world, radius);
-    lastSupergiantSide = side;
-    return {x, y};
-  }
+
 
   for (const object of objects) {
     const { radius, eid } = object;
@@ -105,21 +96,37 @@ export function generateNonOverlappingPositions(
     let found = false;
 
     while (attempt++ < 1000 && !found) {
-      const { x, y } = ObjectPlacement.SUPERGIANT
-        ? generateBigCandidate(radius)
-        : generateCandidate(world, radius, placement, attempt);
 
-      const candidate: GameObject = { x, y, radius, eid };
+      if (placement === ObjectPlacement.SUPERGIANT) {
+        const {x, y, side} = generateBigCandidate(world, radius, lastSupergiantSide);
+        lastSupergiantSide = side;
+
+        const candidate: GameObject = { x, y, radius, eid };
+
+        placed.push(candidate);
+        found = true;
+        break;
+      }
+
+      const {x, y} = generateCandidate(world, radius, placement, attempt)
 
       const tooClose = [...existing, ...placed].some((other) => {
+        const otherRadius = other.radius;
+
+        if (otherRadius > 1000) {
+          return doCirclesOverlap(other.x, other.y, otherRadius, x, y, radius);
+        }
+
         const dx = x - other.x;
         const dy = y - other.y;
         const distSq = dx * dx + dy * dy;
-        const minDist = clearanceFn(radius, other.radius);
+        const minDist = clearanceFn(radius, otherRadius);
         const minDistSq = minDist * minDist;
 
         return distSq < minDistSq;
       });
+      
+      const candidate: GameObject = { x, y, radius, eid };
 
       if (!tooClose) {
         placed.push(candidate);
@@ -244,10 +251,10 @@ const generateCandidate = (
       outskirtsInsetY = 0,
     } = bounds;
 
-    const innerMinX = clamp(outskirtsInsetX, minX, maxX);
-    const innerMaxX = clamp(width - outskirtsInsetX, minX, maxX);
-    const innerMinY = clamp(outskirtsInsetY, minY, maxY);
-    const innerMaxY = clamp(height - outskirtsInsetY, minY, maxY);
+    const innerMinX = clamp(radius + outskirtsInsetX, minX, maxX);
+    const innerMaxX = clamp(width - radius - outskirtsInsetX, minX, maxX);
+    const innerMinY = clamp(radius + outskirtsInsetY, minY, maxY);
+    const innerMaxY = clamp(height - radius - outskirtsInsetY, minY, maxY);
 
     // If fully relaxed, outskirts becomes anywhere.
     if (
@@ -282,6 +289,7 @@ const generateCandidate = (
 
     // If we somehow fail to sample the outskirts region, just fall back to anywhere.
     if (!valid) {
+
       return {
         x: world.random.between(minX, maxX),
         y: world.random.between(minY, maxY),
@@ -296,6 +304,16 @@ const generateCandidate = (
     y: world.random.between(bounds.minY, bounds.maxY),
   };
 };
+
+const generateBigCandidate = (world: GameWorld, radius: number, specifiedSide?: Side | string) => {
+  if (specifiedSide?.length) {
+    const otherSide = getOppositeSide(specifiedSide as Side);
+    const {x, y} = generateSupergiantStarPosition(world, radius, otherSide);
+    return {x, y, side: otherSide}
+  }
+  const {x, y, side} = generateSupergiantStarPosition(world, radius);
+  return {x, y, side};
+}
 
 
 export const generateSupergiantStarPosition = (
@@ -335,6 +353,5 @@ export const generateSupergiantStarPosition = (
       y = height + starRadius - visibleDistance; // Place far bottom
       break;
   }
-
   return { x, y, side };
 };

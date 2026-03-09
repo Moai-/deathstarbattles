@@ -6,9 +6,10 @@ import { MiniButton, NeonButton } from '../styled';
 import { PlayerSetup } from 'shared/src/types';
 import { GameState, useGameState } from './context';
 import { playerCols } from 'shared/src/utils';
-import { getScenarioTypes } from 'src/content/scenarios';
 import { FaSignOutAlt } from 'react-icons/fa';
 import { SCENARIO_STORAGE_KEY_PREFIX } from 'src/ui/components/editor/utils';
+import { getScenarioTypes } from 'shared/src/content/scenarios/scenarioManifest';
+import { createWorldRandomApi } from 'shared/src/ecs/world';
 
 export const DropdownRow = styled.div`
   display: flex;
@@ -64,7 +65,7 @@ export const SetupScreen: React.FC = () => {
   const [stationSize, setStationSize] = useState('2');
   const [stationCount, setStationCount] = useState('1');
   const [scenario, setScenario] = useState('0');
-  const types = getScenarioTypes();
+  const types = getScenarioTypes({random: createWorldRandomApi(Math.random)});
   const savedScenarioKeys = useMemo(() => {
     if (typeof localStorage === 'undefined') return [];
     return Object.keys(localStorage).filter((k) =>

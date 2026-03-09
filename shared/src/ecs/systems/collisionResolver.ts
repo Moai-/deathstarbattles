@@ -99,6 +99,8 @@ const handleWormholeTeleport = (
     const exitX = partnerPos.x + Math.cos(exitAngle) * (partnerRadius + offset);
     const exitY = partnerPos.y + Math.sin(exitAngle) * (partnerRadius + offset);
 
+    console.log('set new position', exitX, exitY)
+
     setPosition(projEid, exitX, exitY);
     return;
   }

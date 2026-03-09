@@ -11,7 +11,6 @@ import {
   Backgrounds,
 } from 'shared/src/types';
 import Hyperspace from 'src/render/animations/hyperspace';
-import { objectClearance } from '../gameSetup/placeEntities';
 import { getSoundManager } from '../scenes';
 import {
   getPosition,
@@ -25,6 +24,7 @@ import {
 } from 'shared/src/utils';
 import { BaseSceneManager } from './baseSceneManager';
 import { Renderable } from 'shared/src/ecs/components';
+import { objectClearance } from 'shared/src/content/scenarios/placement';
 
 // There is a 1 sec timeout between each turn. We use this time to do processing stuff
 const TURN_TIME_GAP = 1000;
@@ -79,7 +79,7 @@ export class BaseGameManager extends BaseSceneManager {
   async startGame(conf: GameConfig) {
     this.ready();
     const { players, bg } = runGameSetup(this.world, conf);
-    this.backgroundArtManager.setBackground(bg || Backgrounds.STARS);
+    this.backgroundArtManager.setBackground(bg ?? Backgrounds.STARS);
     this.scene.fxManager.update();
     this.isHyperspace = getHyperLocus(this.world) !== null;
 

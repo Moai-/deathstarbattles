@@ -5,6 +5,7 @@ export * from './blackHole';
 export * from './deathStar';
 export * from './jetBlackHole';
 export * from './jovian';
+export * from './locus';
 export * from './neutronStar';
 export * from './planet';
 export * from './redGiant';
