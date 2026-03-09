@@ -1,7 +1,7 @@
 import { Position } from 'shared/src/ecs/components/position';
 import { Depths, RenderObject } from '../types';
 import { Collision } from 'shared/src/ecs/components/collision';
-import { Renderable } from '../components/renderable';
+import { Renderable } from '../components';
 import generateStarCols from '../elements/starCols';
 import { nailToContainer } from 'src/util';
 import { ui32ToCol } from 'shared/src/utils';

@@ -10,10 +10,9 @@ import {
 import { createRenderObservers, createRenderSystem } from 'src/render/renderSystem';
 import { GameObjectManager } from 'src/render/objectManager';
 import { gameBus, GameEvents } from 'src/util';
-import { clearBackground } from 'src/render/background';
 import { getSoundManager } from './resourceScene';
 import { drawPathListener } from 'src/util/debug';
-import { FxManager } from '../managers/fxManager';
+import { FxManager } from '../managers';
 import { AppScenes } from '../types';
 import * as sysComponents from 'shared/src/ecs/components';
 import * as renderComponents from 'src/render/components';
@@ -68,7 +67,6 @@ export class BaseScene extends Phaser.Scene {
     this.unsubRenderObservers();
     this.fxManager.destroy();
     this.objectManager.destroy();
-    clearBackground(this);
     gameBus.off(GameEvents.START_GAME);
     gameBus.off(GameEvents.DEBUG_DRAW_PATH);
     gameBus.emit(GameEvents.SCENE_UNLOADED, this.scene.key as AppScenes)

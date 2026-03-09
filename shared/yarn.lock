@@ -5,6 +5,13 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
+"@types/seedrandom@npm:^3":
+  version: 3.0.8
+  resolution: "@types/seedrandom@npm:3.0.8"
+  checksum: 10c0/6efdf3df34cd447ee235794946097c73b3d595a43d3afcf8a7edf08bf1111e32372f77edfe37478ba857d1d712361aff7022a5043c98a816dceb11a0e30e251c
+  languageName: node
+  linkType: hard
+
 "bitecs@npm:^0.4.0":
   version: 0.4.0
   resolution: "bitecs@npm:0.4.0"
@@ -12,10 +19,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"seedrandom@npm:^3.0.5":
+  version: 3.0.5
+  resolution: "seedrandom@npm:3.0.5"
+  checksum: 10c0/929752ac098ff4990b3f8e0ac39136534916e72879d6eb625230141d20db26e2f44c4d03d153d457682e8cbaab0fb7d58a1e7267a157cf23fd8cf34e25044e88
+  languageName: node
+  linkType: hard
+
 "shared@workspace:.":
   version: 0.0.0-use.local
   resolution: "shared@workspace:."
   dependencies:
+    "@types/seedrandom": "npm:^3"
     bitecs: "npm:^0.4.0"
+    seedrandom: "npm:^3.0.5"
   languageName: unknown
   linkType: soft

@@ -1,6 +1,8 @@
+import { Colour } from "../types";
+
 // Converts 0xff0000 to ui32
-export function colToUi32(color: number): number {
-  return color >>> 0;
+export function colToUi32(colour: number): number {
+  return colour >>> 0;
 }
 
 // Converts ui32 back to hex 0xff0000
@@ -38,11 +40,28 @@ export const colNames = [
   'bronze',
 ];
 
-type Col = { r: number; b: number; g: number };
-export const generateRandomCol = (base: Col, bias: Col) => {
+const colourToNumber = ({r, g, b}: Colour) => (r << 16) | (g << 8) | b
+
+export const generateRandomCol = (base: Colour, bias: Colour) => {
   const r = base.r + Math.floor(Math.random() * bias.r);
   const g = base.g + Math.floor(Math.random() * bias.g);
   const b = base.b + Math.floor(Math.random() * bias.b);
 
-  return (r << 16) | (g << 8) | b;
+  return colourToNumber({r, g, b});
 };
+
+
+// VSCode highlights rgb syntax with a nice colour square
+// for example rgb(255,0,0) should be red
+// This little helper allows me to declare colours in this format
+// and get colour highlighting from VSCode
+export const rgb = (r: number | Colour, g: number = 0, b: number = 0): Colour & {num: () => number} => {
+  const base = r as Colour;
+  const col = typeof r === 'number'
+    ? {r, g, b}
+    : base;
+  return {
+    ...col,
+    num: () => colourToNumber(col)
+  }
+}

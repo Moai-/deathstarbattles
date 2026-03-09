@@ -1,6 +1,6 @@
 import { Position } from 'shared/src/ecs/components/position';
 import { Depths, RenderObject } from '../types';
-import { Renderable } from '../components/renderable';
+import { Renderable } from '../components';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { addShadow } from '../elements/shadow';
 import { addEquatorialRidge } from '../elements/equatorialRidge';

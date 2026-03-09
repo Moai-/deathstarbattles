@@ -22,15 +22,14 @@ import { Player } from 'shared/src/ecs/components/player';
 import { Projectile } from 'shared/src/ecs/components/projectile';
 import { Destructible } from 'shared/src/ecs/components/destructible';
 import { Active } from 'shared/src/ecs/components/active';
-import { LeavesTrail } from 'src/render/components/leavesTrail';
+import { LeavesTrail } from 'src/render/components';
 import { colToUi32 } from 'shared/src/utils';
 import { playerCols } from 'shared/src/utils/colour';
 import { serializeComponents, serializeScenario } from 'shared/src/ecs/serde/serialize';
 import { instantiateScenario } from 'shared/src/ecs/serde/deserialize';
 import { DEFAULT_DEATHSTAR_RADIUS } from 'src/entities/deathStar';
 
-import { gameBus, GameEvents } from 'src/util';
-import { setEditorBackground } from 'src/render/background';
+import { gameBus } from 'src/util';
 import { SCENARIO_STORAGE_KEY_PREFIX } from 'src/ui/components/editor/utils';
 import { getSoundManager } from '../scenes/resourceScene';
 import * as ecsComponents from 'shared/src/ecs/components';
@@ -274,7 +273,7 @@ export class EditorManager extends BaseSceneManager {
     );
     gameBus.on(EditorEvents.ED_UI_OPTIONS_BACKGROUND, ({ bgType }) => {
       this.currentBackground = bgType;
-      setEditorBackground(this.scene, bgType);
+      this.backgroundArtManager.setBackground(bgType);
     });
     gameBus.on(EditorEvents.ED_UI_SAVE_SCENARIO, ({ name }) => this.saveScenario(name));
     gameBus.on(EditorEvents.ED_UI_LOAD_SCENARIO, ({ scenarioKey }) =>
@@ -329,7 +328,7 @@ export class EditorManager extends BaseSceneManager {
     this.objectManager.removeAllChildren();
     this.objectManager.removeAllObjects();
     instantiateScenario(scenario, this.world);
-    setEditorBackground(this.scene, scenario.background);
+    this.backgroundArtManager.setBackground(scenario.background);
     this.currentBackground = scenario.background;
     this.updateWorker();
     gameBus.emit(EditorEvents.ED_SCENARIO_LOADED);

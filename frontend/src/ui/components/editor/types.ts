@@ -1,4 +1,4 @@
-import { SerializedComponent } from "shared/src/utils";
+import { SerializedComponent } from "shared/src/types";
 
 export type ClickLoc = { x: number; y: number };
 

@@ -1,12 +1,18 @@
-import { query } from 'bitecs';
-import { Collision } from '../ecs/components/collision';
-import { ObjectInfo } from '../ecs/components/objectInfo';
-import { Position } from '../ecs/components/position';
-import { Projectile } from '../ecs/components/projectile';
-import { ExitTypes, Wormhole } from '../ecs/components/wormhole';
+import { ComponentRef, query } from 'bitecs';
 import { GameWorld } from '../ecs/world';
 import { AnyPoint, GameObject, ObjectTypes } from '../types';
-import { collidingEntities,locusEntities, targetEntities } from '../ecs/components/_queries';
+import { Active, Collision, Destructible, HyperLocus, ObjectInfo, Position, Projectile, Wormhole } from '../ecs/components';
+import { ExitTypes } from '../ecs/components/wormhole';
+
+export const collidingEntities: Array<ComponentRef> = [];
+export const targetEntities: Array<ComponentRef> = [];
+export const locusEntities: Array<ComponentRef> = [];
+
+const setUpQueries = () => {
+  collidingEntities.push(Collision, Position, Active);
+  targetEntities.push(Collision, Position, Destructible, ObjectInfo, Active);
+  locusEntities.push(HyperLocus, Active);
+}
 
 export const getRadius = (eid: number) => Collision.radius[eid];
 
@@ -14,6 +20,12 @@ export const getPosition = (eid: number) => ({
   x: Position.x[eid],
   y: Position.y[eid],
 });
+
+export const getGameObject = (eid: number) => ({
+  ...getPosition(eid),
+  radius: getRadius(eid),
+  eid,
+}) as GameObject;
 
 export const setPosition = (eid: number, x: number | AnyPoint, y?: number) => {
   if (typeof (x as AnyPoint).x !== 'undefined') {
@@ -68,3 +80,7 @@ export const getHyperLocus = (world: GameWorld) => {
   }
   return null;
 };
+
+queueMicrotask(() => {
+  setUpQueries();
+})

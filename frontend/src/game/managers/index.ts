@@ -1,3 +1,4 @@
+export * from './backgroundArtManager';
 export * from './baseGameManager';
 export * from './baseSceneManager';
 export * from './editorManager';

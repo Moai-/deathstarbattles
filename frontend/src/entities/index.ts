@@ -22,7 +22,7 @@ import { playerCols } from 'shared/src/utils';
 const none = () => NULL_ENTITY;
 
 export const createRandomDeathStar = (world: GameWorld) =>
-  createDeathStar(world, 0, 0, playerCols[0]);
+  createDeathStar(world, 0, 0, playerCols[0], 0);
 
 export const createRandom: Record<ObjectTypes, (world: GameWorld) => number> = {
   // These two do not get created from the editor

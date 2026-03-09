@@ -12,4 +12,5 @@ export enum ExitTypes {
   RANDOM,
   PAIRED,
   PAIRED_GIANT,
+  CHAOS,
 }

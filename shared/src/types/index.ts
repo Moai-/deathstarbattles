@@ -1,5 +1,20 @@
 import { GameWorld } from '../ecs/world';
 
+// TODO: split into multiple files
+
+// === Broad-application generics ===
+
+export interface AnyPoint {
+  x: number;
+  y: number;
+}
+
+export type Eid = number;
+
+export type Colour = { r: number; b: number; g: number };
+
+// === Enums ===
+
 export enum OtherActions {
   NONE,
   HYPERSPACE,
@@ -36,6 +51,36 @@ export enum ObjectTypes {
   JET_BLACK_HOLE,
 }
 
+export enum Backgrounds {
+  NONE,
+  STARS,
+  DEEPSPACE,
+  NEBULAR,
+}
+
+export enum ObjectPlacement {
+  ANYWHERE = 'anywhere',
+  DEAD_CENTER = 'dead_center',
+  CLOSE_TO_CENTER = 'close_to_center',
+  OUTSKIRTS = 'outskirts',
+  SUPERGIANT = 'supergiant'
+}
+
+// === Game setup ===
+
+export type GameConfig = {
+  justBots?: boolean;
+  players?: Array<PlayerSetup>;
+  stationPerPlayer?: number;
+  items?: Array<ScenarioItem>;
+  itemRules?: Array<ScenarioItemRule>;
+  background?: Backgrounds;
+  stationSize?: number;
+  maxItems?: number;
+  numItems?: number;
+  savedScenarioKey?: string;
+};
+
 export type PlayerSetup = {
   id: number;
   type: number;
@@ -43,22 +88,27 @@ export type PlayerSetup = {
   difficulty: number;
 };
 
-export interface AnyPoint {
-  x: number;
-  y: number;
-}
-
-export type TurnInput = {
-  stationId: number;
-  angle: number;
-  power: number;
-  otherAction?: OtherActions | null;
-  paths?: Array<Array<AnyPoint>>;
+export type GameSetupResult = {
+  players: Array<PlayerInfo>;
+  objectPlacements: Array<GameObject>;
 };
 
 export type ClearanceFunction = (a: number, b: number) => number;
 
 export type GameObject = { x: number; y: number; radius: number; eid: number };
+export type UnplacedGameObject = Omit<GameObject, 'x' | 'y'> & { placement?: ObjectPlacement};
+
+export type EntityGenerator<EntityProps = {}> = (
+  world: GameWorld,
+  pos: AnyPoint,
+  props?: EntityProps
+) => number;
+
+// === In-game stuff ===
+
+export type GameState = {
+  lastTurnShots: ObjectMovements | null;
+};
 
 export type PlayerInfo = {
   idx: number;
@@ -67,31 +117,14 @@ export type PlayerInfo = {
   stationEids: Array<number>;
 };
 
-export type GameSetupResult = {
-  players: Array<PlayerInfo>;
-  objectPlacements: Array<GameObject>;
-};
+export type RawTurn = Pick<TurnInput, 'angle' | 'power'>;
 
-export type ObjectMovements = {
-  [key: number]: {
-    id: number;
-    movementTrace: Array<AnyPoint>;
-    destroyedTarget: number | null;
-  };
-};
-
-export type TraceBuffer = {
-  x: Int16Array,
-  y: Int16Array,
-}
-
-export type TransferableTraceBuffer = {
-  x: ArrayBuffer;
-  y: ArrayBuffer;
-}
-
-export type GameState = {
-  lastTurnShots: ObjectMovements | null;
+export type TurnInput = {
+  stationId: number;
+  angle: number;
+  power: number;
+  otherAction?: OtherActions | null;
+  paths?: Array<Array<AnyPoint>>;
 };
 
 export type TurnGenerator = (
@@ -113,6 +146,26 @@ export type ShotInfo = {
   shotDist2: number;
 };
 
+export type ObjectMovements = {
+  [key: number]: {
+    id: number;
+    movementTrace: Array<AnyPoint>;
+    destroyedTarget: number | null;
+  };
+};
+
+// === Simulation stuff ===
+
+export type TraceBuffer = {
+  x: Int16Array,
+  y: Int16Array,
+}
+
+export type TransferableTraceBuffer = {
+  x: ArrayBuffer;
+  y: ArrayBuffer;
+}
+
 export type SimShotResult = ShotInfo & {
   collisionT: number | null;
   input: RawTurn;
@@ -120,36 +173,6 @@ export type SimShotResult = ShotInfo & {
   buffer?: TransferableTraceBuffer;
   hitsSelf: boolean;
   pointCount: number;
-};
-
-export type RawTurn = Pick<TurnInput, 'angle' | 'power'>;
-
-export interface ScenarioItem {
-  id: number;
-  type: ObjectTypes; // 'asteroid', 'planet', etc.
-  amount: number;
-}
-
-export interface ScenarioItemRule {
-  type: ObjectTypes;
-  min?: number;
-  max?: number;
-  n?: number;
-  p?: number;
-}
-
-export type GameConfig = {
-  justBots?: boolean;
-  players?: Array<PlayerSetup>;
-  stationPerPlayer?: number;
-  items?: Array<ScenarioItem>;
-  itemRules?: Array<ScenarioItemRule>;
-  background?: Backgrounds;
-  stationSize?: number;
-  maxItems?: number;
-  numItems?: number;
-  /** When set, load objects from this localStorage key (saved editor scenario); players still generated normally. */
-  savedScenarioKey?: string;
 };
 
 export type TargetCacheEntry = {
@@ -164,20 +187,29 @@ export type TargetCacheEntry = {
 
 export type TargetCache = Array<TargetCacheEntry>;
 
+
+// === Serialize / deserialize ===
+
+export interface ScenarioItem {
+  id: number;
+  type: ObjectTypes;
+  amount: number;
+}
+
+export interface ScenarioItemRule {
+  type: ObjectTypes;
+  min?: number;
+  max?: number;
+  n?: number;
+  p?: number;
+  plc?: ObjectPlacement
+}
+
 export type ScenarioType = {
   name: string;
   items: Array<ScenarioItemRule>;
   background?: Backgrounds;
 };
-
-export enum Backgrounds {
-  NONE,
-  STARS,
-  SHARDS,
-  DEEPSPACE,
-  NEBULAR,
-}
-
 
 export type SerializedComponent = {
   key: string;
@@ -195,9 +227,9 @@ export type EditorEntity = SerializedEntity & {
   name: string;
 }
 
-
 export type SerializedScenario = {
   name: string;
   background: Backgrounds;
   objects: Array<SerializedEntity>;
 }
+

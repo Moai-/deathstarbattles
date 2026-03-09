@@ -1,14 +1,10 @@
 import { getPosition, ui32ToCol } from 'shared/src/utils';
-import {
-  LeavesTrail,
-  MAX_STRING_DIST_SQ,
-  TrailType,
-} from '../components/leavesTrail';
 import { GameObjectManager } from '../objectManager';
 import { Depths } from '../types';
-import { Collision, Projectile } from 'shared/src/ecs/components';
+import { Collision, LeavesTrail, Projectile } from 'shared/src/ecs/components';
 import { getSquaredDistance } from 'shared/src/ai/functions';
 import { getPersistTrails } from 'src/ui/components/editor';
+import { MAX_STRING_DIST_SQ, TrailType } from '../components';
 
 const PERSISTED_TRAIL_ALPHA = 0.4;
 

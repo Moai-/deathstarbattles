@@ -1,7 +1,5 @@
 import { Position } from 'shared/src/ecs/components/position';
 import { Depths, RenderObject } from '../types';
-// import { ui32ToCol } from '../../util/col';
-// import { Renderable } from '../components/renderable';
 import { Collision } from 'shared/src/ecs/components/collision';
 
 const renderDeathBeam: RenderObject = (scene, eid) => {

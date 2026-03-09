@@ -1,6 +1,6 @@
-import { AnyPoint, OtherActions, SimShotResult, TraceBuffer, TurnInput } from 'shared/src/types';
+import { Renderable } from 'shared/src/ecs/components';
+import { OtherActions, SimShotResult, TraceBuffer, TurnInput } from 'shared/src/types';
 import { getPosition, getRadius, isVisible, ui32ToCol } from 'shared/src/utils';
-import { Renderable } from 'src/render/components/renderable';
 import { Depths } from 'src/render/types';
 import { gameBus, GameEvents } from 'src/util';
 

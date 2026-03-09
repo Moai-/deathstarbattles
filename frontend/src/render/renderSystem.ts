@@ -1,7 +1,6 @@
 import { query, observe, onAdd, onRemove } from 'bitecs';
-import { Renderable } from './components/renderable';
+import { Renderable, LeavesTrail } from './components';
 import { GameObjectManager } from './objectManager';
-import { LeavesTrail } from './components/leavesTrail';
 import { AnyPoint } from 'shared/src/types';
 import { dimTrail, makeTrail } from './elements/trail';
 import { getPosition } from 'shared/src/utils';

@@ -302,7 +302,6 @@ export function OptionsMenu({
     const items = [
       { value: Backgrounds.NONE, label: "NONE" },
       { value: Backgrounds.STARS, label: "STARS" },
-      { value: Backgrounds.SHARDS, label: "SHARDS" },
       { value: Backgrounds.DEEPSPACE, label: "DEEPSPACE" },
       { value: Backgrounds.NEBULAR, label: "NEBULAR" },
     ];

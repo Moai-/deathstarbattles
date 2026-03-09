@@ -1,0 +1,28 @@
+export const BASE_GRAV = 1500;
+export const BASE_LINEAR_GRAV = 75;
+
+export const ASTEROID_GRAV_MULTIPLIER = 60;
+
+export const BLACK_HOLE_GRAV = 15000;
+export const BLACK_HOLE_GRAV_JITTER = 5000;
+
+export const JOVIAN_GRAV_MULTIPLIER = 80;
+
+export const NEUTRON_STAR_GRAV_OFFSET = 20;
+export const NEUTRON_STAR_GRAV_MULTIPLIER = 1000;
+
+export const PLANET_GRAV_MULTIPLIER = 90;
+
+export const RED_GIANT_GRAV_MULTIPLIER = 80;
+
+export const STAR_GRAV_MULTIPLIER = 100;
+
+export const SUPERGIANT_GRAV_DIVISOR = 8;
+
+export const WHITE_DWARF_GRAV_OFFSET = 20;
+export const WHITE_DWARF_GRAV_MULTIPLIER = 1000;
+
+export const WHITE_HOLE_GRAV_OFFSET = 20;
+export const WHITE_HOLE_GRAV_MULTIPLIER = 1500;
+
+export const WORMHOLE_GRAV_MULTIPLIER = 90;

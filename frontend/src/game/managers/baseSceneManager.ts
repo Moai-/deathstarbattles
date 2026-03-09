@@ -13,6 +13,7 @@ import {
 import { SimManager } from 'shared/src/ai/simulation/manager';
 import { BaseScene } from '../scenes/baseScene';
 import { GHOST_SHOT_STEPS } from 'shared/src/consts';
+import { BackgroundArtManager } from './backgroundArtManager';
 
 type ListenerConfig = {
   cleanupCallback: () => void,
@@ -60,10 +61,12 @@ export class BaseSceneManager {
   protected collisionHandler: CollisionHandler;
   // Handler for keeping track of projectiles
   protected projectileManager: ProjectileManager;
-  // Handler for all in-game object renders (TODO: rename so it's clear this has to do with rendering)
+  // Manager for all in-game object renders (TODO: rename so it's clear this has to do with rendering)
   protected objectManager: GameObjectManager;
-  // Handler for the webworker that runs shot simulations
+  // Manager for the webworker that runs shot simulations
   protected simManager: SimManager;
+  // Manager for background art
+  protected backgroundArtManager: BackgroundArtManager
 
   // == game state ==
   // Whether this scene is active or not (TODO: check if I need this, phaser should handle this by itself)
@@ -77,6 +80,7 @@ export class BaseSceneManager {
     this.scene = scene;
     this.world = world;
     this.objectManager = objectManager;
+    this.backgroundArtManager = new BackgroundArtManager(scene);
     this.indicator = new FiringIndicatorHandler(scene);
     this.projectileManager = new ProjectileManager(world);
     this.simManager = new SimManager();
@@ -97,6 +101,7 @@ export class BaseSceneManager {
     this.simManager.destroy();
     this.inputHandler.destroy();
     this.projectileManager.destroy();
+    this.backgroundArtManager.destroy();
     this.active = false;
   }
 

@@ -14,3 +14,8 @@ export type RenderObject = (
   scene: BaseScene,
   eid: number,
 ) => Phaser.GameObjects.Container;
+
+export type BackgroundGenerator<BackgroundProps = {}> = (
+  scene: BaseScene, 
+  props?: BackgroundProps
+) => Phaser.GameObjects.RenderTexture;

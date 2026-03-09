@@ -1,3 +1,3 @@
 export * from './animated';
-export * from './leavesTrail';
-export * from './renderable';
+export * from 'shared/src/ecs/components/leavesTrail';
+export * from 'shared/src/ecs/components/renderable';

@@ -7,7 +7,6 @@ import {
   entityExists,
   hasComponent,
   removeEntity,
-  resetWorld,
   deleteWorld,
 } from 'bitecs';
 import {

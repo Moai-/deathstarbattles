@@ -13,7 +13,6 @@ import {
   scenarioItems,
   star,
   supergiant,
-  tunnelLocus,
   whiteDwarf,
   whiteHole,
   wormhole,
@@ -26,7 +25,6 @@ const none = Backgrounds.NONE;
 const neb = Backgrounds.NEBULAR;
 const deep = Backgrounds.DEEPSPACE;
 const bgst = Backgrounds.STARS;
-const shard = Backgrounds.SHARDS;
 
 const rare = { p: 0.05 };
 const oneOf = (...args: Array<ScenarioItemRule>) =>
@@ -74,5 +72,5 @@ export const getScenarioTypes = (): Array<ScenarioType> => [
   { name: 'White Holes',        background: anyBg(),                  items: [whiteHole({min: 1})] },
   { name: 'Stellar Graveyard',  background: oneBg(deep, bgst),        items: [blackHole({min: 1, max: 5}), whiteHole({min: 1, max: 5}), whiteDwarf({p: 0.3}), wormhole({max: 6, ...rare}), ganglies()]},
   { name: 'Hyperspace Classic', background: none,                     items: [locus(), anomaly(), blackHole({ max: 2, ...rare }), wormhole({ min: 2, max: 6, ...rare })] },
-  { name: 'Hyperspace Redux',   background: shard,                    items: [tunnelLocus(), anomaly()],  },
+  // { name: 'Hyperspace Redux',   background: shard,                    items: [tunnelLocus(), anomaly()],  },
 ];

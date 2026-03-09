@@ -1,5 +1,5 @@
-import { removeEntity, hasComponent, query } from 'bitecs';
-import { getPosition, getRadius, setPosition } from 'shared/src/utils';
+import { removeEntity, hasComponent, query, entityExists } from 'bitecs';
+import { getGameObject, getPosition, getRadius, setPosition } from 'shared/src/utils';
 import { Wormhole, ExitTypes } from '../components/wormhole';
 import { GameWorld, NULL_ENTITY } from '../world';
 import { Destructible } from '../components/destructible';
@@ -68,15 +68,13 @@ const handleWormholeTeleport = (
   holeEid: number,
   world: GameWorld,
 ) => {
-  const exitType = Wormhole.exitType[holeEid];
+  const exitType = Wormhole.exitType[holeEid]
 
   if (exitType === ExitTypes.RANDOM) {
     const [newPos] = generateNonOverlappingPositions(
-      BASE_WIDTH,
-      BASE_HEIGHT,
-      [getRadius(projEid)],
-      (a, b) => a + b + 5,
       world,
+      [getGameObject(projEid)],
+      (a, b) => a + b + 5,
     );
     setPosition(projEid, newPos);
     return;

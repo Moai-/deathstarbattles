@@ -1,4 +1,6 @@
-import { clamp01, lerp, smoothstep, sampleDiskBiased, makeLCG, stampFeathered } from "src/render/utils";
+import { GameWorld } from "shared/src/ecs/world";
+import { BaseScene } from "src/game";
+import { clamp01, lerp, smoothstep, sampleDiskBiased, stampFeathered } from "src/render/utils";
 
 export type GalaxyOptions = {
   outerRadius: number; // full-disk radius, px
@@ -36,25 +38,22 @@ export type GalaxyOptions = {
 };
 
 // Galaxy with light core, spiral arms, etc
-export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) => {
+export const drawGalaxy = (world: GameWorld, g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) => {
   const centerX = opts.x;
   const centerY = opts.y;
 
-  const outerRadius = opts.outerRadius ?? Phaser.Math.FloatBetween(220, 520);
-  const coreRadius = opts.coreRadius ?? outerRadius * Phaser.Math.FloatBetween(0.03, 0.09);
+  const outerRadius = opts.outerRadius ?? world.random.betweenFloat(220, 520);
+  const coreRadius = opts.coreRadius ?? outerRadius * world.random.betweenFloat(0.03, 0.09);
 
-  const tilt = clamp01(opts.tilt ?? Math.random());
-  const rotation = opts.rotation ?? (Math.random() * Math.PI * 2);
+  const tilt = clamp01(opts.tilt ?? world.random.rnd());
+  const rotation = opts.rotation ?? (world.random.rnd() * Math.PI * 2);
 
   const axisRatio = lerp(1.0, 0.15, tilt);
 
-  const hue = opts.hue ?? Phaser.Math.Between(190, 320); // bluish -> purple-ish default
+  const hue = opts.hue ?? world.random.between(190, 320); // bluish -> purple-ish default
   const satMul = (opts.saturation ?? 100) / 100;
   const lightMul = (opts.lightness ?? 100) / 100;
   const gasAlpha = opts.gasAlpha ?? 1;
-
-  const localRnd =
-    opts.seed == null ? Math.random : makeLCG(opts.seed);
 
   g.setPosition(centerX, centerY);
   g.setRotation(rotation);
@@ -71,7 +70,7 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
     const a = Math.pow(inv, 2.2) * 0.055 * gasAlpha; // keep subtle
 
     // Color: brighter/warmer near core, cooler near edge
-    const h = (hue + lerp(-10, 15, t) + (localRnd() - 0.5) * 6) % 360;
+    const h = (hue + lerp(-10, 15, t) + (world.random.rnd() - 0.5) * 6) % 360;
     const s = Phaser.Math.Clamp(lerp(65, 45, t) * satMul, 0, 100);
     const l = Phaser.Math.Clamp(lerp(22, 10, t) * lightMul, 0, 100);
 
@@ -139,23 +138,23 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
   // ---- (A) Outer haze: makes the core boundary "liquid/gassy" into the disk
   for (let i = 0; i < hazePuffs; i++) {
     // Bias toward the edge so it blends, not brighten the center too much
-    const t = Math.pow(localRnd(), 0.55); // 0..1, biased toward 1
+    const t = Math.pow(world.random.rnd(), 0.55); // 0..1, biased toward 1
     const r = lerp(coreRadius * 0.9, coreOuter, t);
 
-    const ang = localRnd() * Math.PI * 2;
+    const ang = world.random.rnd() * Math.PI * 2;
     const {x, y} = applyWalnut(Math.cos(ang) * r, Math.sin(ang) * r)
 
     const rn = coreRadNorm(r);           // 0..1
     const edge = smoothstep(0.35, 1.0, rn);
 
     // Slightly brighter near the core edge, but low alpha overall
-    const h = (hue + lerp(-10, 16, rn) + (localRnd() - 0.5) * 10) % 360;
+    const h = (hue + lerp(-10, 16, rn) + (world.random.rnd() - 0.5) * 10) % 360;
     const s = Phaser.Math.Clamp(lerp(50, 35, rn) * satMul, 0, 100);
     const l = Phaser.Math.Clamp(lerp(18, 14, rn) * lightMul, 0, 100);
 
     const col = Phaser.Display.Color.HSLToColor(h / 360, s / 100, l / 100).color;
 
-    const puffR = lerp(coreRadius * 0.42, coreRadius * 0.75, localRnd()) * lerp(1.25, 1.6, edge);
+    const puffR = lerp(coreRadius * 0.42, coreRadius * 0.75, world.random.rnd()) * lerp(1.25, 1.6, edge);
     const a = gasAlpha * coreAlphaMul * lerp(0.010, 0.026, edge) * lerp(1.15, 0.75, coreFuzz);
 
     stampFeathered(g, x, y, puffR, col, a, hazeFeather);
@@ -164,17 +163,17 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
   // ---- (B) Bulge body: turbulent puffs that get whiter + brighter toward center
   for (let i = 0; i < bulgePuffs; i++) {
     // Bias distribution inward (more mass near center)
-    const t = Math.pow(localRnd(), lerp(1.8, 2.6, coreFuzz)); // higher fuzz => stronger inner bias
+    const t = Math.pow(world.random.rnd(), lerp(1.8, 2.6, coreFuzz)); // higher fuzz => stronger inner bias
     const r = lerp(coreOuter, 0, t);
 
-    const ang = localRnd() * Math.PI * 2;
+    const ang = world.random.rnd() * Math.PI * 2;
 
     const turb = lerp(0.35, 1.0, coreFuzz);
     const jitter = turb * coreRadius * 0.22 * (0.25 + 0.75 * (1 - t));
 
     const {x, y} = applyWalnut(
-      Math.cos(ang) * r + (localRnd() - 0.5) * jitter,
-      Math.sin(ang) * r + (localRnd() - 0.5) * jitter
+      Math.cos(ang) * r + (world.random.rnd() - 0.5) * jitter,
+      Math.sin(ang) * r + (world.random.rnd() - 0.5) * jitter
     );
 
     const rn = coreRadNorm(r);
@@ -184,7 +183,7 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
     const whiten = smoothstep(0.25, 0.95, center);
 
     // Lower saturation + higher lightness toward center (fixes “bright ring + dark center”)
-    const h = (hue + lerp(-6, 10, rn) + (localRnd() - 0.5) * lerp(10, 3, whiten)) % 360;
+    const h = (hue + lerp(-6, 10, rn) + (world.random.rnd() - 0.5) * lerp(10, 3, whiten)) % 360;
     const s = Phaser.Math.Clamp(lerp(52, 6, whiten) * satMul, 0, 100);   // -> nearly white at center
     const l = Phaser.Math.Clamp(lerp(20, 62, whiten) * lightMul, 0, 100); // -> brighter at center (but not blown out)
 
@@ -210,12 +209,12 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
   g.setBlendMode(Phaser.BlendModes.ADD);
   
   for (let i = 0; i < nucleusPuffs; i++) {
-    const t = Math.pow(localRnd(), 2.6);            // heavily center-biased
+    const t = Math.pow(world.random.rnd(), 2.6);            // heavily center-biased
     const r = lerp(nucleusR, 0, t);
-    const ang = localRnd() * Math.PI * 2;
+    const ang = world.random.rnd() * Math.PI * 2;
   
-    let x = Math.cos(ang) * r + (localRnd() - 0.5) * coreRadius * 0.07;
-    let y = Math.sin(ang) * r + (localRnd() - 0.5) * coreRadius * 0.07;
+    let x = Math.cos(ang) * r + (world.random.rnd() - 0.5) * coreRadius * 0.07;
+    let y = Math.sin(ang) * r + (world.random.rnd() - 0.5) * coreRadius * 0.07;
   
     const p = applyWalnut(x, y);
     x = p.x; y = p.y;
@@ -224,7 +223,7 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
     const center = 1 - (r / nucleusR);             // 0 edge -> 1 center
     const whiten = smoothstep(0.10, 1.0, center);
   
-    const h = (hue + (localRnd() - 0.5) * lerp(6, 1, whiten)) % 360;
+    const h = (hue + (world.random.rnd() - 0.5) * lerp(6, 1, whiten)) % 360;
     const s = Phaser.Math.Clamp(lerp(18, 2, whiten) * satMul, 0, 100);
     const l = Phaser.Math.Clamp(lerp(70, 96, whiten) * lightMul, 0, 100);
 
@@ -263,9 +262,9 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
   }
 
   // 2.5. Spiral arms (diffuse ribbons made of soft clumps)
-  const armCount = opts.armCount ?? Phaser.Math.Between(2, 5);
-  const armStrength = clamp01(opts.armStrength ?? Phaser.Math.FloatBetween(0.35, 0.85));
-  const armTwist = opts.armTwist ?? Phaser.Math.FloatBetween(7.0, 12.0); // radians across radius
+  const armCount = opts.armCount ?? world.random.between(2, 5);
+  const armStrength = clamp01(opts.armStrength ?? world.random.betweenFloat(0.35, 0.85));
+  const armTwist = opts.armTwist ?? world.random.betweenFloat(7.0, 12.0); // radians across radius
   const armJitter = clamp01(opts.armJitter ?? 0.35);
 
   // How far arms start (avoid painting arms right in the core)
@@ -279,7 +278,7 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
   const hazePasses = 2;
 
   // Base phase so arms aren't always aligned the same way
-  const baseArmPhase = localRnd() * Math.PI * 2;
+  const baseArmPhase = world.random.rnd() * Math.PI * 2;
 
   // A gentle fade so arms are strongest mid-radius
   const armRadialWeight = (rNorm: number) => {
@@ -307,8 +306,8 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
 
         // Jitter/wobble increases outward a bit
         const jitterMag = armJitter * outerRadius * 0.03 * (0.25 + 0.75 * t);
-        const jx = (localRnd() - 0.5) * jitterMag;
-        const jy = (localRnd() - 0.5) * jitterMag;
+        const jx = (world.random.rnd() - 0.5) * jitterMag;
+        const jy = (world.random.rnd() - 0.5) * jitterMag;
 
         // Position on spiral
         const x = Math.cos(spiral) * r + jx;
@@ -322,7 +321,7 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
         const a = w * 0.3 * armStrength * gasAlpha * hazeAlphaMul;
 
         // Slightly different hue for arms so they "pop" from the blob
-        const h = (hue + lerp(-18, 22, t) + (localRnd() - 0.5) * 10) % 360;
+        const h = (hue + lerp(-18, 22, t) + (world.random.rnd() - 0.5) * 10) % 360;
         const s = Phaser.Math.Clamp(lerp(55, 45, t) * satMul, 0, 100);
         const l = Phaser.Math.Clamp(lerp(18, 12, t) * lightMul, 0, 100);
 
@@ -344,8 +343,8 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
       const spiral = armOffset + armTwist * Math.pow(t, 1.06);
 
       const jitterMag = armJitter * outerRadius * 0.02 * (0.2 + 0.8 * t);
-      const jx = (localRnd() - 0.5) * jitterMag;
-      const jy = (localRnd() - 0.5) * jitterMag;
+      const jx = (world.random.rnd() - 0.5) * jitterMag;
+      const jy = (world.random.rnd() - 0.5) * jitterMag;
 
       const x = Math.cos(spiral) * r + jx;
       const y = Math.sin(spiral) * r + jy;
@@ -355,13 +354,13 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
         const clumpR = lerp(outerRadius * 0.035, outerRadius * 0.012, t) * lerp(1.2, 0.85, armStrength);
         const a = w * 0.11 * armStrength * gasAlpha;
 
-        const h = (hue + lerp(-10, 26, t) + (localRnd() - 0.5) * 12) % 360;
+        const h = (hue + lerp(-10, 26, t) + (world.random.rnd() - 0.5) * 12) % 360;
         const s = Phaser.Math.Clamp(lerp(78, 60, t) * satMul, 0, 100);
         const l = Phaser.Math.Clamp(lerp(34, 18, t) * lightMul, 0, 100);
         const color = Phaser.Display.Color.HSLToColor(h / 360, s / 100, l / 100).color;
 
         stampFeathered(g, x, y, clumpR, color, a, 6);
-        if (localRnd() < lerp(0.10, 0.03, t)) {
+        if (world.random.rnd() < lerp(0.10, 0.03, t)) {
           const hi = Phaser.Display.Color.HSLToColor(h / 360, (s * 0.4) / 100, 0.9).color;
           g.setBlendMode(Phaser.BlendModes.ADD);
           stampFeathered(g, x, y, clumpR * 0.55, hi, a * 0.35, 5);
@@ -381,31 +380,31 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
   // 3. Bright spots: star-forming regions / clumps
   const spotCount = opts.spotCount ?? Math.floor(lerp(10, 35, 1 - tilt));
   for (let i = 0; i < spotCount; i++) {
-    const p = sampleDiskBiased(localRnd, 2.6);
+    const p = sampleDiskBiased(world.random.rnd, 2.6);
     // spread spots within about 85% of outer radius
     const x = p.x * outerRadius * 0.85;
     const y = p.y * outerRadius * 0.85;
 
-    const spotR = lerp(3, 18, Math.pow(localRnd(), 2.0));
-    const a = lerp(0.06, 0.18, localRnd()) * gasAlpha;
+    const spotR = lerp(3, 18, Math.pow(world.random.rnd(), 2.0));
+    const a = lerp(0.06, 0.18, world.random.rnd()) * gasAlpha;
 
-    const h = (hue + lerp(-35, 35, localRnd())) % 360;
-    const s = Phaser.Math.Clamp(lerp(45, 75, localRnd()) * satMul, 0, 100);
-    const l = Phaser.Math.Clamp(lerp(35, 60, localRnd()) * lightMul, 0, 100);
+    const h = (hue + lerp(-35, 35, world.random.rnd())) % 360;
+    const s = Phaser.Math.Clamp(lerp(45, 75, world.random.rnd()) * satMul, 0, 100);
+    const l = Phaser.Math.Clamp(lerp(35, 60, world.random.rnd()) * lightMul, 0, 100);
 
     const color = Phaser.Display.Color.HSLToColor(h / 360, s / 100, l / 100).color;
     g.fillStyle(color, a);
     g.fillCircle(x, y, spotR);
 
     // Optional micro-highlight inside the clump
-    if (localRnd() < 0.35) {
+    if (world.random.rnd() < 0.35) {
       const hi = Phaser.Display.Color.HSLToColor(
         ((h + 10) % 360) / 360,
         (s * 0.6) / 100,
         0.75,
       ).color;
       g.fillStyle(hi, a * 0.6);
-      g.fillCircle(x + (localRnd() - 0.5) * 6, y + (localRnd() - 0.5) * 6, spotR * 0.35);
+      g.fillCircle(x + (world.random.rnd() - 0.5) * 6, y + (world.random.rnd() - 0.5) * 6, spotR * 0.35);
     }
   }
 
@@ -414,9 +413,9 @@ export const drawGalaxy = (g: Phaser.GameObjects.Graphics, opts: GalaxyOptions) 
   if (tilt > 0.35) {
     const laneCount = Math.floor(lerp(0, 3, (tilt - 0.35) / 0.65));
     for (let i = 0; i < laneCount; i++) {
-      const laneOffset = (localRnd() - 0.5) * outerRadius * 0.18;
-      const laneR = lerp(outerRadius * 0.45, outerRadius * 0.9, localRnd());
-      const laneThickness = lerp(10, 38, localRnd()); // becomes an ellipse due to scaleY
+      const laneOffset = (world.random.rnd() - 0.5) * outerRadius * 0.18;
+      const laneR = lerp(outerRadius * 0.45, outerRadius * 0.9, world.random.rnd());
+      const laneThickness = lerp(10, 38, world.random.rnd()); // becomes an ellipse due to scaleY
       const laneAlpha = lerp(0.05, 0.14, tilt) * gasAlpha;
 
       g.fillStyle(0x000000, laneAlpha);
@@ -465,12 +464,14 @@ export const computeBulgeFromTilt = (tilt: number, knobs: BulgeKnobs = {}) => {
 export type GalaxyCompositeOptions = Omit<GalaxyOptions & BulgeKnobs, 'x' | 'y'>;
 
 // Both together
-export const drawGalaxyComposite = (scene: Phaser.Scene, opts: GalaxyCompositeOptions) => {
-  const outerRadius = opts.outerRadius ?? Phaser.Math.FloatBetween(220, 520);
-  const rotation = opts.rotation ?? (Math.random() * Math.PI * 2);
-  const coreRadius = opts.coreRadius ?? outerRadius * Phaser.Math.FloatBetween(0.03, 0.09);
+export const drawGalaxyComposite = (scene: BaseScene, opts: GalaxyCompositeOptions) => {
+  const world = scene.world;
+
+  const outerRadius = opts.outerRadius ?? world.random.betweenFloat(220, 520);
+  const rotation = opts.rotation ?? (world.random.rnd() * Math.PI * 2);
+  const coreRadius = opts.coreRadius ?? outerRadius * world.random.betweenFloat(0.03, 0.09);
   const bulgeStrength = opts.bulgeStrength ?? 1
-  const tilt = clamp01(opts.tilt ?? Math.random());
+  const tilt = clamp01(opts.tilt ?? world.random.rnd());
 
   const pad = outerRadius * 0.35;
   const size = Math.ceil((outerRadius + pad) * 2);
@@ -481,7 +482,7 @@ export const drawGalaxyComposite = (scene: Phaser.Scene, opts: GalaxyCompositeOp
   renderTexture.clear();
 
   const galaxy = scene.add.graphics();
-  drawGalaxy(galaxy, {
+  drawGalaxy(world, galaxy, {
     bulgeStrength,
     coreRadius,
     rotation, 

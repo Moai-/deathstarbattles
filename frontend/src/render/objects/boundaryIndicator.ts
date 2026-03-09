@@ -1,5 +1,5 @@
 import { ui32ToCol } from 'shared/src/utils';
-import { Renderable } from '../components/renderable';
+import { Renderable } from '../components';
 import { Depths } from '../types';
 
 const renderBoundaryIndicator = (scene: Phaser.Scene, parentEid: number) => {

@@ -1,5 +1,5 @@
 import generateTurn from 'shared/src/ai/generateTurn';
-import { runGameSetup } from '../gameSetup';
+import { runGameSetup } from 'shared/src/content'
 import { gameBus, GameEvents } from 'src/util';
 import {
   TurnInput,
@@ -8,21 +8,23 @@ import {
   PlayerTypes,
   GameConfig,
   GameObject,
+  Backgrounds,
 } from 'shared/src/types';
-import { Renderable } from 'src/render/components/renderable';
 import Hyperspace from 'src/render/animations/hyperspace';
 import { objectClearance } from '../gameSetup/placeEntities';
 import { getSoundManager } from '../scenes';
 import {
-  getRadius,
   getPosition,
   setPosition,
   generateNonOverlappingPositions,
   getColliders,
   getHyperLocus,
   wait,
+  getGameObject,
+  getAllObjects,
 } from 'shared/src/utils';
 import { BaseSceneManager } from './baseSceneManager';
+import { Renderable } from 'shared/src/ecs/components';
 
 // There is a 1 sec timeout between each turn. We use this time to do processing stuff
 const TURN_TIME_GAP = 1000;
@@ -76,7 +78,8 @@ export class BaseGameManager extends BaseSceneManager {
 
   async startGame(conf: GameConfig) {
     this.ready();
-    const { players } = runGameSetup(this.scene, this.world, conf)!;
+    const { players, bg } = runGameSetup(this.world, conf);
+    this.backgroundArtManager.setBackground(bg || Backgrounds.STARS);
     this.scene.fxManager.update();
     this.isHyperspace = getHyperLocus(this.world) !== null;
 
@@ -211,18 +214,10 @@ export class BaseGameManager extends BaseSceneManager {
     const shouldHyperspace = this.isHyperspace
       ? this.stations.filter((p) => !this.willHyperspace.includes(p))
       : this.willHyperspace;
-  
-    const { width, height } = this.scene.scale;
 
-    const radii = shouldHyperspace.map(getRadius);
+    const hyperspacers = shouldHyperspace.map(getGameObject);
 
-    const newPositions = generateNonOverlappingPositions(
-      width,
-      height,
-      radii,
-      objectClearance,
-      this.world,
-    );
+    const newPositions = generateNonOverlappingPositions(this.world, hyperspacers, objectClearance);
 
     await Promise.all(shouldHyperspace.map((eid, idx) => this.useHyperspace(eid, newPositions[idx])));
     this.willHyperspace = [];
