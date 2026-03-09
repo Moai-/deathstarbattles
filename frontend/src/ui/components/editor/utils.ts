@@ -119,8 +119,6 @@ export const DEFAULT_WINDOW_HEIGHT = 260;
 export const COLLAPSED_HEIGHT = 35;
 export const ADD_ENTITY_EXCLUDED = ["NONE", "DEATHBEAM"];
 
-/** localStorage key prefix for saved editor scenarios */
-export const SCENARIO_STORAGE_KEY_PREFIX = "dsb_scenario_";
 export const FIRING_PANEL_WIDTH = 270;
 export const FIRING_PANEL_HEIGHT = 160;
 

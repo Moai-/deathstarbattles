@@ -6,29 +6,31 @@ import { GameWorld } from "shared/src/ecs/world";
 import { ObjectTypes } from "shared/src/types";
 import { getType } from "shared/src/utils";
 
-export const finalizeScenario = (world: GameWorld, stationSize: number) => {
-  // 1. String together wormholes
+export const finalizeScenario = (world: GameWorld, stationSize: number, ignoreWormholes = false) => {
   const objectsInWorld = buildColliderCache(world);
-  const wormholes = objectsInWorld
-    .filter((o) => hasComponent(world, o.eid, Wormhole))
-    .map((o) => o.eid);
-
-  for (let i = 0; i < wormholes.length; ) {
-    const remaining = wormholes.length - i;
-
-    if (remaining === 1) {
-      scrambleWormhole(wormholes[i]);
-      i += 1;
-    } else {
-      if (world.random.oneIn(6)) {
+  // 1. String together wormholes
+  if (!ignoreWormholes) {
+    const wormholes = objectsInWorld
+      .filter((o) => hasComponent(world, o.eid, Wormhole))
+      .map((o) => o.eid);
+  
+    for (let i = 0; i < wormholes.length; ) {
+      const remaining = wormholes.length - i;
+  
+      if (remaining === 1) {
         scrambleWormhole(wormholes[i]);
         i += 1;
-      } else if (world.random.oneIn(6)) {
-        chaosifyWormhole(world, wormholes, wormholes[i]);
-        i += 1;
       } else {
-        pairWormholes(wormholes[i], wormholes[i + 1]);
-        i += 2;
+        if (world.random.oneIn(6)) {
+          scrambleWormhole(wormholes[i]);
+          i += 1;
+        } else if (world.random.oneIn(6)) {
+          chaosifyWormhole(world, wormholes, wormholes[i]);
+          i += 1;
+        } else {
+          pairWormholes(wormholes[i], wormholes[i + 1]);
+          i += 2;
+        }
       }
     }
   }

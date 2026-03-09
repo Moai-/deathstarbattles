@@ -1,11 +1,10 @@
 import { RefObject, useState, useMemo } from "react";
-import { gameBus, GameEvents } from "src/util";
+import { gameBus, GameEvents, listScenarios } from "src/util";
 import { Backgrounds } from "shared/src/types";
 import {
   useEditorOptions,
   type DeathStarSizeIndex,
 } from "./";
-import { SCENARIO_STORAGE_KEY_PREFIX } from "./utils";
 import { EditorEvents } from "src/util/event";
 
 export type OptionsMenuPanel =
@@ -42,10 +41,7 @@ export function OptionsMenu({
   const options = useEditorOptions();
   const [saveName, setSaveName] = useState("");
   const savedScenarioKeys = useMemo(() => {
-    if (typeof localStorage === "undefined") return [];
-    return Object.keys(localStorage).filter((k) =>
-      k.startsWith(SCENARIO_STORAGE_KEY_PREFIX)
-    );
+    return listScenarios();
   }, [panel]);
   if (!position) return null;
 
@@ -165,14 +161,13 @@ export function OptionsMenu({
           <div style={{ padding: "4px 0", color: "#666" }}>No saved scenarios</div>
         ) : (
           <ul style={{ margin: 0, paddingLeft: 18 }}>
-            {savedScenarioKeys.map((key) => {
-              const name = key.slice(SCENARIO_STORAGE_KEY_PREFIX.length);
+            {savedScenarioKeys.map((name) => {
               return (
-                <li key={key}>
+                <li key={name}>
                   <button
                     type="button"
                     onClick={() => {
-                      gameBus.emit(EditorEvents.ED_UI_LOAD_SCENARIO, { scenarioKey: key });
+                      gameBus.emit(EditorEvents.ED_UI_LOAD_SCENARIO, { scenarioKey: name });
                       onClose();
                     }}
                   >

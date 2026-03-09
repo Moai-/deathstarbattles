@@ -1,5 +1,5 @@
 import { EntityGenerator, ObjectPlacement, ObjectTypes, ScenarioItemRule } from 'shared/src/types';
-import { createAnomaly, createAsteroid, createBigWormhole, createBlackHole, createJetBlackHole, createJovian, createLocus, createNeutronStar, createPlanet, createRedGiant, createStar, createSupergiant, createWhiteDwarf, createWhiteHole, createWormhole } from './entities';
+import { createAnomaly, createAsteroid, createBigWormhole, createBlackHole, createDeathStar, createJetBlackHole, createJovian, createLocus, createNeutronStar, createPlanet, createRedGiant, createStar, createSupergiant, createWhiteDwarf, createWhiteHole, createWormhole } from './entities';
 
 type ScenarioItemArray = Array<{
   key: ObjectTypes,
@@ -40,6 +40,8 @@ scenarioItems.forEach((item) => {
   const {key, ...rest} = item;
   scenarioItemMap.set(key, rest);
 })
+
+scenarioItemMap.set(ObjectTypes.DEATHSTAR, { label: 'Deathstar', maxAmount: 40, generator: createDeathStar})
 
 type GenParams = Partial<ScenarioItemRule>;
 const generateObject = (type: ObjectTypes) => {

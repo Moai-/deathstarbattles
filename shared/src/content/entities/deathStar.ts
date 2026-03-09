@@ -23,8 +23,8 @@ import { GameWorld } from "shared/src/ecs/world";
 import { inputsToShot } from "shared/src/ai/functions";
 
 type DeathStarProps = {
-  colour: Colour;
-  owner: number;
+  colour?: Colour;
+  owner?: number;
 }
 
 export const createDeathStar: EntityGenerator<DeathStarProps> = (world, pos, props) => {
@@ -47,6 +47,8 @@ export const createDeathStar: EntityGenerator<DeathStarProps> = (world, pos, pro
   Renderable.col[eid] = baseColour;
 
   addComponent(world, eid, Player);
+  // Pooled projectile added a bit later 
+  
   addComponent(world, eid, Destructible);
   addComponent(world, eid, Active);
 

@@ -86,6 +86,8 @@ export function generateNonOverlappingPositions(
 
   let lastSupergiantSide = '';
 
+  console.log('running placement with %s existing objects', existing?.length)
+
 
   for (const object of objects) {
     const { radius, eid } = object;
@@ -112,10 +114,6 @@ export function generateNonOverlappingPositions(
 
       const tooClose = [...existing, ...placed].some((other) => {
         const otherRadius = other.radius;
-
-        if (otherRadius > 1000) {
-          return doCirclesOverlap(other.x, other.y, otherRadius, x, y, radius);
-        }
 
         const dx = x - other.x;
         const dy = y - other.y;

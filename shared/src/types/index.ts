@@ -78,7 +78,7 @@ export type GameConfig = {
   stationSize?: number;
   maxItems?: number;
   numItems?: number;
-  savedScenarioKey?: string;
+  savedScenario?: SerializedScenario;
 };
 
 export type PlayerSetup = {

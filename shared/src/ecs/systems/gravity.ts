@@ -59,11 +59,9 @@ export const createGravitySystem = () => {
             break;
         }
 
-        const clampedForce = Math.max(0, 1.5)
-
         // Apply force directionally
-        const fx = (dx / dist) * clampedForce;
-        const fy = (dy / dist) * clampedForce;
+        const fx = (dx / dist) * force;
+        const fy = (dy / dist) * force;
         ax += fx;
         ay += fy;
       }

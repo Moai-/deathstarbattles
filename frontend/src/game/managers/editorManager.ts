@@ -27,8 +27,7 @@ import { playerCols } from 'shared/src/utils/colour';
 import { serializeComponents, serializeScenario } from 'shared/src/ecs/serde/serialize';
 import { instantiateScenario } from 'shared/src/ecs/serde/deserialize';
 
-import { gameBus } from 'src/util';
-import { SCENARIO_STORAGE_KEY_PREFIX } from 'src/ui/components/editor/utils';
+import { gameBus, loadScenario, saveScenario } from 'src/util';
 import { getSoundManager } from '../scenes/resourceScene';
 import * as ecsComponents from 'shared/src/ecs/components';
 import { getDeathStarSizeIndex, getRemovedDestructibleEids, clearRemovedDestructibleEids, addRemovedDestructibleEid, getPersistTrails, getLabelTrails, getShotHistory, recordShot } from 'src/ui/components/editor';
@@ -51,7 +50,6 @@ export class EditorManager extends BaseSceneManager {
   // editor state
   private placementState: PlacementState = null;
   private escapeKey: Phaser.Input.Keyboard.Key | null = null;
-  private currentBackground: Backgrounds = Backgrounds.NONE;
   private shiftKey: Phaser.Input.Keyboard.Key | null = null;
   private firingFromEid: number | null = null;
   private lastAngle = 90;
@@ -82,7 +80,10 @@ export class EditorManager extends BaseSceneManager {
 
   startPlaceEntity(objectType: ObjectTypes) {
     const creator = scenarioItemMap.get(objectType)?.generator;
-    if (!creator) return;
+    if (!creator) {
+      console.log('editorManager: could not find creator for', ObjectTypes[objectType]);
+      return;
+    }
     const eid = creator(this.world, { x: 0, y: 0 });
     if (eid === NULL_ENTITY) return;
     if (ObjectInfo.type[eid] === ObjectTypes.DEATHSTAR) {
@@ -272,7 +273,6 @@ export class EditorManager extends BaseSceneManager {
       this.setAllDestructible(enabled),
     );
     gameBus.on(EditorEvents.ED_UI_OPTIONS_BACKGROUND, ({ bgType }) => {
-      this.currentBackground = bgType;
       this.backgroundArtManager.setBackground(bgType);
     });
     gameBus.on(EditorEvents.ED_UI_SAVE_SCENARIO, ({ name }) => this.saveScenario(name));
@@ -303,21 +303,14 @@ export class EditorManager extends BaseSceneManager {
   }
 
   private saveScenario(name: string) {
-    const scenario = serializeScenario(this.world, this.currentBackground, name);
-    const key = SCENARIO_STORAGE_KEY_PREFIX + name;
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(key, JSON.stringify(scenario));
-    }
+    const scenario = serializeScenario(this.world, this.backgroundArtManager.getCurrentBackground(), name);
+    saveScenario(scenario, name);
   }
 
   private loadScenario(scenarioKey: string) {
-    if (typeof localStorage === 'undefined') return;
-    const raw = localStorage.getItem(scenarioKey);
-    if (!raw) return;
-    let scenario: SerializedScenario;
-    try {
-      scenario = JSON.parse(raw);
-    } catch {
+    const scenario = loadScenario(scenarioKey);
+    if (!scenario) {
+      console.log('failed to load scenario', scenarioKey);
       return;
     }
     const eids = getAllEntities(this.world);
@@ -329,7 +322,6 @@ export class EditorManager extends BaseSceneManager {
     this.objectManager.removeAllObjects();
     instantiateScenario(scenario, this.world);
     this.backgroundArtManager.setBackground(scenario.background);
-    this.currentBackground = scenario.background;
     this.updateWorker();
     gameBus.emit(EditorEvents.ED_SCENARIO_LOADED);
   }

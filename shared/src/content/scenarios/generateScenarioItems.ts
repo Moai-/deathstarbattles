@@ -111,14 +111,13 @@ export const generateScenarioItems = (
     .map((item) => ({ radius: getRadius(item), eid: item, placement: getPlacementRule(item, rules) }))
     .sort((a, b) => b.radius - a.radius);
 
-  console.log(levelObjects)
   // Turn players into game objects too
   const playerObjects: Array<UnplacedGameObject> = players
     .map((item) => ({ radius: getRadius(item), eid: item, placement: ObjectPlacement.ANYWHERE }));
 
 
   // 5. Place objects (exclude level object eids from existing so we don't treat
-  //    unpositioned level entities at (0,0) as obstacles, e.g. the supergiant at origin)
+  // unpositioned level entities at (0,0) as obstacles)
   const levelEids = new Set(levelObjects.map((o) => o.eid));
   const existingForLevel = getAllObjects(world).filter((o) => !levelEids.has(o.eid));
   const placedObjects = generateNonOverlappingPositions(world, levelObjects, objectClearance, existingForLevel);

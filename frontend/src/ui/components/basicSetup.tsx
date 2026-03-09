@@ -7,9 +7,9 @@ import { PlayerSetup } from 'shared/src/types';
 import { GameState, useGameState } from './context';
 import { playerCols } from 'shared/src/utils';
 import { FaSignOutAlt } from 'react-icons/fa';
-import { SCENARIO_STORAGE_KEY_PREFIX } from 'src/ui/components/editor/utils';
 import { getScenarioTypes } from 'shared/src/content/scenarios/scenarioManifest';
 import { createWorldRandomApi } from 'shared/src/ecs/world';
+import { checkKey, listScenarios, loadScenario, makeKey } from 'src/util';
 
 export const DropdownRow = styled.div`
   display: flex;
@@ -67,20 +67,17 @@ export const SetupScreen: React.FC = () => {
   const [scenario, setScenario] = useState('0');
   const types = getScenarioTypes({random: createWorldRandomApi(Math.random)});
   const savedScenarioKeys = useMemo(() => {
-    if (typeof localStorage === 'undefined') return [];
-    return Object.keys(localStorage).filter((k) =>
-      k.startsWith(SCENARIO_STORAGE_KEY_PREFIX),
-    );
+    return listScenarios();
   }, []);
   const scenarioOptions = useMemo(() => {
     const builtIn = types.map(({ name }, idx) => ({ value: String(idx), label: name }));
-    const saved = savedScenarioKeys.map((key) => ({
-      value: key,
-      label: key.slice(SCENARIO_STORAGE_KEY_PREFIX.length),
+    const saved = savedScenarioKeys.map((name) => ({
+      value: makeKey(name),
+      label: name,
     }));
     return [...builtIn, ...saved];
   }, [types, savedScenarioKeys]);
-  const isSavedScenario = scenario.startsWith(SCENARIO_STORAGE_KEY_PREFIX);
+  const isSavedScenario = checkKey(scenario);
 
   const start = () => {
     const players: Array<PlayerSetup> = [];
@@ -100,9 +97,9 @@ export const SetupScreen: React.FC = () => {
       setGameState(GameState.INGAME, {
         justBots: false,
         players,
-        savedScenarioKey: scenario,
         stationSize: size,
         stationPerPlayer: Number(stationCount),
+        savedScenario: loadScenario(scenario)
       });
     } else {
       const [amountRaw, isMaxRaw] = objectCount.split('|');
