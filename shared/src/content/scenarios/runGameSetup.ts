@@ -14,8 +14,8 @@ export const runGameSetup = (world: GameWorld, config: GameConfig) => {
   if (config.justBots) {
     const bots = generateRandomBots(world);
     const stationEids = bots.flatMap((b) => b.stationEids)
-    const scenario = getScenarioTypes(world)[6];
-    // const scenario = world.random.pickElement(getScenarioTypes(world));
+    // const scenario = getScenarioTypes(world)[6];
+    const scenario = world.random.pickElement(getScenarioTypes(world));
     const num = world.random.between(10, 20);
     const objects = generateScenarioItems(world, scenario.items, {num}, stationEids);
     const size = world.random.between(1, 3);

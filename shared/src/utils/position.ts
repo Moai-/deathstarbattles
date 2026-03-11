@@ -86,7 +86,6 @@ export function generateNonOverlappingPositions(
 
   let lastSupergiantSide = '';
 
-  console.log('running placement with %s existing objects', existing?.length)
 
 
   for (const object of objects) {

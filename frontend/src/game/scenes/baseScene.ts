@@ -1,4 +1,3 @@
-import Phaser from 'phaser';
 import { clearWorld, createGameWorld } from 'shared/src/ecs/world';
 import {
   createCollisionSystem,

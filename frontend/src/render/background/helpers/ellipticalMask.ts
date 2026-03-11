@@ -1,3 +1,4 @@
+import { makeId } from "shared/src/utils";
 import { stampFeathered } from "src/render/utils";
 
 type EllipticalMaskOpts = {
@@ -64,12 +65,12 @@ export const makeEllipticalMask = (
 };
 
 export const applyMask = (targetTex: Phaser.GameObjects.RenderTexture, scene: Phaser.Scene, opts: EllipticalMaskOpts) => {
-  const targetKey = Phaser.Math.RND.uuid();
+  const targetKey = makeId();
   targetTex.saveTexture(targetKey);
 
   const {rt} = makeEllipticalMask(scene, opts);
 
-  const maskKey = Phaser.Math.RND.uuid();
+  const maskKey = makeId();
   rt.saveTexture(maskKey);
 
   const targetImg = scene.add

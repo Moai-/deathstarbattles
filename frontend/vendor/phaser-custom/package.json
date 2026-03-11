@@ -1,0 +1,31 @@
+{
+  "name": "phaser3-custom-build",
+  "version": "2.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack",
+    "buildlog": "webpack --json --profile > webpack.build-log.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/photonstorm/phaser3-custom-build.git"
+  },
+  "author": "Richard Davey <rich@photonstorm.com> (http://www.photonstorm.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/photonstorm/phaser3-custom-build/issues"
+  },
+  "homepage": "https://github.com/photonstorm/phaser3-custom-build#readme",
+  "dependencies": {
+    "clean-webpack-plugin": "^4.0.0",
+    "eventemitter3": "^5.0.1",
+    "phaser": "^3.88.2",
+    "terser-webpack-plugin": "^5.3.9",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "devDependencies": {
+    "prettier": "3.0.3"
+  }
+}
