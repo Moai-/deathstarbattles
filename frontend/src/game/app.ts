@@ -1,4 +1,13 @@
-import 'phaser';
+/*
+ * For development:
+ * - Uncomment `import 'phaser';`
+ * - Comment `import 'phaser-core';`
+ * - Comment `import 'phaser-extras';`
+ * See DOCS.md for more information.
+ */
+// import 'phaser';
+import 'phaser-core';
+import 'phaser-extras';
 import { BackgroundScene, BaseScene, EditorScene, GameScene, ResourceScene } from './scenes';
 import { BASE_HEIGHT, BASE_WIDTH } from 'shared/src/consts';
 import { gameBus, GameEvents } from 'src/util';
@@ -33,10 +42,6 @@ const config: Phaser.Types.Core.GameConfig = {
 class DSBPhaserApp {
   private game: Phaser.Game | null = null;
   private activeMode: AppModes | null = null;
-
-  constructor() {
-    console.log('phaser app constructed', Date.now())
-  }
 
   createGame() {
     return new Promise<void>((resolve) => {

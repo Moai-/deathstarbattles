@@ -7,7 +7,9 @@
     "baseUrl": ".",
     "paths": {
       "shared/*": ["../shared/*"],
-      "src/*": ["src/*"]
+      "src/*": ["src/*"],
+      "phaser-core": ["src/typings/phaser-chunks.d.ts"],
+      "phaser-extras": ["src/typings/phaser-chunks.d.ts"]
     }
   },
   "include": ["src"]

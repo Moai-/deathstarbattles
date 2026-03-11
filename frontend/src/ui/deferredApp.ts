@@ -5,9 +5,15 @@ type GameAppModule = typeof import('src/game/app');
 let appPromise: Promise<GameAppModule['App']> | null = null;
 
 const loadApp = async () => {
-  console.log('app load begin', Date.now())
   if (!appPromise) {
-    appPromise = import('src/game/app').then((mod) => mod.App);
+    appPromise = (async () => {
+      // Load in order: extras extends core and overwrites global.Phaser; core must run first.
+      await import('phaser-core');
+      await import('phaser-extras');
+
+      const mod = await import('src/game/app');
+      return mod.App;
+    })();
   }
   return appPromise;
 };

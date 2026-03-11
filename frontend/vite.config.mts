@@ -20,7 +20,8 @@ export default defineConfig({
       src: path.resolve(__dirname, 'src'),
       shared: path.resolve(__dirname, '../shared'),
       bitecs: path.resolve(__dirname, 'node_modules/bitecs'),
-      phaser: path.resolve(__dirname, 'vendor/phaser-custom/dist/phaser-custom.js')
+      'phaser-core': path.resolve(__dirname, 'vendor/phaser-custom/dist/phaser-core.js'),
+      'phaser-extras': path.resolve(__dirname, 'vendor/phaser-custom/dist/phaser-extras.js'),
     },
   },
   server: {
@@ -39,8 +40,12 @@ export default defineConfig({
       output: {
         manualChunks: (id) => {
           
-          if (id.includes('vendor/phaser-custom')) {
-            return 'phaser';
+          if (id.includes('vendor/phaser-custom/dist/phaser-core')) {
+            return 'phaser-core';
+          }
+
+          if (id.includes('vendor/phaser-custom/dist/phaser-extras')) {
+            return 'phaser-extras';
           }
 
           if (!id.includes('node_modules') && !id.includes('/src/') && !id.includes('/shared/')) {

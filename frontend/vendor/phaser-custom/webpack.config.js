@@ -8,8 +8,16 @@ module.exports = {
     mode: "production",
 
     entry: {
-        "phaser-custom": `./phaser-custom.js`,
-        "phaser-custom.min": "./phaser-custom.js",
+        'phaser-core': './phaser-core.js',
+        'phaser-extras': {
+            import: './phaser-extras.js',
+            dependOn: 'phaser-core',
+        },
+        'phaser-core.min': './phaser-core.js',
+        'phaser-extras.min': {
+            import: './phaser-extras.js',
+            dependOn: 'phaser-core.min',
+        },
     },
 
     resolve: {

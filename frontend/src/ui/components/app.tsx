@@ -8,7 +8,6 @@ import { useUiInsets } from '../hooks/useUiInsets';
 import { EditorScreen } from './editor';
 
 const App: React.FC = () => {
-  console.log('ui render start', Date.now())
   useUiInsets();
   const { gameState } = useGameState();
 
