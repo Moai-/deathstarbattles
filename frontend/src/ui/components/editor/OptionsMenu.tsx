@@ -1,5 +1,5 @@
 import { RefObject, useState, useMemo } from "react";
-import { gameBus, GameEvents, listScenarios } from "src/util";
+import { gameBus, listScenarios } from "src/util";
 import { Backgrounds } from "shared/src/types";
 import {
   useEditorOptions,

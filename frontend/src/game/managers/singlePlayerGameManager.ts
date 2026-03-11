@@ -20,7 +20,7 @@ export class SinglePlayerGameManager extends BaseGameManager {
     this.indicator.radius = 30 * (Collision.radius[currentStation] / 8);
 
     this.indicator.drawIndicator();
-    this.objectManager.hideAllchildren();
+    this.renderManager.hideAllchildren();
 
     const thisPlayerInput = this.getPreviousTurnInput(currentStation);
 
@@ -31,7 +31,7 @@ export class SinglePlayerGameManager extends BaseGameManager {
       if (thisPlayerInput.otherAction !== OtherActions.HYPERSPACE) {
         const parent = this.projectileManager.getByPlayerId(currentStation);
         if (parent && !this.isHyperspace) {
-          this.objectManager.showChildren(parent.ownId);
+          this.renderManager.showChildren(parent.ownId);
         }
       }
     } else {
@@ -59,7 +59,7 @@ export class SinglePlayerGameManager extends BaseGameManager {
 
   protected firePhase() {
     this.indicator.removeIndicator();
-    this.objectManager.removeAllChildren();
+    this.renderManager.removeAllChildren();
     super.firePhase();
   }
 

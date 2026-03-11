@@ -1,13 +1,13 @@
 import { AnyPoint } from 'shared/src/types';
 import { getType } from 'shared/src/utils';
-import renderMap from './objects';
-import renderBoundaryIndicator from './objects/boundaryIndicator';
+import renderMap from '../objects';
+import renderBoundaryIndicator from '../objects/boundaryIndicator';
 import { BaseScene } from 'src/game/scenes/baseScene';
 
 const GHOST_ALPHA = 0.45;
 const GHOST_SCALE = 0.75;
 
-export class GameObjectManager {
+export class EntityRenderManager {
   private objects = new Map<number, Phaser.GameObjects.Container>();
   private children = new Map<number, Array<Phaser.GameObjects.GameObject>>();
   private boundaryIndicators = new Map<number, Phaser.GameObjects.Triangle>();

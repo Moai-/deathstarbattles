@@ -7,7 +7,7 @@ import {
   createPolarJetSystem,
 } from 'shared/src/ecs/systems';
 import { createRenderObservers, createRenderSystem } from 'src/render/renderSystem';
-import { GameObjectManager } from 'src/render/objectManager';
+import { EntityRenderManager } from 'src/render/managers';
 import { gameBus, GameEvents } from 'src/util';
 import { getSoundManager } from './resourceScene';
 import { drawPathListener } from 'src/util/debug';
@@ -22,14 +22,14 @@ export class BaseScene extends Phaser.Scene {
   public debug = false;
   public fxManager = new FxManager(this);
 
-  protected objectManager = new GameObjectManager(this);
+  protected renderManager = new EntityRenderManager(this);
   protected unsubRenderObservers = () => {};
   protected movementSystem = createMovementSystem();
   protected pathTrackerSystem = createPathTrackerSystem();
   protected gravitySystem = createGravitySystem();
   protected polarJetSystem = createPolarJetSystem();
   protected collisionSystem = createCollisionSystem();
-  protected renderSystem = createRenderSystem(this, this.objectManager);
+  protected renderSystem = createRenderSystem(this, this.renderManager);
 
   constructor(sceneKey: AppScenes) {
     super({ key: sceneKey, active: false });
@@ -37,7 +37,7 @@ export class BaseScene extends Phaser.Scene {
   }
 
   create() {
-    this.unsubRenderObservers = createRenderObservers(this.world, this.objectManager);
+    this.unsubRenderObservers = createRenderObservers(this.world, this.renderManager);
     drawPathListener(this);
     this.fxManager.create();
     // For some reason, shaders in fxManager need a moment to load
@@ -65,7 +65,7 @@ export class BaseScene extends Phaser.Scene {
     // this.world = createGameWorld();
     this.unsubRenderObservers();
     this.fxManager.destroy();
-    this.objectManager.destroy();
+    this.renderManager.destroy();
     gameBus.off(GameEvents.START_GAME);
     gameBus.off(GameEvents.DEBUG_DRAW_PATH);
     gameBus.emit(GameEvents.SCENE_UNLOADED, this.scene.key as AppScenes)

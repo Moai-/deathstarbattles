@@ -90,14 +90,14 @@ export class EditorManager extends BaseSceneManager {
       const multiplier = getDeathStarSizeIndex() + 1;
       Collision.radius[eid] = BASE_DEATHSTAR_RAD * multiplier;
     }
-    this.objectManager.setPendingGhostEid(eid);
+    this.renderManager.setPendingGhostEid(eid);
     setPosition(eid, { x: 0, y: 0 });
     this.placementState = { mode: 'add', objectType, ghostEid: eid };
   }
 
   startMoveEntity(eid: number) {
     const pos = getPosition(eid);
-    this.objectManager.setGhost(eid, true);
+    this.renderManager.setGhost(eid, true);
     this.placementState = { mode: 'move', eid, originalX: pos.x, originalY: pos.y };
   }
 
@@ -123,13 +123,13 @@ export class EditorManager extends BaseSceneManager {
     if (this.placementState.mode === 'add') {
       removeComponent(this.world, this.placementState.ghostEid, Active);
       removeEntity(this.world, this.placementState.ghostEid);
-      this.objectManager.removeObject(this.placementState.ghostEid);
+      this.renderManager.removeObject(this.placementState.ghostEid);
     } else {
       setPosition(this.placementState.eid, {
         x: this.placementState.originalX,
         y: this.placementState.originalY,
       });
-      this.objectManager.setGhost(this.placementState.eid, false);
+      this.renderManager.setGhost(this.placementState.eid, false);
     }
     this.placementState = null;
   }
@@ -143,16 +143,16 @@ export class EditorManager extends BaseSceneManager {
       if (ObjectInfo.type[eid] === ObjectTypes.DEATHSTAR) {
         const multiplier = getDeathStarSizeIndex() + 1;
         Collision.radius[eid] = BASE_DEATHSTAR_RAD * multiplier;
-        this.objectManager.refreshObject(eid);
+        this.renderManager.refreshObject(eid);
       }
-      this.objectManager.setGhost(eid, false);
+      this.renderManager.setGhost(eid, false);
       this.placementState = null;
       if (this.shiftKey?.isDown) {
         this.startPlaceEntity(objectType);
       }
     } else {
       setPosition(this.placementState.eid, { x, y });
-      this.objectManager.setGhost(this.placementState.eid, false);
+      this.renderManager.setGhost(this.placementState.eid, false);
       this.placementState = null;
     }
     this.updateWorker();
@@ -203,7 +203,7 @@ export class EditorManager extends BaseSceneManager {
     if (this.placementState) {
       const eid = this.placementState.mode === 'add' ? this.placementState.ghostEid : this.placementState.eid;
       setPosition(eid, { x: pointer.x, y: pointer.y });
-      this.objectManager.updateObjectPosition(eid, pointer.x, pointer.y);
+      this.renderManager.updateObjectPosition(eid, pointer.x, pointer.y);
       return;
     }
     const ent = query(this.world, EditorManager.posQuery);
@@ -223,12 +223,12 @@ export class EditorManager extends BaseSceneManager {
   }
 
   protected setUpListeners() {
-    const {objectManager, projectileManager} = this;
+    const {renderManager, projectileManager} = this;
     super.setUpListeners({
-      singleCleanupCallback: (eid) => objectManager.removeBoundaryIndicator(eid!),
+      singleCleanupCallback: (eid) => renderManager.removeBoundaryIndicator(eid!),
       projectileDestroyedCallback: (eid) => {
         projectileManager.removeProjectile(eid);
-        objectManager.removeBoundaryIndicator(eid);
+        renderManager.removeBoundaryIndicator(eid);
       }
     })
 
@@ -236,7 +236,7 @@ export class EditorManager extends BaseSceneManager {
       const thisComp = getEntityComponents(this.world, eid)[compIdx];
       if (thisComp) {
         thisComp[propName][eid] = newVal;
-        this.objectManager.refreshObject(eid);
+        this.renderManager.refreshObject(eid);
       }
       this.updateWorker();
     });
@@ -317,9 +317,9 @@ export class EditorManager extends BaseSceneManager {
     for (const eid of eids) {
       removeEntity(this.world, eid);
     }
-    this.objectManager.removeAllBoundaryIndicators();
-    this.objectManager.removeAllChildren();
-    this.objectManager.removeAllObjects();
+    this.renderManager.removeAllBoundaryIndicators();
+    this.renderManager.removeAllChildren();
+    this.renderManager.removeAllObjects();
     instantiateScenario(scenario, this.world);
     this.backgroundArtManager.setBackground(scenario.background);
     this.updateWorker();
@@ -331,7 +331,7 @@ export class EditorManager extends BaseSceneManager {
   private clearAllTrails() {
     const projectiles = query(this.world, EditorManager.projectileQuery);
     for (const projEid of projectiles) {
-      this.objectManager.removeChildren(projEid);
+      this.renderManager.removeChildren(projEid);
     }
   }
 
@@ -341,7 +341,7 @@ export class EditorManager extends BaseSceneManager {
     for (const eid of eids) {
       if (ObjectInfo.type[eid] === ObjectTypes.DEATHSTAR) {
         Collision.radius[eid] = BASE_DEATHSTAR_RAD * multiplier;
-        this.objectManager.refreshObject(eid);
+        this.renderManager.refreshObject(eid);
       }
     }
   }
@@ -352,7 +352,7 @@ export class EditorManager extends BaseSceneManager {
       for (const eid of Array.from(getRemovedDestructibleEids())) {
         if (entityExists(this.world, eid)) {
           addComponent(this.world, eid, Destructible);
-          this.objectManager.refreshObject(eid);
+          this.renderManager.refreshObject(eid);
         }
       }
       clearRemovedDestructibleEids();
@@ -361,7 +361,7 @@ export class EditorManager extends BaseSceneManager {
         if (hasComponent(this.world, eid, Active) && hasComponent(this.world, eid, Destructible)) {
           removeComponent(this.world, eid, Destructible);
           addRemovedDestructibleEid(eid);
-          this.objectManager.refreshObject(eid);
+          this.renderManager.refreshObject(eid);
         }
       }
     }
@@ -400,7 +400,7 @@ export class EditorManager extends BaseSceneManager {
     this.lastPower = power;
     const projEid = Player.pooledProjectile[eid];
     if (!getPersistTrails() && projEid !== undefined) {
-      this.objectManager.removeChildren(projEid);
+      this.renderManager.removeChildren(projEid);
     }
     if (getLabelTrails() && projEid !== undefined) {
       const history = getShotHistory(eid);
@@ -442,7 +442,7 @@ export class EditorManager extends BaseSceneManager {
     const comp = EditorManager.getComponentByName(compKey);
     if (!comp) return;
     removeComponent(this.world, eid, comp);
-    this.objectManager.refreshObject(eid);
+    this.renderManager.refreshObject(eid);
     const serialized = serializeComponents(this.world, eid);
     gameBus.emit(EditorEvents.ED_PH_COMPONENT_REMOVED, {
       eid,

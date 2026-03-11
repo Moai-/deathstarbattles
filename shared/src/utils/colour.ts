@@ -42,19 +42,11 @@ export const colNames = [
 
 const colourToNumber = ({r, g, b}: Colour) => (r << 16) | (g << 8) | b
 
-export const generateRandomCol = (base: Colour, bias: Colour) => {
-  const r = base.r + Math.floor(Math.random() * bias.r);
-  const g = base.g + Math.floor(Math.random() * bias.g);
-  const b = base.b + Math.floor(Math.random() * bias.b);
-
-  return colourToNumber({r, g, b});
-};
-
-
 // VSCode highlights rgb syntax with a nice colour square
 // for example rgb(255,0,0) should be red
 // This little helper allows me to declare colours in this format
 // and get colour highlighting from VSCode
+// Also convert the colour to ui32 format for ECS storage
 export const rgb = (r: number | Colour, g: number = 0, b: number = 0): Colour & {num: () => number} => {
   const base = r as Colour;
   const col = typeof r === 'number'

@@ -1,6 +1,6 @@
-import { addComponent, addEntity, createWorld, getComponent } from "bitecs";
-
 // https://stackoverflow.com/questions/1349404/generate-a-string-of-random-characters
+// Phaser technically has its own makeId function, but I'd rather use this, because
+// this can be used outside of Phaser context
 export function makeId(length = 5) {
   let result = '';
   const characters =

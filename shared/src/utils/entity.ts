@@ -82,5 +82,7 @@ export const getHyperLocus = (world: GameWorld) => {
 };
 
 queueMicrotask(() => {
+  // Need to do it this way to avoid accessing before initialization
+  // TODO: come in there has to be a way to fix this in a more intelligent way
   setUpQueries();
 })

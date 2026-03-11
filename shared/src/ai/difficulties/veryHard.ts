@@ -1,5 +1,4 @@
 import { ShotInfo, SimShotResult, TurnGenerator } from 'shared/src/types';
-import { oneIn } from 'shared/src/utils';
 import { getPosition } from 'shared/src/utils';
 import {
   shotTurn,
@@ -156,7 +155,7 @@ const generateVeryHardTurn: TurnGenerator = async (
   // If we didn't, see if we wanna bail -- 1/3 of the time
   const lastTurnShots = gameState.lastTurnShots || null;
   if (!didFindCloserTarget && lastTurnShots) {
-    if (checkDangerousShots(stationId, lastTurnShots) && oneIn(3)) {
+    if (checkDangerousShots(stationId, lastTurnShots) && world.random.oneIn(3)) {
       return hyperspaceTurn(stationId);
     }
   }
@@ -191,7 +190,7 @@ const generateVeryHardTurn: TurnGenerator = async (
 
 
   // 7. Missed again, drat! Bail half the time, the other half, just brave the closest shot we have
-  if (oneIn(2)) {
+  if (world.random.oneIn(2)) {
     return hyperspaceTurn(stationId);
   }
 

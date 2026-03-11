@@ -3,7 +3,6 @@ import { Depths, RenderObject } from '../types';
 import { Collision } from 'shared/src/ecs/components/collision';
 import { HasPolarJets } from 'shared/src/ecs/components/hasPolarJets';
 import { drawJet, JetStyle } from '../elements/jet';
-import { generateRandomCol } from 'shared/src/utils';
 import { drawAccretionDisk } from '../elements/accretionDisk';
 import { HasGravity } from 'shared/src/ecs/components';
 import generateStarCols from '../elements/starCols';
@@ -24,11 +23,11 @@ const renderJetBlackHole: RenderObject = (scene, eid) => {
     depth: Depths.GFX,
   };
   const rotation = HasPolarJets.rotation[eid];
-  const baseCol = generateRandomCol(
+  const baseCol = scene.world.random.colour(
     { r: 253, g: 40, b: 10 },
     { r: 3, g: 216, b: 51 },
   );
-  const cols = generateStarCols(baseCol, 6);
+  const cols = generateStarCols(baseCol.num(), 6);
   const jetA = drawJet(scene, { x: 0, y: 0 }, cols[5], rotation, jetStyle);
   const jetB = drawJet(scene, { x: 0, y: 0 }, cols[5], rotation + Math.PI, jetStyle);
   const disk = drawAccretionDisk(

@@ -66,6 +66,12 @@ export enum ObjectPlacement {
   SUPERGIANT = 'supergiant'
 }
 
+export enum AppModes {
+  GAME = "GameMode",
+  EDITOR = "EditorMode",
+  BACKGROUND = "BackgroundMode"
+}
+
 // === Game setup ===
 
 export type GameConfig = {

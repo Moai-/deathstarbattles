@@ -1,5 +1,4 @@
 import { ShotInfo, TurnGenerator } from 'shared/src/types';
-import { oneIn } from 'shared/src/utils';
 import {
   shotTurn,
   checkDangerousShots,
@@ -29,7 +28,7 @@ const generateMediumTurn: TurnGenerator = async (
   simulateShot,
 ) => {
   // 0. -trollface.png-
-  if (oneIn(10)) {
+  if (world.random.oneIn(10)) {
     return generateVeryHardTurn(
       world,
       stationId,
@@ -55,7 +54,7 @@ const generateMediumTurn: TurnGenerator = async (
   }
 
   // 2. One third of the time, check for danger and run
-  if (oneIn(3) && gameState.lastTurnShots) {
+  if (world.random.oneIn(3) && gameState.lastTurnShots) {
     if (checkDangerousShots(stationId, gameState.lastTurnShots)) {
       return hyperspaceTurn(stationId);
     }
@@ -63,7 +62,7 @@ const generateMediumTurn: TurnGenerator = async (
 
   // 3. One eighth of the time, run
   // This prevents being stuck in a position where you can't hit or get hit
-  if (oneIn(8)) {
+  if (world.random.oneIn(8)) {
     return hyperspaceTurn(stationId);
   }
 

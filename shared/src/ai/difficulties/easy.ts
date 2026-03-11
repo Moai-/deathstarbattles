@@ -1,5 +1,4 @@
 import { TurnGenerator } from 'shared/src/types';
-import { oneIn } from 'shared/src/utils';
 import {
   hyperspaceTurn,
   getClosestDestructible,
@@ -16,7 +15,7 @@ import {
 const generateEasyTurn: TurnGenerator = async (world, stationId) => {
 
   // 1. Bail randomly
-  if (oneIn(8)) {
+  if (world.random.oneIn(8)) {
     return hyperspaceTurn(stationId);
   }
 

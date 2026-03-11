@@ -10,7 +10,7 @@ import { BackgroundGameManager } from '../managers/backgroundGameManager';
 
 // Runs automatic game between bots
 export class BackgroundScene extends BaseScene {
-  private gameManager = new BackgroundGameManager(this, this.world, this.objectManager);
+  private gameManager = new BackgroundGameManager(this, this.world, this.renderManager);
   private cleanupSystem = createCleanupSystem(
     this.gameManager.onCleanup.bind(this.gameManager),
   );

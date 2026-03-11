@@ -4,9 +4,3 @@ export enum AppScenes {
   EDITOR = "EditorScene",
   BACKGROUND = "BackgroundScene",
 }
-
-export enum AppModes {
-  GAME = "GameMode",
-  EDITOR = "EditorMode",
-  BACKGROUND = "BackgroundMode"
-}

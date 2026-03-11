@@ -1,6 +1,6 @@
 import { Backgrounds } from "shared/src/types";
-import { BaseScene } from "../scenes";
-import { generatorMap } from "src/render/background";
+import { BaseScene } from "src/game/scenes";
+import { generatorMap } from "../background";
 
 const BG_TEXTURE = 'currentBackground';
 

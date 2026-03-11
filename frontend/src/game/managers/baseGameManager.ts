@@ -184,7 +184,7 @@ export class BaseGameManager extends BaseSceneManager {
 
   protected firePhase() {
     this.numTurn = this.numTurn + 1;
-    this.objectManager.removeAllChildren();
+    this.renderManager.removeAllChildren();
     this.projectileManager.reset();
     this.world.movements = null;
     let didFire = false;
@@ -326,15 +326,15 @@ export class BaseGameManager extends BaseSceneManager {
   }
 
   protected setUpListeners() {
-    const {objectManager, projectileManager} = this;
+    const {renderManager, projectileManager} = this;
     super.setUpListeners({
       // Set a tiny delay on post combat phase to allow collision manager
       // to properly resolve all destroyed stations
       cleanupCallback: () => setTimeout(() => this.postCombatPhase(), 10),
-      singleCleanupCallback: (eid) => objectManager.removeBoundaryIndicator(eid!),
+      singleCleanupCallback: (eid) => renderManager.removeBoundaryIndicator(eid!),
       projectileDestroyedCallback: (eid) => {
         projectileManager.removeProjectile(eid);
-        objectManager.removeBoundaryIndicator(eid);
+        renderManager.removeBoundaryIndicator(eid);
       },
       targetDestroyedCallback: this.onStationDestroyed.bind(this),
       onEndTurnCallback: this.endTurn.bind(this),

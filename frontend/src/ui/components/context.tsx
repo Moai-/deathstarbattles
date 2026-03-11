@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { GameState } from '../types';
 import { gameBus, GameEvents } from 'src/util';
 import { GameConfig } from 'shared/src/types';
-import { App, AppModes } from 'src/game';
+import { DeferredApp, AppModes } from '../deferredApp';
 
 type WinnerData = { playerId: number; col: number };
 
@@ -35,17 +35,17 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
     // afterward, we know for sure we will have a clean slate.
     if (!backgroundGameStates.includes(nextState)) {
       // Next state isn't one where the background game should be running.
-      await App.stopMode(AppModes.BACKGROUND);
+      await DeferredApp.stopMode(AppModes.BACKGROUND);
     }
 
     if (nextState !== GameState.EDITOR) {
       // Exiting editor; ensure editor is stopped.
-      await App.stopMode(AppModes.EDITOR)
+      await DeferredApp.stopMode(AppModes.EDITOR)
     }
 
     // Exit game and remove stale listener, if any.
     if (nextState !== GameState.INGAME) {
-      await App.stopMode(AppModes.GAME);
+      await DeferredApp.stopMode(AppModes.GAME);
       gameBus.off(GameEvents.GAME_END);
     }
 
@@ -73,18 +73,24 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
       setLastConfig(conf);
 
       // Start the game with provided or saved config.
-      App.startMode(AppModes.GAME, conf);
+      DeferredApp.startMode(AppModes.GAME, conf);
     }
 
     if (nextState === GameState.EDITOR) {
       // Game editor is launching.
       // Not much we need to do here -- just launch the editor scene.
-      App.startMode(AppModes.EDITOR);
+      DeferredApp.startMode(AppModes.EDITOR);
     }
 
     if (backgroundGameStates.includes(nextState)) {
       // Main menu or config: let's launch the background game.
-      App.startMode(AppModes.BACKGROUND);
+      if (gameState === GameState.FIRST_START) {
+        // If this is a fresh start, we need to create the game before running background.
+        DeferredApp.createGame().then(() => DeferredApp.startMode(AppModes.BACKGROUND));
+      } else {
+        // Not a fresh start, just play the background scene.
+        DeferredApp.startMode(AppModes.BACKGROUND);
+      }
     }
 
     setGameState(nextState);
@@ -93,7 +99,7 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
   // On game-start, move from FIRST_START to MAIN_MENU
   useEffect(() => {
     if (gameState === GameState.FIRST_START) {
-      App.createGame().then(() => handleStateSwitch(GameState.MAIN_MENU))
+      handleStateSwitch(GameState.MAIN_MENU);
     }
   })
 

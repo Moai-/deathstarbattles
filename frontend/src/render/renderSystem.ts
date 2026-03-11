@@ -1,6 +1,6 @@
 import { query, observe, onAdd, onRemove } from 'bitecs';
 import { Renderable, LeavesTrail } from './components';
-import { GameObjectManager } from './objectManager';
+import { EntityRenderManager } from './managers';
 import { AnyPoint } from 'shared/src/types';
 import { dimTrail, makeTrail } from './elements/trail';
 import { getPosition } from 'shared/src/utils';
@@ -14,13 +14,13 @@ const withDimTrails = [Position, LeavesTrail];
 
 const projectiles = [Projectile, Active];
 
-export const createRenderObservers = (world: GameWorld, objectManager: GameObjectManager) => {
+export const createRenderObservers = (world: GameWorld, renderManager: EntityRenderManager) => {
   const unsubCreate = observe(world, onAdd(Renderable, Active), (eid) => {
-    objectManager.createObject(eid);
+    renderManager.createObject(eid);
   });
 
   const unsubRemove = observe(world, onRemove(Renderable, Active), (eid) => {
-    objectManager.removeObject(eid);
+    renderManager.removeObject(eid);
   });
 
   return () => {
@@ -31,7 +31,7 @@ export const createRenderObservers = (world: GameWorld, objectManager: GameObjec
 
 export const createRenderSystem = (
   scene: Phaser.Scene,
-  objectManager: GameObjectManager,
+  renderManager: EntityRenderManager,
 ) => {
   return (world: GameWorld) => {
 
@@ -40,7 +40,7 @@ export const createRenderSystem = (
     for (const eid of updatedEntities) {
       const x = Position.x[eid];
       const y = Position.y[eid];
-      objectManager.updateObjectPosition(eid, x, y);
+      renderManager.updateObjectPosition(eid, x, y);
     }
 
     const updatedTrails = query(world, withTrails);
@@ -48,11 +48,11 @@ export const createRenderSystem = (
     const dimmedTrails = query(world, withDimTrails);
 
     for (const eid of dimmedTrails) {
-      dimTrail(eid, objectManager, scene);
+      dimTrail(eid, renderManager, scene);
     }
 
     for (const eid of updatedTrails) {
-      makeTrail(eid, objectManager, scene);
+      makeTrail(eid, renderManager, scene);
     }
 
     const updatedProjectiles = query(world, projectiles);
@@ -78,9 +78,9 @@ export const createRenderSystem = (
         const ey = y - edgePoint.y;
         const distance = Math.sqrt(ex * ex + ey * ey);
 
-        objectManager.upsertBoundaryIndicator(eid, edgePoint, angle, distance);
+        renderManager.upsertBoundaryIndicator(eid, edgePoint, angle, distance);
       } else {
-        objectManager.removeBoundaryIndicator(eid);
+        renderManager.removeBoundaryIndicator(eid);
       }
     }
 

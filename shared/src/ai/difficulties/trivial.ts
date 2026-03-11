@@ -1,5 +1,5 @@
 import { TurnGenerator } from 'shared/src/types';
-import { oneIn, getPosition, getRandomBetween } from 'shared/src/utils';
+import { getPosition } from 'shared/src/utils';
 import {
   hyperspaceTurn,
   getClosestDestructible,
@@ -15,7 +15,7 @@ import {
 const generateTrivialTurn: TurnGenerator = async (world, stationId) => {
 
   // 1. Bail 1/4 of the time
-  if (oneIn(4)) {
+  if (world.random.oneIn(4)) {
     return hyperspaceTurn(stationId);
   }
 
@@ -25,7 +25,7 @@ const generateTrivialTurn: TurnGenerator = async (world, stationId) => {
   const target = getPosition(closestEid);
   const angleToTarget = getAngleBetween(ownPoint, target);
   const quadrant = Math.floor(angleToTarget / 90) * 90;
-  const angleError = getRandomBetween(0, 90);
+  const angleError = world.random.between(0, 90);
   const angle = quadrant + angleError;
   const { power } = addError({ power: 100, angle: 0 }, 0, 10);
   return {

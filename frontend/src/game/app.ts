@@ -1,8 +1,9 @@
+import 'phaser';
 import { BackgroundScene, BaseScene, EditorScene, GameScene, ResourceScene } from './scenes';
 import { BASE_HEIGHT, BASE_WIDTH } from 'shared/src/consts';
 import { gameBus, GameEvents } from 'src/util';
-import { AppModes, AppScenes } from './types';
-import { GameConfig } from 'shared/src/types';
+import { AppScenes } from './types';
+import { GameConfig, AppModes } from 'shared/src/types';
 
 const modeScenes: Record<AppModes, AppScenes> = {
   "BackgroundMode": AppScenes.BACKGROUND,
@@ -32,6 +33,10 @@ const config: Phaser.Types.Core.GameConfig = {
 class DSBPhaserApp {
   private game: Phaser.Game | null = null;
   private activeMode: AppModes | null = null;
+
+  constructor() {
+    console.log('phaser app constructed', Date.now())
+  }
 
   createGame() {
     return new Promise<void>((resolve) => {

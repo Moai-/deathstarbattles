@@ -1,5 +1,5 @@
 import { GameWorld } from 'shared/src/ecs/world';
-import { GameObjectManager } from 'src/render/objectManager';
+import { EntityRenderManager } from 'src/render/managers';
 import { FiringIndicatorHandler } from './handlers/firingIndicatorHandler';
 import { PlayerInputHandler } from './handlers/playerInputHandler';
 import { ProjectileManager } from './projectileManager';
@@ -13,7 +13,7 @@ import {
 import { SimManager } from 'shared/src/ai/simulation/manager';
 import { BaseScene } from '../scenes/baseScene';
 import { GHOST_SHOT_STEPS } from 'shared/src/consts';
-import { BackgroundArtManager } from './backgroundArtManager';
+import { BackgroundArtManager } from 'src/render/managers';
 
 type ListenerConfig = {
   cleanupCallback: () => void,
@@ -61,8 +61,8 @@ export class BaseSceneManager {
   protected collisionHandler: CollisionHandler;
   // Handler for keeping track of projectiles
   protected projectileManager: ProjectileManager;
-  // Manager for all in-game object renders (TODO: rename so it's clear this has to do with rendering)
-  protected objectManager: GameObjectManager;
+  // Manager for all in-game object renders
+  protected renderManager: EntityRenderManager;
   // Manager for the webworker that runs shot simulations
   protected simManager: SimManager;
   // Manager for background art
@@ -75,11 +75,11 @@ export class BaseSceneManager {
   constructor(
     scene: BaseScene,
     world: GameWorld,
-    objectManager: GameObjectManager,
+    renderManager: EntityRenderManager,
   ) {
     this.scene = scene;
     this.world = world;
-    this.objectManager = objectManager;
+    this.renderManager = renderManager;
     this.backgroundArtManager = new BackgroundArtManager(scene);
     this.indicator = new FiringIndicatorHandler(scene);
     this.projectileManager = new ProjectileManager(world);

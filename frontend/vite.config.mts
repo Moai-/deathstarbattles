@@ -35,5 +35,67 @@ export default defineConfig({
   build: {
     outDir: '../dist',
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          
+          if (id.includes('vendor/phaser-custom')) {
+            return 'phaser';
+          }
+
+          if (!id.includes('node_modules') && !id.includes('/src/') && !id.includes('/shared/')) {
+            return;
+          }
+
+          if (id.includes('react-dom') || id.includes('/react/')) {
+            return 'react-vendor';
+          }
+
+          if (
+            id.includes('styled-components') ||
+            id.includes('react-icons') ||
+            id.includes('react-select')
+          ) {
+            return 'ui-vendor';
+          }
+
+          if (
+            id.includes('seedrandom') ||
+            id.includes('bitecs') ||
+            id.includes('mitt')
+          ) {
+            return 'other-vendor';
+          }
+
+
+          if (
+            id.includes('/src/game/') ||
+            id.includes('/src/render/') ||
+            id.includes('/src/shaders/') ||
+            id.includes('/src/util/') ||
+            id.includes('/src/utils/') ||
+            id.includes('/src/scenarios/') ||
+            id.includes('/src/ai/') ||
+            id.includes('/src/content/') ||
+            id.includes('/src/ecs/') ||
+            id.includes('/src/entities/') ||
+            id.includes('/src/simulation/')
+          ) {
+            return 'game-app';
+          }
+
+          if (
+            id.includes('/src/ui/') ||
+            id.includes('/src/editor/') ||
+            id.includes('/src/hooks/') ||
+            id.includes('/src/components/') ||
+            id.includes('/src/main.tsx') ||
+            id.includes('/src/App.tsx')
+          ) {
+            return 'ui-app';
+          }
+        }
+      }
+    }
   },
 });

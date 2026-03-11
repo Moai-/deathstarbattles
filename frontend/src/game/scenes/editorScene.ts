@@ -9,7 +9,7 @@ import { AppScenes } from '../types';
 
 // Runs the editor
 export class EditorScene extends BaseScene {
-  private editorManager = new EditorManager(this, this.world, this.objectManager);
+  private editorManager = new EditorManager(this, this.world, this.renderManager);
   private cleanupSystem = createCleanupSystem(
     this.editorManager.onCleanup.bind(this.editorManager),
   );

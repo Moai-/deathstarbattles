@@ -10,7 +10,7 @@ import { AppScenes } from '../types';
 
 // Runs a game with bots and a single player
 export class GameScene extends BaseScene {
-  private gameManager = new GameManager(this, this.world, this.objectManager);
+  private gameManager = new GameManager(this, this.world, this.renderManager);
   private cleanupSystem = createCleanupSystem(
     this.gameManager.onCleanup.bind(this.gameManager),
   );
