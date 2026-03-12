@@ -46,6 +46,7 @@ Phaser = Extend(false, Phaser, {
     Graphics: require('gameobjects/graphics/Graphics.js'),
     Image: require('gameobjects/image/Image'),
     Layer: require('gameobjects/layer/Layer'),
+    Line: require('gameobjects/shape/line/Line'),
     RenderTexture: require('gameobjects/rendertexture/RenderTexture.js'),
     Shape: require('gameobjects/shape/Shape'),
     Triangle: require('gameobjects/shape/triangle/Triangle.js'),
@@ -56,6 +57,7 @@ Phaser = Extend(false, Phaser, {
       Graphics: require('gameobjects/graphics/GraphicsFactory'),
       Image: require('gameobjects/image/ImageFactory'),
       Layer: require('gameobjects/layer/LayerFactory'),
+      Line: require('gameobjects/shape/line/LineFactory'),
       RenderTexture: require('gameobjects/rendertexture/RenderTextureFactory.js'),
       Triangle: require('gameobjects/shape/triangle/TriangleFactory.js'),
     },
@@ -78,6 +80,7 @@ Phaser = Extend(false, Phaser, {
   Math: {
     Between: require('math/Between'),
     Clamp: require('math/Clamp'),
+    Distance: require('math/distance'),
     DegToRad: require('math/DegToRad'),
     FloatBetween: require('math/FloatBetween'),
     Linear: require('math/Linear'),
