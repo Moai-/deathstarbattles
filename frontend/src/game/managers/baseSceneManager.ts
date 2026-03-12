@@ -55,7 +55,7 @@ export class BaseSceneManager {
   // == game components ==
   // Handler and renderer for the firing indicator
   protected indicator: FiringIndicatorHandler;
-  // Handler for player input (TODO: probably worth rolling into firing indicator idk)
+  // Handler for player input
   protected inputHandler: PlayerInputHandler;
   // Handler for resolving collisions between projectiles and other objects
   protected collisionHandler: CollisionHandler;
@@ -67,10 +67,6 @@ export class BaseSceneManager {
   protected simManager: SimManager;
   // Manager for background art
   protected backgroundArtManager: BackgroundArtManager
-
-  // == game state ==
-  // Whether this scene is active or not (TODO: check if I need this, phaser should handle this by itself)
-  protected active = true;
 
   constructor(
     scene: BaseScene,
@@ -92,7 +88,6 @@ export class BaseSceneManager {
     this.indicator.create();
     this.inputHandler.create();
     this.setUpListeners();
-    this.active = true;
   }
 
   destroy() {
@@ -102,7 +97,6 @@ export class BaseSceneManager {
     this.inputHandler.destroy();
     this.projectileManager.destroy();
     this.backgroundArtManager.destroy();
-    this.active = false;
   }
 
   onCollision(eid1: number, eid2: number, wasDestroyed: boolean) {
@@ -111,10 +105,6 @@ export class BaseSceneManager {
 
   onCleanup(eid: number) {
     this.projectileManager.removeProjectile(eid);
-  }
-
-  ready() {
-    this.active = true;
   }
 
   protected setUpListeners(conf?: Partial<ListenerConfig>) {

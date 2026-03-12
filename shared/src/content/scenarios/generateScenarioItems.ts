@@ -3,6 +3,7 @@ import { GameObject, ObjectPlacement, ObjectTypes, ScenarioItemRule, UnplacedGam
 import { scenarioItemMap } from '../objectManifest';
 import { getAllObjects, getRadius, getType, setPosition, generateNonOverlappingPositions } from 'shared/src/utils';
 import { objectClearance, playerClearance } from './placement';
+import { placePlayers } from './placePlayers';
 
 const NULL_POS = {x: 0, y: 0}
 
@@ -111,25 +112,19 @@ export const generateScenarioItems = (
     .map((item) => ({ radius: getRadius(item), eid: item, placement: getPlacementRule(item, rules) }))
     .sort((a, b) => b.radius - a.radius);
 
-  // Turn players into game objects too
-  const playerObjects: Array<UnplacedGameObject> = players
-    .map((item) => ({ radius: getRadius(item), eid: item, placement: ObjectPlacement.ANYWHERE }));
 
-
-  // 5. Place objects (exclude level object eids from existing so we don't treat
-  // unpositioned level entities at (0,0) as obstacles)
+  // 5. Place objects
   const levelEids = new Set(levelObjects.map((o) => o.eid));
   const existingForLevel = getAllObjects(world).filter((o) => !levelEids.has(o.eid));
   const placedObjects = generateNonOverlappingPositions(world, levelObjects, objectClearance, existingForLevel);
-  const placedPlayers = generateNonOverlappingPositions(world, playerObjects, playerClearance, placedObjects);
-
-  const all = [...placedObjects, ...placedPlayers];
-
-  all.forEach((obj) => {
+  
+  placedObjects.forEach((obj) => {
     setPosition(obj.eid, obj.x, obj.y)
   })
+  
+  const placedPlayers = placePlayers(world, players);
 
-  return all;
+  return [...placedObjects, ...placedPlayers];
 }
 
 const getPlacementRule = (eid: number, rules: Array<ScenarioItemRule>) => {

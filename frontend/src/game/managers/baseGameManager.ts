@@ -57,7 +57,6 @@ export class BaseGameManager extends BaseSceneManager {
   protected turnTimeGapRemaining = 0;
 
   ready() {
-    super.ready();
     this.numTurn = 0;
     this.activeStationIndex = -1;
     this.turnInputs = [];
@@ -107,11 +106,8 @@ export class BaseGameManager extends BaseSceneManager {
   }
 
   protected async startPhase() {
-    if (!this.active) {
-      return;
-    }
     await wait(this.turnTimeGapRemaining);
-    if (!this.active) {
+    if (!this.scene.scene.isActive()) {
       return;
     }
     this.turnTimeGapRemaining = TURN_TIME_GAP;
@@ -231,6 +227,9 @@ export class BaseGameManager extends BaseSceneManager {
     );
 
     this.decrementTimeGap(Date.now() - beforeRestart);
+    if (!this.scene.scene.isActive()) {
+      return;
+    }
     this.startPhase();
   }
 

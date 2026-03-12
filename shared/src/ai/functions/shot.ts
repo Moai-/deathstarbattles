@@ -104,7 +104,10 @@ export const getTangentShots = (
   const dx = obstacleX - shooterPos.x;
   const dy = obstacleY - shooterPos.y;
   const d = Math.hypot(dx, dy);
-  if (d <= obstacleR + 1e-6) return []; // shooter inside or on circle
+  if (d <= obstacleR + 1e-6) {
+    console.warn(`Shooter at ${shooterPos.x},${shooterPos.y} is inside the obstacle it is trying to avoid`)
+    return [];
+  }
 
   const baseAngle = toDeg(Math.atan2(dy, dx));
   const deltaDeg = toDeg(Math.asin(obstacleR / d));

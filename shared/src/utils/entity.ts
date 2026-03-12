@@ -4,15 +4,9 @@ import { AnyPoint, GameObject, ObjectTypes } from '../types';
 import { Active, Collision, Destructible, HyperLocus, ObjectInfo, Position, Projectile, Wormhole } from '../ecs/components';
 import { ExitTypes } from '../ecs/components/wormhole';
 
-export const collidingEntities: Array<ComponentRef> = [];
-export const targetEntities: Array<ComponentRef> = [];
-export const locusEntities: Array<ComponentRef> = [];
-
-const setUpQueries = () => {
-  collidingEntities.push(Collision, Position, Active);
-  targetEntities.push(Collision, Position, Destructible, ObjectInfo, Active);
-  locusEntities.push(HyperLocus, Active);
-}
+export const collidingEntities: Array<ComponentRef> = [Collision, Position, Active];
+export const targetEntities: Array<ComponentRef> = [Collision, Position, Destructible, ObjectInfo, Active];
+export const locusEntities: Array<ComponentRef> = [HyperLocus, Active];
 
 export const getRadius = (eid: number) => Collision.radius[eid];
 
@@ -80,9 +74,3 @@ export const getHyperLocus = (world: GameWorld) => {
   }
   return null;
 };
-
-queueMicrotask(() => {
-  // Need to do it this way to avoid accessing before initialization
-  // TODO: come in there has to be a way to fix this in a more intelligent way
-  setUpQueries();
-})

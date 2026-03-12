@@ -1,6 +1,4 @@
-import { GameWorld } from '../ecs/world';
-
-// TODO: split into multiple files
+import { World } from 'bitecs';
 
 // === Broad-application generics ===
 
@@ -109,6 +107,56 @@ export type EntityGenerator<EntityProps = {}> = (
   pos: AnyPoint,
   props?: EntityProps
 ) => number;
+
+export type RandomFn = () => number;
+
+export type WeightedChoice<T> = Record<number, T>
+
+export type WorldRandomApi = {
+  // Basic random generator, acts like Math.random
+  rnd: () => number,
+
+  // Integer between min and max, inclusive
+  between: (min: number, max: number) => number;
+
+  // Float between min and max, inclusive only of min
+  betweenFloat: (min: number, max: number) => number;
+
+  // Randomly adds or subtracts value with base, number >= 1
+  jitter: (base: number, value: number) => number;
+
+  // Randomly adds or subtracts value with base, number < 1
+  jitterFloat: (base: number, value: number) => number;
+
+  // Returns true or false based on fraction; so, oneIn(2) will return true 50% of the time
+  oneIn: (fraction: number) => boolean;
+
+  // Picks a random element from the provided array
+  pickElement: <T>(array: readonly T[]) => T;
+
+  // Accepts weights and values to return
+  // For example, [{1: 'foo'}, {2: 'bar'}] will return 'bar' twice as often as 'foo'
+  pickChance: <T>(chances: readonly WeightedChoice<T>[]) => T;
+
+  // Generates a random colour
+  // Base is the starting colour
+  // Bias is how much each value of the starting colour can increase
+  // For example, base: rgb(100, 100, 100) and bias rgb(0, 0, 20)
+  // can only produce something between 100,100,100 and 100,100,120
+  colour: (base: Colour, bias: Colour) => Colour & {num: () => number};
+};
+
+export interface GameWorld extends World {
+  time: number;
+  delta: number;
+  movements: ObjectMovements | null;
+  debug: boolean;
+  traceBuffer: TraceBuffer | null;
+  traceBufferIdx: number;
+  seed?: string | number;
+  rng: RandomFn;
+  random: WorldRandomApi;
+}
 
 // === In-game stuff ===
 

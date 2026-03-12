@@ -1,6 +1,7 @@
 import { Backgrounds } from "shared/src/types";
 import { BaseScene } from "src/game/scenes";
 import { generatorMap } from "../background";
+import { Depths } from "../types";
 
 const BG_TEXTURE = 'currentBackground';
 
@@ -23,7 +24,8 @@ export class BackgroundArtManager {
     this.backgroundImage = this.scene.add
       .image(0, 0, BG_TEXTURE)
       .setOrigin(0, 0)
-      .setDisplaySize(this.scene.scale.width, this.scene.scale.height);
+      .setDisplaySize(this.scene.scale.width, this.scene.scale.height)
+      .setDepth(Depths.BACKGROUND);
 
     renderTexture.destroy();
     this.currentBackground = bg;

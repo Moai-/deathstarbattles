@@ -1,6 +1,7 @@
 import { BaseScene } from 'src/game/scenes/baseScene';
 
 export enum Depths {
+  BACKGROUND,
   BOTTOM,
   STARS,
   PLANETS,

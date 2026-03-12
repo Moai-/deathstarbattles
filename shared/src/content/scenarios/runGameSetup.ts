@@ -7,6 +7,7 @@ import { finalizeScenario } from "./finalizeScenario";
 import { instantiateScenario } from "shared/src/ecs/serde";
 import { generateNonOverlappingPositions, getAllObjects, getRadius, setPosition } from "shared/src/utils";
 import { playerClearance } from "./placement";
+import { placePlayers } from "./placePlayers";
 
 export const runGameSetup = (world: GameWorld, config: GameConfig) => {
 
@@ -36,13 +37,9 @@ export const runGameSetup = (world: GameWorld, config: GameConfig) => {
     instantiateScenario(config.savedScenario, world);
 
     // 2.2 Generate and place players
-    // TODO: this is copy pasted from generateScenarioItems, extract into a util
     const players = generatePlayers(world, config.players, config.stationPerPlayer);
     const stationEids = players.flatMap((b) => b.stationEids);
-    const playerObjects: Array<UnplacedGameObject> = stationEids
-      .map((item) => ({ radius: getRadius(item), eid: item, placement: ObjectPlacement.ANYWHERE }));
-    const placedPlayers = generateNonOverlappingPositions(world, playerObjects, playerClearance);
-    placedPlayers.forEach((p) => setPosition(p.eid, p.x, p.y));
+    placePlayers(world, stationEids);
 
     // 2.3 For finalization, all we need is to inflate stations. Deserializer should take care of wormholes
     const size = config.stationSize === undefined ? 2 : config.stationSize;
