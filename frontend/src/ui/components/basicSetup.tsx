@@ -9,11 +9,15 @@ import { playerCols } from 'shared/src/utils';
 import { FaSignOutAlt } from 'react-icons/fa';
 import { getScenarioTypes } from 'shared/src/content/scenarios/scenarioManifest';
 import { createWorldRandomApi } from 'shared/src/ecs/world';
-import { checkKey, listScenarios, loadScenario, makeKey } from 'src/util';
+import { listScenarios, loadScenario, makeKey } from 'src/util';
+
+type SetupTab = 'generated' | 'saved';
 
 export const DropdownRow = styled.div`
   display: flex;
+  width: 100%;
   flex-direction: column;
+  flex: 1;
   gap: 4px;
 `;
 
@@ -54,30 +58,63 @@ const amounts: Array<{ label: string; amount: number; isMax: boolean }> = [
 
 const stationCountOptions = [1, 2, 3, 4];
 
-const maxPlayersPerStationCount = [12, 6, 4, 3]
+const TabBar = styled.div`
+  display: flex;
+  width: 100%;
+  gap: 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #00ffff40;
+`;
+
+const Tab = styled.button<{ $active: boolean }>`
+  padding: 10px 20px;
+  font-size: 14px;
+  background: ${(p) => (p.$active ? '#00ffff22' : 'transparent')};
+  color: #00ffff;
+  border: 1px solid ${(p) => (p.$active ? '#00ffff' : 'transparent')};
+  border-bottom: ${(p) => (p.$active ? '1px solid transparent' : 'none')};
+  margin-bottom: -1px;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  outline: none;
+  &:hover {
+    background: #00ffff18;
+  }
+`;
 
 export const SetupScreen: React.FC = () => {
-  const { setGameState, lastConfig } = useGameState();
-  
+  const { setGameState } = useGameState();
+
+  const [activeTab, setActiveTab] = useState<SetupTab>('generated');
   const [botCount, setBotCount] = useState('7');
   const [difficulty, setDifficulty] = useState('3');
   const [objectCount, setObjectCount] = useState('10');
   const [stationSize, setStationSize] = useState('2');
   const [stationCount, setStationCount] = useState('1');
-  const [scenario, setScenario] = useState('0');
-  const types = getScenarioTypes({random: createWorldRandomApi(Math.random)});
-  const savedScenarioKeys = useMemo(() => {
-    return listScenarios();
-  }, []);
-  const scenarioOptions = useMemo(() => {
-    const builtIn = types.map(({ name }, idx) => ({ value: String(idx), label: name }));
-    const saved = savedScenarioKeys.map((name) => ({
-      value: makeKey(name),
-      label: name,
-    }));
-    return [...builtIn, ...saved];
-  }, [types, savedScenarioKeys]);
-  const isSavedScenario = checkKey(scenario);
+  const [generatedScenario, setGeneratedScenario] = useState('0');
+  const [savedScenario, setSavedScenario] = useState('');
+
+  const types = getScenarioTypes({ random: createWorldRandomApi(Math.random) });
+  const savedScenarioKeys = useMemo(() => listScenarios(), []);
+
+  const generatedScenarioOptions = useMemo(
+    () => types.map(({ name }, idx) => ({ value: String(idx), label: name })),
+    [types]
+  );
+  const savedScenarioOptions = useMemo(
+    () =>
+      savedScenarioKeys.map((name) => ({
+        value: makeKey(name),
+        label: name,
+      })),
+    [savedScenarioKeys]
+  );
+
+  // Default saved scenario selection when switching to saved tab
+  const effectiveSavedScenario =
+    savedScenarioOptions.length > 0 && !savedScenarioOptions.some((o) => o.value === savedScenario)
+      ? savedScenarioOptions[0].value
+      : savedScenario;
 
   const start = () => {
     const players: Array<PlayerSetup> = [];
@@ -93,19 +130,21 @@ export const SetupScreen: React.FC = () => {
         col: playerCols[i + 1],
       });
     }
-    if (isSavedScenario) {
+    if (activeTab === 'saved') {
+      const scenarioKey = effectiveSavedScenario;
+      if (!scenarioKey) return;
       setGameState(GameState.INGAME, {
         justBots: false,
         players,
         stationSize: size,
         stationPerPlayer: Number(stationCount),
-        savedScenario: loadScenario(scenario)
+        savedScenario: loadScenario(scenarioKey),
       });
     } else {
       const [amountRaw, isMaxRaw] = objectCount.split('|');
       const amount = parseInt(amountRaw, 10);
       const isMax = isMaxRaw === 'true';
-      const scenarioIdx = parseInt(scenario, 10);
+      const scenarioIdx = parseInt(generatedScenario, 10);
       const scenarioSetup = types[scenarioIdx];
       setGameState(GameState.INGAME, {
         justBots: false,
@@ -120,6 +159,8 @@ export const SetupScreen: React.FC = () => {
     }
   };
 
+  const canStartSaved = activeTab !== 'saved' || savedScenarioOptions.length > 0;
+
   return (
     <SetupScreenContainer>
       <TopLeftButton>
@@ -128,6 +169,14 @@ export const SetupScreen: React.FC = () => {
         </MiniButton>
       </TopLeftButton>
       <SetupHeader>Game Setup</SetupHeader>
+      <TabBar>
+        <Tab $active={activeTab === 'generated'} onClick={() => setActiveTab('generated')}>
+          Generated scenarios
+        </Tab>
+        <Tab $active={activeTab === 'saved'} onClick={() => setActiveTab('saved')}>
+          Saved scenarios
+        </Tab>
+      </TabBar>
       <SimpleSetup>
         <DropdownGroup>
           <DropdownRow>
@@ -167,70 +216,135 @@ export const SetupScreen: React.FC = () => {
             </StyledSelect>
           </DropdownRow>
         </DropdownGroup>
-        <DropdownGroup>
-          <DropdownRow>
-            <StyledLabel htmlFor="scenario">Scenario</StyledLabel>
-            <StyledSelect
-              id="scenario"
-              value={scenario}
-              onChange={(e) => setScenario(e.target.value)}
-            >
-              {scenarioOptions.map(({ value, label }) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </StyledSelect>
-          </DropdownRow>
-          <DropdownRow>
-            <StyledLabel htmlFor="objectCount">Number of Objects</StyledLabel>
-            <StyledSelect
-              id="objectCount"
-              value={objectCount}
-              onChange={(e) => setObjectCount(e.target.value)}
-              disabled={isSavedScenario}
-            >
-              {amounts.map(({ label, amount, isMax }) => (
-                <option key={label} value={`${amount}|${isMax}`}>
-                  {label}
-                </option>
-              ))}
-            </StyledSelect>
-          </DropdownRow>
-        </DropdownGroup>
 
-        <DropdownGroup>
-          <DropdownRow>
-            <StyledLabel htmlFor="stationSize">Station Size</StyledLabel>
-            <StyledSelect
-              id="stationSize"
-              value={stationSize}
-              onChange={(e) => setStationSize(e.target.value)}
-            >
-              {sizes.map((n, i) => (
-                <option key={n} value={i - 0 + 1}>
-                  {n}
-                </option>
-              ))}
-            </StyledSelect>
-          </DropdownRow>
-          <DropdownRow>
-            <StyledLabel htmlFor="stationCount">Station Count</StyledLabel>
-            <StyledSelect
-              id="stationCount"
-              value={stationCount}
-              onChange={(e) => setStationCount(e.target.value)}
-            >
-              {stationCountOptions.map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </StyledSelect>
-          </DropdownRow>
-        </DropdownGroup>
+        {activeTab === 'generated' ? (
+          <DropdownGroup>
+            <DropdownRow>
+              <StyledLabel htmlFor="scenario">Scenario</StyledLabel>
+              <StyledSelect
+                id="scenario"
+                value={generatedScenario}
+                onChange={(e) => setGeneratedScenario(e.target.value)}
+              >
+                {generatedScenarioOptions.map(({ value, label }) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </StyledSelect>
+            </DropdownRow>
+            <DropdownRow>
+              <StyledLabel htmlFor="objectCount">Number of Objects</StyledLabel>
+              <StyledSelect
+                id="objectCount"
+                value={objectCount}
+                onChange={(e) => setObjectCount(e.target.value)}
+              >
+                {amounts.map(({ label, amount, isMax }) => (
+                  <option key={label} value={`${amount}|${isMax}`}>
+                    {label}
+                  </option>
+                ))}
+              </StyledSelect>
+            </DropdownRow>
+          </DropdownGroup>
+        ) : (
+          
+            <DropdownGroup>
+              <DropdownRow>
+                <StyledLabel htmlFor="savedScenario">Scenario</StyledLabel>
+                <StyledSelect
+                  id="savedScenario"
+                  value={effectiveSavedScenario}
+                  onChange={(e) => setSavedScenario(e.target.value)}
+                >
+                  {savedScenarioOptions.length === 0 ? (
+                    <option value="">No saved scenarios</option>
+                  ) : (
+                    savedScenarioOptions.map(({ value, label }) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))
+                  )}
+                </StyledSelect>
+              </DropdownRow>
+
+            <DropdownRow>
+              <StyledLabel htmlFor="stationSize">Station Size</StyledLabel>
+              <StyledSelect
+                id="stationSize"
+                value={stationSize}
+                onChange={(e) => setStationSize(e.target.value)}
+              >
+                {sizes.map((n, i) => (
+                  <option key={n} value={i - 0 + 1}>
+                    {n}
+                  </option>
+                ))}
+              </StyledSelect>
+            </DropdownRow>
+          </DropdownGroup>
+        
+        )}
+
+        {activeTab === 'generated' ? (
+          <DropdownGroup>
+            <DropdownRow>
+              <StyledLabel htmlFor="stationSize">Station Size</StyledLabel>
+              <StyledSelect
+                id="stationSize"
+                value={stationSize}
+                onChange={(e) => setStationSize(e.target.value)}
+              >
+                {sizes.map((n, i) => (
+                  <option key={n} value={i - 0 + 1}>
+                    {n}
+                  </option>
+                ))}
+              </StyledSelect>
+            </DropdownRow>
+            <DropdownRow>
+              <StyledLabel htmlFor="stationCount">Station Count</StyledLabel>
+              <StyledSelect
+                id="stationCount"
+                value={stationCount}
+                onChange={(e) => setStationCount(e.target.value)}
+              >
+                {stationCountOptions.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </StyledSelect>
+            </DropdownRow>
+          </DropdownGroup>
+        ) : (
+          <DropdownGroup>
+            <DropdownRow>
+              <StyledLabel htmlFor="stationCount">Station Count</StyledLabel>
+              <StyledSelect
+                id="stationCount"
+                value={stationCount}
+                onChange={(e) => setStationCount(e.target.value)}
+              >
+                {stationCountOptions.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </StyledSelect>
+            </DropdownRow>
+          </DropdownGroup>
+        )}
+
+        
       </SimpleSetup>
-      <NeonButton style={{ marginTop: '30px' }} onClick={start}>
+      <NeonButton
+        style={{ marginTop: '30px' }}
+        onClick={start}
+        disabled={activeTab === 'saved' && !canStartSaved}
+      >
         Start Game
       </NeonButton>
     </SetupScreenContainer>

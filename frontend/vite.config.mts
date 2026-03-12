@@ -8,12 +8,13 @@ export default defineConfig({
   base: '/',
   plugins: [
     react(),
-    visualizer({
-      filename: 'dist/stats.html',
-      open: true,
-      gzipSize: true,
-      brotliSize: true
-    })
+    // Uncomment the below line to see a visualization of the relative chunks in the build
+    // visualizer({
+    //   filename: 'dist/stats.html',
+    //   open: true,
+    //   gzipSize: true,
+    //   brotliSize: true
+    // })
   ],
   resolve: {
     alias: {

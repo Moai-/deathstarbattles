@@ -104,6 +104,7 @@ export const WinnerContent = styled.div`
 `;
 
 export const SetupScreenContainer = styled(OverlayContainer)`
+  width: 570px;
   max-width: 800px;
   max-height: 912px;
   flex-direction: column;
@@ -155,6 +156,7 @@ export const SimpleSetup = styled.div`
   display: flex;
   flex-direction: row;
   gap: 10px;
+  width: 100%;
 `;
 
 export const AdvancedSetup = styled.div`
@@ -182,4 +184,5 @@ export const DropdownGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex: 1;
 `
