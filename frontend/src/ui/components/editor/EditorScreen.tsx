@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GameState, useGameState } from "../context";
-import { gameBus } from "src/util";
-import { EditorEvents, SelectionClick } from "src/util/event";
+import { gameBus, EditorEvents, SelectionClick } from 'src/events';
 import { ObjectTypes, EditorEntity } from "shared/src/types";
 import { SelectionMenu } from "./SelectionMenu";
 import { useOutsideClick } from "../../hooks/useOutsideClick";

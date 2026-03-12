@@ -1,4 +1,4 @@
-import { gameBus, GameEvents } from 'src/util';
+import { gameBus, GameEvents } from 'src/events';
 import { AudioManager, audioManifest } from '../managers/audioManager';
 import { AppScenes } from '../types';
 

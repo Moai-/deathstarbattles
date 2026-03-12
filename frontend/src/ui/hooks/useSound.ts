@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { gameBus, GameEvents } from 'src/util';
+import { gameBus, GameEvents } from 'src/events';
 
 export const useSound = () => {
   const [muted, setMuted] = useState(true);

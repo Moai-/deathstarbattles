@@ -1,11 +1,11 @@
 import { RefObject, useState, useMemo } from "react";
-import { gameBus, listScenarios } from "src/util";
+import { listScenarios } from "src/util";
+import { gameBus, EditorEvents } from 'src/events';
 import { Backgrounds } from "shared/src/types";
 import {
   useEditorOptions,
   type DeathStarSizeIndex,
 } from "./";
-import { EditorEvents } from "src/util/event";
 
 export type OptionsMenuPanel =
   | "root"

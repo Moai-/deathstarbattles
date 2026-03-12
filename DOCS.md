@@ -13,7 +13,7 @@ This repo is split into two TypeScript workspaces:
 1. **React UI (`frontend/src/ui/`)**
    - Owns the simple app state transformations (splashscreen, game setup, game controls, scenario editor).
    - Calls into the Phaser app singleton through a deferred loader (`frontend/src/ui/deferredApp.ts`) to start/stop scenes.
-   - Talks to Phaser via an event bus (`frontend/src/util/event.ts`).
+   - Talks to Phaser via an event bus (`frontend/src/events`).
 
 2. **Phaser App + Scenes (`frontend/src/game/`)**
    - `App` (`frontend/src/game/app.ts`) is a singleton that starts/stops scenes, and owns the Phaser game object.
@@ -22,7 +22,7 @@ This repo is split into two TypeScript workspaces:
      - `BackgroundScene`: automatic bot-vs-bot gameplay on the main menu.
      - `GameScene`: single-player game vs bots.
      - `EditorScene`: used by the scenario editor.
-  - There is also `ResourceScene`, which is currently used only for sound management.
+   - There is also `ResourceScene`, which is currently used only for sound management.
 
 3. **ECS (`shared/src/ecs/`)**
    - BitECS implementation of ECS architecture ([see Wikipedia page](https://en.wikipedia.org/wiki/Entity_component_system) for more info on ECS).
@@ -187,6 +187,9 @@ So, in spite of their names, a better way to understand these aren't the essenti
 
 Splitting the phaser build into these two halves led to some difficulties: 
 
+  - Sometimes, it is not clear what modules need to be included for what specific functionalities. Here are some things I've learned:
+    - Anything you create with `scene.add` needs to be included both as its base object and as its factory. For example, `scene.add.line` will need `Geom.Line`, `GameObjects.Line`, and `GameObjects.Factories.Line`.
+    - `scene.make` acts like the above, but instead of Factories, you will need to bring in the Creator for that object. 
   - The packages build on each other. The first assigns itself to a global Phaser namespace, and the second extends that namespace. Because of this behaivour, it is important to import them in order. Importing them out of order extras to write its modules to an uninitialized namespace, and then core loads and overwrites that namespace, so everything you'd expect to come from extras will be missing. 
   - Typescript can cope normally with a custom Phaser build, but because I split it in two, it got confused. That is why I added the `frontend/src/typings` folder. Removing this folder will not affect the build or the runtime, but the VSCode Typescript server goes nuts and starts highlighting all sorts of things, so these are there mostly for development comfort. The files inside are:
     - `phaser-chunks.d.ts` lets Typescript know that there are two Phaser chunks.

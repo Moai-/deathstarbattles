@@ -8,7 +8,7 @@ import {
 } from 'shared/src/ecs/systems';
 import { createRenderObservers, createRenderSystem } from 'src/render/renderSystem';
 import { EntityRenderManager } from 'src/render/managers';
-import { gameBus, GameEvents } from 'src/util';
+import { gameBus, GameEvents } from 'src/events';
 import { getSoundManager } from './resourceScene';
 import { drawPathListener } from 'src/util/debug';
 import { FxManager } from '../managers';

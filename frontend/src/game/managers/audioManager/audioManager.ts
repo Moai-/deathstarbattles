@@ -1,4 +1,4 @@
-import { gameBus, GameEvents } from 'src/util';
+import { gameBus, GameEvents } from 'src/events';
 import { AudioCategory, audioManifest } from './manifest';
 
 // Manages audio, although not very well

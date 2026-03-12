@@ -1,12 +1,11 @@
 import { GameWorld } from "shared/src/ecs/world";
-import { Backgrounds, GameConfig, ObjectPlacement, UnplacedGameObject } from "shared/src/types";
+import { Backgrounds, GameConfig } from "shared/src/types";
 import { generatePlayers, generateRandomBots } from "./generatePlayers";
 import { getScenarioTypes } from "./scenarioManifest";
 import { generateScenarioItems } from "./generateScenarioItems";
 import { finalizeScenario } from "./finalizeScenario";
 import { instantiateScenario } from "shared/src/ecs/serde";
-import { generateNonOverlappingPositions, getAllObjects, getRadius, setPosition } from "shared/src/utils";
-import { playerClearance } from "./placement";
+import { getAllObjects} from "shared/src/utils";
 import { placePlayers } from "./placePlayers";
 
 export const runGameSetup = (world: GameWorld, config: GameConfig) => {

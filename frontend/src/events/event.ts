@@ -1,6 +1,8 @@
 import mitt, { type Emitter } from 'mitt';
 import { AnyPoint, Backgrounds, EditorEntity, GameConfig, ObjectTypes, OtherActions } from 'shared/src/types';
 import { AppScenes } from 'src/game';
+import { GameEvents } from './gameEvents';
+import { EditorEvents } from './editorEvents';
 
 type WinnerData = { col: number; playerId: number };
 
@@ -74,57 +76,6 @@ export type FireShotConfirmPayload = {
   power: number
 }
 
-export enum GameEvents {
-  // === Game stuff ===
-  // controls
-  ANGLE_POWER_GAME = 'apgame',
-  ANGLE_POWER_UI = 'apui',
-  OTHER_ACTION_UI = 'otheractionui',
-  OTHER_ACTION_GAME = 'otheractiongame',
-  SET_VOLUME = 'setvolume',
-  // lifecycle
-  SCENE_LOADED = 'sceneloaded',
-  SCENE_UNLOADED = 'sceneunloaded',
-  START_GAME = 'startgame',
-  GAME_LOADED = 'gameloaded',
-  GAME_REMOVED = 'gameremoved',
-  GAME_END = 'gameend',
-  // in-game events
-  END_TURN = 'endturn',
-  DEBUG_DRAW_PATH = 'debugdrawpath',
-}
-
-export enum EditorEvents {
-  // === Editor stuff ===
-  // ECS general management
-  ED_ADD_ENTITY = 'ed_addentity',
-  ED_ENTITY_CLICKED = 'ed_entityclicked',
-  ED_UI_PROP_CHANGED = 'ed_ui_propchanged',
-  ED_UI_DELETE_ENTITY = 'ed_ui_deleteentity',
-  ED_PH_DELETE_ENTITY = 'ed_ph_deleteentity',
-  ED_UI_REMOVE_COMPONENT = 'ed_ui_removecomponent',
-  ED_PH_COMPONENT_REMOVED = 'ed_ph_componentremoved',
-  // Entity placement
-  ED_UI_START_PLACE_ENTITY = 'ed_ui_startplaceentity',
-  ED_UI_START_MOVE_ENTITY = 'ed_ui_startmoveentity',
-  ED_UI_ABORT_PLACE = 'ed_ui_abortplace',
-  ED_PH_ABORT_PLACE = 'ed_ph_abortplace',
-  // Fire shot
-  ED_UI_START_FIRE_SHOT = 'ed_ui_startfireshot',
-  ED_FIRE_SHOT_READY = 'ed_fireshotready',
-  ED_UI_FIRE_SHOT_CONFIRM = 'ed_ui_fireshotconfirm',
-  ED_UI_FIRE_SHOT_CANCEL = 'ed_ui_fireshotcancel',
-  ED_FIRE_MODE_EXITED = 'ed_firemodeexited',
-  // Editor options
-  ED_UI_CLEAR_TRAILS = 'ed_ui_cleartrails',
-  ED_UI_OPTIONS_DEATHSTAR_SIZE = 'ed_ui_options_deathstarsize',
-  ED_UI_OPTIONS_ALL_DESTRUCTIBLE = 'ed_ui_options_alldestructible',
-  ED_UI_OPTIONS_BACKGROUND = 'ed_ui_options_background',
-  ED_ENTITY_HOVERED = 'ed_entityhovered',
-  ED_UI_SAVE_SCENARIO = 'ed_ui_savescenario',
-  ED_UI_LOAD_SCENARIO = 'ed_ui_loadscenario',
-  ED_SCENARIO_LOADED = 'ed_scenarioloaded',
-}
 
 type EventData = {
   // === Game stuff ===
@@ -176,12 +127,14 @@ type EventData = {
   [EditorEvents.ED_SCENARIO_LOADED]: void;
 };
 
+
 type GameBus = Emitter<EventData> & {
   once<Key extends keyof EventData>(type: Key, handler: (data: EventData[Key]) => void): void;
 };
 
 const bus = mitt<EventData>();
 
+// Add a "once" handler -- listen to an event then unsub after it was triggered once
 (bus as GameBus).once = function once<Key extends keyof EventData>(
   type: Key,
   handler: (data: EventData[Key]) => void
@@ -194,4 +147,3 @@ const bus = mitt<EventData>();
 };
 
 export const gameBus = bus as GameBus;
-

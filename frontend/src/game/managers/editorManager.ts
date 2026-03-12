@@ -27,12 +27,12 @@ import { playerCols } from 'shared/src/utils/colour';
 import { serializeComponents, serializeScenario } from 'shared/src/ecs/serde/serialize';
 import { instantiateScenario } from 'shared/src/ecs/serde/deserialize';
 
-import { gameBus, loadScenario, saveScenario } from 'src/util';
+import { loadScenario, saveScenario } from 'src/util';
 import { getSoundManager } from '../scenes/resourceScene';
 import * as ecsComponents from 'shared/src/ecs/components';
 import { getDeathStarSizeIndex, getRemovedDestructibleEids, clearRemovedDestructibleEids, addRemovedDestructibleEid, getPersistTrails, getLabelTrails, getShotHistory, recordShot } from 'src/ui/components/editor';
 import { BaseSceneManager } from './baseSceneManager';
-import { EditorEvents } from 'src/util/event';
+import { gameBus, EditorEvents } from 'src/events';
 import { BASE_DEATHSTAR_RAD } from 'shared/src/content';
 import { scenarioItemMap } from 'shared/src/content/objectManifest';
 
@@ -60,7 +60,6 @@ export class EditorManager extends BaseSceneManager {
   private static posQuery = [Position];
 
   ready() {
-    super.ready();
     this.enableClickListeners();
     this.escapeKey = this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) ?? null;
     this.shiftKey = this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT) ?? null;

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { GameState } from '../types';
-import { gameBus, GameEvents } from 'src/util';
+import { gameBus, GameEvents } from 'src/events';
 import { GameConfig } from 'shared/src/types';
 import { DeferredApp, AppModes } from '../deferredApp';
 

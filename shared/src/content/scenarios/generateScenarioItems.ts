@@ -2,7 +2,7 @@ import { GameWorld } from 'shared/src/ecs/world';
 import { GameObject, ObjectPlacement, ObjectTypes, ScenarioItemRule, UnplacedGameObject } from 'shared/src/types';
 import { scenarioItemMap } from '../objectManifest';
 import { getAllObjects, getRadius, getType, setPosition, generateNonOverlappingPositions } from 'shared/src/utils';
-import { objectClearance, playerClearance } from './placement';
+import { objectClearance } from './placement';
 import { placePlayers } from './placePlayers';
 
 const NULL_POS = {x: 0, y: 0}

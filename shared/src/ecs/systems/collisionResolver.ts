@@ -1,9 +1,8 @@
-import { removeEntity, hasComponent, query, entityExists } from 'bitecs';
+import { removeEntity, hasComponent, query } from 'bitecs';
 import { getGameObject, getPosition, getRadius, setPosition } from 'shared/src/utils';
 import { Wormhole, ExitTypes } from '../components/wormhole';
 import { GameWorld, NULL_ENTITY } from '../world';
 import { Destructible } from '../components/destructible';
-import { BASE_HEIGHT, BASE_WIDTH } from 'shared/src/consts';
 import { generateNonOverlappingPositions } from 'shared/src/utils';
 import { Projectile, Position, Collision, Active } from '../components';
 
@@ -98,8 +97,6 @@ const handleWormholeTeleport = (
     const offset = 1.5; // push beyond radius to avoid re-triggering
     const exitX = partnerPos.x + Math.cos(exitAngle) * (partnerRadius + offset);
     const exitY = partnerPos.y + Math.sin(exitAngle) * (partnerRadius + offset);
-
-    console.log('set new position', exitX, exitY)
 
     setPosition(projEid, exitX, exitY);
     return;

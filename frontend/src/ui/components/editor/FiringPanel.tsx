@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { gameBus, GameEvents } from "src/util";
+import { gameBus, GameEvents } from 'src/events';
 import { useDraggable } from "../../hooks/useDraggable";
 import { FIRING_PANEL_HEIGHT, FIRING_PANEL_WIDTH } from "./utils";
 

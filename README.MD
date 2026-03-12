@@ -17,6 +17,8 @@ A modern JavaScript/PhaserJS port of the 2001 game **Death Star Battles**, origi
 - **TypeScript**: For type safety and more maintainable code.
 - **Vite**: Development tooling.
 
+See the [code documentation](./DOCS.md) for more details about the code.
+
 ## Installation
 
 ```sh

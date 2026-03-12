@@ -1,5 +1,5 @@
 import { Depths } from 'src/render/types';
-import { gameBus, GameEvents } from './event';
+import { gameBus, GameEvents } from 'src/events';
 import { BaseScene } from 'src/game/scenes/baseScene';
 
 export const drawPathListener = (scene: BaseScene) => {

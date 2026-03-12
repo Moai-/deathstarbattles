@@ -1,6 +1,6 @@
 import generateTurn from 'shared/src/ai/generateTurn';
 import { runGameSetup } from 'shared/src/content'
-import { gameBus, GameEvents } from 'src/util';
+import { gameBus, GameEvents } from 'src/events';
 import {
   TurnInput,
   OtherActions,

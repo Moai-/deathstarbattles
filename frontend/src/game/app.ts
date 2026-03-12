@@ -10,7 +10,7 @@ import 'phaser-core';
 import 'phaser-extras';
 import { BackgroundScene, BaseScene, EditorScene, GameScene, ResourceScene } from './scenes';
 import { BASE_HEIGHT, BASE_WIDTH } from 'shared/src/consts';
-import { gameBus, GameEvents } from 'src/util';
+import { gameBus, GameEvents } from 'src/events';
 import { AppScenes } from './types';
 import { GameConfig, AppModes } from 'shared/src/types';
 

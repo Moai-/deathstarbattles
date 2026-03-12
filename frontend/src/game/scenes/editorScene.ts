@@ -2,7 +2,7 @@ import {
   createCleanupSystem,
   createCollisionResolverSystem,
 } from 'shared/src/ecs/systems';
-import { gameBus, GameEvents } from 'src/util';
+import { gameBus, GameEvents } from 'src/events';
 import { BaseScene } from './baseScene';
 import {EditorManager} from '../managers';
 import { AppScenes } from '../types';

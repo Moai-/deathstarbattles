@@ -2,7 +2,7 @@ import {
   createCleanupSystem,
   createCollisionResolverSystem,
 } from 'shared/src/ecs/systems';
-import { gameBus, GameEvents } from 'src/util';
+import { gameBus, GameEvents } from 'src/events';
 import { getSoundManager } from './resourceScene';
 import { BaseScene } from './baseScene';
 import { AppScenes } from '../types';

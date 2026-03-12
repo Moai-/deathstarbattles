@@ -1,5 +1,22 @@
 import { EntityGenerator, ObjectPlacement, ObjectTypes, ScenarioItemRule } from 'shared/src/types';
-import { createAnomaly, createAsteroid, createBigWormhole, createBlackHole, createDeathStar, createJetBlackHole, createJovian, createLocus, createNeutronStar, createPlanet, createRedGiant, createStar, createSupergiant, createWhiteDwarf, createWhiteHole, createWormhole } from './entities';
+import { 
+  createAnomaly, 
+  createAsteroid, 
+  createBigWormhole, 
+  createBlackHole, 
+  createDeathStar, 
+  createJetBlackHole, 
+  createJovian, 
+  createLocus, 
+  createNeutronStar, 
+  createPlanet, 
+  createRedGiant, 
+  createStar, 
+  createSupergiant, 
+  createWhiteDwarf, 
+  createWhiteHole, 
+  createWormhole 
+} from './entities';
 
 type ScenarioItemArray = Array<{
   key: ObjectTypes,

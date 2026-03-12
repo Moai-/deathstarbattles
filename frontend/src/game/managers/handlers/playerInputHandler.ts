@@ -1,5 +1,5 @@
 import { OtherActions } from 'shared/src/types';
-import { gameBus, GameEvents } from 'src/util';
+import { gameBus, GameEvents } from 'src/events';
 
 export class PlayerInputHandler {
   private angle: number = 0;

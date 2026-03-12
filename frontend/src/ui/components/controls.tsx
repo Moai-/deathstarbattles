@@ -9,7 +9,7 @@ import {
   StyledSlider,
 } from '../styled';
 import { toggleFullscreen } from '../functions/toggleFullscreen';
-import { gameBus, GameEvents } from 'src/util';
+import { gameBus, GameEvents } from 'src/events';
 import { OtherActions } from 'shared/src/types';
 import { GameState, useGameState } from './context';
 import { ControlSection, ControlSectionDesktop, DesktopButton, DesktopControl, EndTurnButton, MobileLeftControl, MobileRightControl, SliderSection } from '../styled/controls';
