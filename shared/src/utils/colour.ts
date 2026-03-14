@@ -10,6 +10,15 @@ export function ui32ToCol(ui32: number): number {
   return ui32 & 0xffffff;
 }
 
+// Converts ui32 to rgb
+export const ui32ToRgb =(col: number) => {
+  return rgb({
+    r: (col >> 16) & 0xff,
+    g: (col >> 8) & 0xff,
+    b: col & 0xff,
+  });
+}
+
 export const playerCols = [
   0x00db00, // green 0
   0x00c2c2, // cyan 1

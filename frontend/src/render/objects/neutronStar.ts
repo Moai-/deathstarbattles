@@ -5,9 +5,10 @@ import { Renderable } from '../components';
 import generateStarCols from '../elements/starCols';
 import drawCorona from '../elements/corona';
 import { nailToContainer } from 'src/util';
-import { ui32ToCol } from 'shared/src/utils';
+import { clamp01, ui32ToCol } from 'shared/src/utils';
 import { drawJet, JetStyle } from '../elements/jet';
 import { HasPolarJets } from 'shared/src/ecs/components/hasPolarJets';
+import { lerp } from '../utils';
 
 const renderNeutronStar: RenderObject = (scene, eid) => {
 
@@ -32,14 +33,16 @@ const renderNeutronStar: RenderObject = (scene, eid) => {
   container.add(scene.add.circle(0, 0, radius, cols[4]));
   container.add(scene.add.circle(0, 0, radius * 0.8, cols[2]));
   container.add(scene.add.circle(0, 0, radius * 0.6, baseCol));
+  const strengthN = clamp01(HasPolarJets.jetStrength[eid] / 20);
+
   const jetStyle: JetStyle = {
     length: HasPolarJets.length[eid],
     innerRadius: HasPolarJets.innerRadius[eid],
     spreadRad: HasPolarJets.spreadRad[eid],
-    layers: 5,
-    coreAlpha: 0.1,
-    edgeAlpha: 0.02,
-    falloffPow: 1.5,
+    layers: Math.round(lerp(3, 8, strengthN)),
+    coreAlpha: lerp(0.04, 0.18, strengthN),
+    edgeAlpha: lerp(0.008, 0.05, strengthN),
+    falloffPow: HasPolarJets.corePow[eid] / 5,
     depth: Depths.GFX,
   };
   const rotation = HasPolarJets.rotation[eid];

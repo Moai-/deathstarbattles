@@ -58,6 +58,39 @@
     pointer-events: auto;
   }
 </style>
+<style>
+  .beam {
+  animation: beamPulse 0.45s ease-in-out infinite alternate;
+}
+
+.impact {
+  animation: impactPulse 0.45s ease-in-out infinite alternate;
+}
+
+@keyframes beamPulse {
+  from {
+    opacity: 0.7;
+    transform: translateX(0px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-1px);
+  }
+}
+
+@keyframes impactPulse {
+  from {
+    opacity: 0.7;
+    transform: scale(0.96);
+    transform-origin: 170px 300px;
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.06);
+    transform-origin: 170px 300px;
+  }
+}
+</style>
 </head>
 <body>
   <script type="module" src="/src/main.ts"></script>

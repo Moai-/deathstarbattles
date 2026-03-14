@@ -6,13 +6,15 @@ import { SetupScreen } from './basicSetup';
 import { GameStateProvider, useGameState } from './context';
 import { useUiInsets } from '../hooks/useUiInsets';
 import { EditorScreen } from './editor';
+import { Loading } from './loading';
 
 const App: React.FC = () => {
   useUiInsets();
-  const { gameState } = useGameState();
+  const { gameState, isLoading } = useGameState();
 
   return (
     <>
+      {isLoading && <Loading />}
       {gameState === GameState.MAIN_MENU && <Splash />}
       {gameState === GameState.CONFIG_GAME && <SetupScreen />}
       {gameState === GameState.INGAME && <ControlPanel />}

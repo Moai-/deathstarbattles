@@ -3,20 +3,13 @@ import { Position, Active, Velocity } from "../components";
 import { HasPolarJets } from "../components/hasPolarJets";
 import { GameWorld } from "../world";
 import { AffectedByJets } from "../components/affectedByJets";
+import { clamp01, smoothstep } from "shared/src/utils";
 
 const JET_EPS = 1e-6;
 
 const jetMaintenanceQueries = [HasPolarJets];
 const jetSourceEntities = [HasPolarJets, Position, Active];
 const jetTargetEntities = [AffectedByJets, Velocity, Position, Active];
-
-const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
-
-// Smoothstep (classic)
-const smoothstep = (edge0: number, edge1: number, x: number) => {
-  const t = clamp01((x - edge0) / Math.max(JET_EPS, edge1 - edge0));
-  return t * t * (3 - 2 * t);
-};
 
 const applyOneJet = (
   dt: number,
@@ -73,7 +66,7 @@ const applyOneJet = (
     const shift = outerFadeBias * (1 - core); // 0 at core, max at edge
     const startShifted = clamp01(start - shift * fadeFrac);
 
-    const s = smoothstep(startShifted, 1, u); // 0..1
+    const s = smoothstep(startShifted, 1, u, JET_EPS); // 0..1
     const tail = 1 - s;                      // 1..0
     if (tail <= 0) return;
 
@@ -136,7 +129,7 @@ export const createPolarJetSystem = () => {
         const perpX = HasPolarJets._perpX[sid];
         const perpY = HasPolarJets._perpY[sid];
 
-        const corePow = HasPolarJets.corePow[sid] || 2.2;
+        const corePow = HasPolarJets.corePow[sid] ?? 2.2;
         const endFadeFrac = HasPolarJets.endFadeFrac[sid] ?? 0.22;
         const outerFadeBias = HasPolarJets.outerFadeBias[sid] ?? 0.75;
         const deflectAngleRad = HasPolarJets.deflectAngleRad[sid] ?? 0;
@@ -174,7 +167,6 @@ export const createPolarJetSystem = () => {
     for (let i = 0; i < eids.length; i++) {
       const eid = eids[i];
       const rot = HasPolarJets.rotation[eid];
-      const spread = HasPolarJets.spreadRad[eid];
       if (rot !== HasPolarJets._prevRotation[eid]) {
         const c = Math.cos(rot);
         const s = Math.sin(rot);
@@ -184,6 +176,7 @@ export const createPolarJetSystem = () => {
         HasPolarJets._perpY[eid] = c;
         HasPolarJets._prevRotation[eid] = rot;
       }
+      const spread = HasPolarJets.spreadRad[eid];
       if (spread !== HasPolarJets._prevSpread[eid]) {
         HasPolarJets._tanHalfSpread[eid] = Math.tan(spread * 0.5);
         HasPolarJets._prevSpread[eid] = spread;

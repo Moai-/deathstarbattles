@@ -1,3 +1,4 @@
+import { getComponentFromName, getComponentMeta } from "shared/src/utils";
 import { useDraggable } from "../../hooks/useDraggable";
 import { useResize } from "../../hooks/useResize";
 import type { InspectWindowState } from "./types";
@@ -7,6 +8,7 @@ import {
   DEFAULT_WINDOW_WIDTH,
   coerceInputValue,
 } from "./utils";
+import { ControlRecord } from "./propInputs";
 
 const DRAG_PAD = 6;
 const MIN_WIDTH = 260;
@@ -107,97 +109,85 @@ export const DraggableInspectWindow = (props: DraggableInspectWindowProps) => {
         </button>
       </div>
 
+      <div style={{padding: 8, }}>
+        <span>Hover over component or property names to find out more about what they are or what they do.</span>
+      </div>
+
       {!win.collapsed && (
-        <div style={{ padding: "8px", overflow: "auto", flex: 1 }}>
-          {win.components.map((c) => (
-            <div key={c.key} style={{ marginBottom: 10 }}>
-              <div
-                style={{
-                  fontWeight: 600,
-                  marginBottom: 4,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRemoveComponent(win.eid, c.key);
-                  }}
-                  title="Remove component"
+        <div style={{ padding: 8, overflow: "auto", flex: 1 }}>
+          {win.components.map((c) => {
+            const originalComponent = getComponentFromName(c.key);
+            const meta = originalComponent && getComponentMeta(originalComponent);
+            return (
+              <div key={meta?.name ?? c.key} style={{ marginBottom: 10 }}>
+                <div
                   style={{
-                    padding: "0 4px",
-                    lineHeight: 1,
-                    cursor: "pointer",
-                    flexShrink: 0,
+                    fontWeight: 600,
+                    marginBottom: 4,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
                   }}
                 >
-                  x
-                </button>
-                <span>{c.key}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemoveComponent(win.eid, c.key);
+                    }}
+                    title="Remove component"
+                    style={{
+                      padding: "0 4px",
+                      lineHeight: 1,
+                      cursor: "pointer",
+                      flexShrink: 0,
+                    }}
+                  >
+                    x
+                  </button>
+                  <span title={meta?.description ?? c.key}>{c.key}</span>
+                </div>
+  
+                <div style={{ paddingLeft: 10 }}>
+                  {Object.entries(c.props ?? {}).length === 0 ? (
+                    <div>(no props)</div>
+                  ) : (
+                    Object.entries(c.props).filter(([propKey]) => propKey[0] !== '_').map(([propKey, value]) => {
+                      const inputId = `eid-${win.eid}-${c.key}-${propKey}`;
+                      const propMeta = meta?.props?.[propKey];
+
+                      // generic
+                      const controlType = propMeta?.control;
+                      const label = propMeta?.label ?? propKey;
+                      const description = propMeta?.description ?? propKey;
+
+                      // number
+                      const precision = propMeta?.precision;
+                      const step = propMeta?.step ?? 1;
+
+                      // enum
+                      const enumValues = propMeta?.enumOptions ?? [];
+                      const Input = ControlRecord[controlType ?? 'number'];
+
+                      return <Input 
+                        precision={precision}
+                        step={step}
+                        enumValues={enumValues}
+                        key={inputId}
+                        id={inputId}
+                        propKey={label}
+                        description={description}
+                        value={value}
+                        onChange={(e, val) => 
+                          onEditProp(win.eid, c.key, propKey, coerceInputValue(e, val))
+                        }
+                      />
+                    })
+                  )}
+                </div>
               </div>
-
-              <div style={{ paddingLeft: 10 }}>
-                {Object.entries(c.props ?? {}).length === 0 ? (
-                  <div>(no props)</div>
-                ) : (
-                  Object.entries(c.props).filter(([propKey]) => propKey[0] !== '_').map(([propKey, value]) => {
-                    const inputId = `eid-${win.eid}-${c.key}-${propKey}`;
-                    const valueType = typeof value;
-
-                    if (valueType === "boolean") {
-                      return (
-                        <div key={propKey} style={{ marginBottom: 4 }}>
-                          <label htmlFor={inputId} style={{ marginRight: 6 }}>
-                            {propKey}
-                          </label>
-                          <input
-                            id={inputId}
-                            type="checkbox"
-                            checked={Boolean(value)}
-                            onChange={(e) =>
-                              onEditProp(win.eid, c.key, propKey, e.target.checked)
-                            }
-                          />
-                        </div>
-                      );
-                    }
-
-                    const isNumber = valueType === "number";
-                    const isNullish = value === null || value === undefined;
-
-                    return (
-                      <div key={propKey} style={{ marginBottom: 4, display: "flex" }}>
-                        <label
-                          htmlFor={inputId}
-                          style={{ display: "inline-block", width: 120 }}
-                        >
-                          {propKey}
-                        </label>
-                        <input
-                          id={inputId}
-                          type={isNumber ? "number" : "text"}
-                          step={propKey === 'rotation' ? 0.01 : 1}
-                          value={isNullish ? "" : String(value)}
-                          onChange={(e) =>
-                            onEditProp(
-                              win.eid,
-                              c.key,
-                              propKey,
-                              coerceInputValue(e.target.value, value)
-                            )
-                          }
-                          style={{ width: 200 }}
-                        />
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
       {!win.collapsed && (

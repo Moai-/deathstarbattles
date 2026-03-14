@@ -60,7 +60,8 @@ export default defineConfig({
           if (
             id.includes('styled-components') ||
             id.includes('react-icons') ||
-            id.includes('react-select')
+            id.includes('react-select') ||
+            id.includes('react-color')
           ) {
             return 'ui-vendor';
           }

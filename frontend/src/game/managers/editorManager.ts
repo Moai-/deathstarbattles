@@ -1,7 +1,5 @@
 import {
-  Backgrounds,
   GameState,
-  SerializedScenario,
 } from 'shared/src/types';
 import {
   doCirclesOverlap,

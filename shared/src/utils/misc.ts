@@ -21,3 +21,7 @@ export const wait = (ms?: number) => new Promise<void>((resolve) => {
     queueMicrotask(resolve);
   }
 })
+
+export function isTypedArray(v: any): v is ArrayBufferView {
+  return ArrayBuffer.isView(v) && !(v instanceof DataView);
+}

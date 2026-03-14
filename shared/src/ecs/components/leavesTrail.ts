@@ -1,5 +1,5 @@
 import { MAX_ENTITIES } from "shared/src/consts";
-import { nameComponent } from 'shared/src/utils';
+import { defineComponentMeta, enumToOptions } from 'shared/src/utils';
 
 export enum TrailType {
   NONE,
@@ -16,4 +16,20 @@ export const LeavesTrail = {
   col: new Uint32Array(MAX_ENTITIES),
 };
 
-nameComponent(LeavesTrail, 'LeavesTrail');
+defineComponentMeta(LeavesTrail, {
+  name: 'Leaves Trail',
+  description: 'This entity leaves a trail in its path as it moves.',
+  props: {
+    type: {
+      label: 'Trail Type',
+      description: 'The way the trail will be rendered.',
+      control: 'enum',
+      enumOptions: enumToOptions(TrailType),
+    },
+    col: {
+      label: 'Trail Colour',
+      description: 'The colour of the trail.',
+      control: 'colour'
+    }
+  }
+});

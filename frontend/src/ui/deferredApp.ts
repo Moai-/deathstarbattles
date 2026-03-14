@@ -2,42 +2,60 @@ import { AppModes, GameConfig } from 'shared/src/types';
 
 type GameAppModule = typeof import('src/game/app');
 
-let appPromise: Promise<GameAppModule['App']> | null = null;
+export { AppModes }
 
-const loadApp = async () => {
-  if (!appPromise) {
-    appPromise = (async () => {
-      // Load in order: extras extends core and overwrites global.Phaser; core must run first.
-      await import('phaser-core');
-      await import('phaser-extras');
+class DeferredAppClass {
+  private appPromise: Promise<GameAppModule['App']> | null = null;
+  private loading = true;
+  private loadCallback = () => {};
 
-      const mod = await import('src/game/app');
-      return mod.App;
-    })();
+  private async loadApp() {
+    if (this.loading) {
+      console.time('App loaded in');
+    }
+    if (!this.appPromise) {
+      this.appPromise = (async () => {
+        // Load in order: extras extends core and overwrites global.Phaser; core must run first.
+        await import('phaser-core');
+        await import('phaser-extras');
+  
+        const mod = await import('src/game/app');
+        if (this.loading) {
+          console.timeEnd('App loaded in');
+          this.loadCallback();
+          this.loadCallback = () => {};
+        }
+        this.loading = false;
+        
+        return mod.App;
+      })();
+    }
+    return this.appPromise;
   }
-  return appPromise;
-};
 
-export { AppModes };
+  setLoadCallback(cb: () => void) {
+    this.loadCallback = cb;
+  }
 
-export const DeferredApp = {
   async createGame() {
-    const app = await loadApp();
+    const app = await this.loadApp();
     return app.createGame();
-  },
+  }
 
   async destroyGame() {
-    const app = await loadApp();
+    const app = await this.loadApp();
     return app.destroyGame();
-  },
+  }
 
   async startMode(mode: AppModes, config?: GameConfig) {
-    const app = await loadApp();
+    const app = await this.loadApp();
     return app.startMode(mode, config);
-  },
+  }
 
   async stopMode(mode: AppModes) {
-    const app = await loadApp();
+    const app = await this.loadApp();
     return app.stopMode(mode);
-  },
-};
+  }
+}
+
+export const DeferredApp = new DeferredAppClass();

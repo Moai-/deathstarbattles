@@ -20,7 +20,7 @@ export function serializeComponents(world: World, eid: number) {
   let entityName = `${eid}: Entity`;
   const components = comps.map((c) => {
     const key = getComponentName(c) ?? (c as any).__name ?? "UnknownComponent";
-    if (key === 'ObjectInfo') {
+    if (key === 'Object Info') {
       const renderType = (c as {type: Array<number>}).type[eid];
       entityName = `${eid}: ${ObjectTypes[renderType]}`;
     }

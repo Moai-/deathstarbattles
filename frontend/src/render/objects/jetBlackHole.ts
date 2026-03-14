@@ -6,20 +6,23 @@ import { drawJet, JetStyle } from '../elements/jet';
 import { drawAccretionDisk } from '../elements/accretionDisk';
 import { HasGravity } from 'shared/src/ecs/components';
 import generateStarCols from '../elements/starCols';
+import { clamp01, lerp } from '../utils';
 
 const renderJetBlackHole: RenderObject = (scene, eid) => {
   const x = Position.x[eid];
   const y = Position.y[eid];
   const radius = Collision.radius[eid];
   const container = scene.add.container(x, y);
+  const strengthN = clamp01(HasPolarJets.jetStrength[eid] / 20);
+
   const jetStyle: JetStyle = {
     length: HasPolarJets.length[eid],
     innerRadius: HasPolarJets.innerRadius[eid],
     spreadRad: HasPolarJets.spreadRad[eid],
-    layers: 5,
-    coreAlpha: 0.1,
-    edgeAlpha: 0.02,
-    falloffPow: 1.5,
+    layers: Math.round(lerp(3, 8, strengthN)),
+    coreAlpha: lerp(0.04, 0.18, strengthN),
+    edgeAlpha: lerp(0.008, 0.05, strengthN),
+    falloffPow: HasPolarJets.corePow[eid],
     depth: Depths.GFX,
   };
   const rotation = HasPolarJets.rotation[eid];

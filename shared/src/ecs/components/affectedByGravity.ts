@@ -1,5 +1,9 @@
-import { nameComponent } from "shared/src/utils";
+import { defineComponentMeta } from "shared/src/utils";
 
 export const AffectedByGravity = {};
 
-nameComponent(AffectedByGravity, 'AffectedByGravity');
+defineComponentMeta(AffectedByGravity, {
+  name: 'Affected by Gravity',
+  description: 'Whether this component is acted upon by objects \
+with the HasGravity component.'
+});

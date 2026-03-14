@@ -1,5 +1,12 @@
 import styled from 'styled-components';
 
+export const LoadingContainer = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-color: black;
+`
+
 export const OverlayContainer = styled.div`
   position: fixed;
   max-width: 500px;

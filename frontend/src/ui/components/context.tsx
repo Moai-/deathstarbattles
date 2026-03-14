@@ -10,6 +10,7 @@ const backgroundGameStates = [GameState.MAIN_MENU, GameState.CONFIG_GAME];
 
 interface GameStateContextProps {
   gameState: GameState;
+  isLoading: boolean;
   setGameState: (value: GameState, config?: GameConfig) => void;
   winnerData: WinnerData | null;
   lastConfig: GameConfig | null;
@@ -25,6 +26,7 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
   const [gameState, setGameState] = useState<GameState>(GameState.FIRST_START);
   const [winnerData, setWinnerData] = useState<WinnerData | null>(null);
   const [lastConfig, setLastConfig] = useState<GameConfig | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Functions to run when performing specific switches
   const handleStateSwitch = async (nextState:GameState, config?: GameConfig) => {
@@ -99,12 +101,17 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
   // On game-start, move from FIRST_START to MAIN_MENU
   useEffect(() => {
     if (gameState === GameState.FIRST_START) {
-      handleStateSwitch(GameState.MAIN_MENU);
+      // DeferredApp.setLoadCallback(() => {
+      //   gameBus.once(GameEvents.GAME_LOADED, () => {
+      //     setIsLoading(false);
+      //   })
+      // })
+      // handleStateSwitch(GameState.MAIN_MENU);
     }
   })
 
   return (
-    <GameStateContext.Provider value={{ gameState, setGameState: handleStateSwitch, winnerData, lastConfig }}>
+    <GameStateContext.Provider value={{ isLoading, gameState, setGameState: handleStateSwitch, winnerData, lastConfig }}>
       {children}
     </GameStateContext.Provider>
   );
