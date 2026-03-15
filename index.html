@@ -58,16 +58,49 @@
     pointer-events: auto;
   }
 </style>
-  <script type="module" crossorigin src="/assets/index-DrCTsfnZ.js"></script>
+<style>
+  .beam {
+  animation: beamPulse 0.45s ease-in-out infinite alternate;
+}
+
+.impact {
+  animation: impactPulse 0.45s ease-in-out infinite alternate;
+}
+
+@keyframes beamPulse {
+  from {
+    opacity: 0.7;
+    transform: translateX(0px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-1px);
+  }
+}
+
+@keyframes impactPulse {
+  from {
+    opacity: 0.7;
+    transform: scale(0.96);
+    transform-origin: 170px 300px;
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.06);
+    transform-origin: 170px 300px;
+  }
+}
+</style>
+  <script type="module" crossorigin src="/assets/index-nT-Onbq0.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/other-vendor-CQiTX5cC.js">
-  <link rel="modulepreload" crossorigin href="/assets/react-vendor-Bj8QGiRM.js">
+  <link rel="modulepreload" crossorigin href="/assets/react-vendor-B52gqvOY.js">
   <link rel="modulepreload" crossorigin href="/assets/phaser-core-UqVUGhlF.js">
-  <link rel="modulepreload" crossorigin href="/assets/phaser-extras-DRiuhpM_.js">
-  <link rel="modulepreload" crossorigin href="/assets/game-app-BGqSH_bc.js">
-  <link rel="modulepreload" crossorigin href="/assets/ui-vendor-ITWqKVib.js">
-  <link rel="modulepreload" crossorigin href="/assets/ui-app-C8AP9tJd.js">
+  <link rel="modulepreload" crossorigin href="/assets/phaser-extras-BGc8xhKk.js">
+  <link rel="modulepreload" crossorigin href="/assets/game-app-kHfTKpLL.js">
+  <link rel="modulepreload" crossorigin href="/assets/ui-vendor-ClbfLyMU.js">
+  <link rel="modulepreload" crossorigin href="/assets/ui-app-DhBY2kFj.js">
 </head>
-<body>
+<body>
   <div id="game-container">
     <div id="phaser-root"></div>
     <div id="react-root"></div>
