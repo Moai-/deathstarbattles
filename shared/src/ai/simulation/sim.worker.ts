@@ -142,7 +142,6 @@ const runSimulation = (
 
   const maxSteps = numSteps ?? MAX_MS;
 
-  // console.log('min buffer at', minBuffer);
   const proj = fireProjectile(turnInfo);
   // let numSteps = 0;
   // const start = Date.now();
