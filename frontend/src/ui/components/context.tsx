@@ -101,12 +101,12 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
   // On game-start, move from FIRST_START to MAIN_MENU
   useEffect(() => {
     if (gameState === GameState.FIRST_START) {
-      // DeferredApp.setLoadCallback(() => {
-      //   gameBus.once(GameEvents.GAME_LOADED, () => {
-      //     setIsLoading(false);
-      //   })
-      // })
-      // handleStateSwitch(GameState.MAIN_MENU);
+      DeferredApp.setLoadCallback(() => {
+        gameBus.once(GameEvents.GAME_LOADED, () => {
+          setIsLoading(false);
+        })
+      })
+      handleStateSwitch(GameState.MAIN_MENU);
     }
   })
 
