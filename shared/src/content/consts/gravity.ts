@@ -26,3 +26,4 @@ export const WHITE_HOLE_GRAV_OFFSET = 20;
 export const WHITE_HOLE_GRAV_MULTIPLIER = 1500;
 
 export const WORMHOLE_GRAV_MULTIPLIER = 90;
+export const WORMHOLE_GRAV_OFFSET = 20;
