@@ -144,12 +144,8 @@ const runSimulation = (
   const maxSteps = numSteps ?? MAX_MS;
 
   const proj = fireProjectile(turnInfo);
-  // let numSteps = 0;
-  // const start = Date.now();
 
   for (let t = 0; t < maxSteps; t += MS_STEP) {
-    // console.log('stepping at', dynamicStep);
-    // numSteps++;
     let stepClosestd2 = Infinity;
 
     updateSystems(world, t, MS_STEP);
@@ -175,12 +171,6 @@ const runSimulation = (
         hitsEid = trg.eid;
         collisionT = t;
         if (trg.breaks) {
-          // console.log(
-          //   'sim %s: found target in %s steps and %s ms',
-          //   playerId,
-          //   numSteps,
-          //   Date.now() - start,
-          // );
           closestDestructible = trg.eid;
         }
         break;
@@ -199,25 +189,9 @@ const runSimulation = (
       removeEntity(world, proj);
       break;
     }
-
-    // console.log(
-    //   'sim for %s: need %s, closest %s',
-    //   playerId,
-    //   Math.floor(ownRad * ownRad),
-    //   stepClosestd2,
-    // );
   }
   removeEntity(world, proj);
   const willHit = hitsEid === closestDestructible;
-  if (!willHit) {
-    // console.log(
-    //   'sim %s: missed after %s steps and %s ms',
-    //   playerId,
-    //   numSteps,
-    //   Date.now() - start,
-    // );
-  }
-
   
   const shotTrail = world.traceBuffer
     ? []
@@ -245,7 +219,6 @@ const runSimulation = (
     ? {x: world.traceBuffer.x[pointCount], y: world.traceBuffer.y[pointCount]}
     : shotTrail[shotTrail.length - 1];
 
-  // console.log('point count', pointCount)
 
   return {
     hitsEid,

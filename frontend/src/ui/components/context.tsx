@@ -31,8 +31,6 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({
   // Functions to run when performing specific switches
   const handleStateSwitch = async (nextState:GameState, config?: GameConfig) => {
 
-    // console.log(`${GameState[gameState]} -> ${GameState[nextState]}`)
-
     // We handle termination states first -- this way, when we launch scenes
     // afterward, we know for sure we will have a clean slate.
     if (!backgroundGameStates.includes(nextState)) {

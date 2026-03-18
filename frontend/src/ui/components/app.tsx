@@ -1,7 +1,7 @@
 import Splash from './splash';
 import ControlPanel from './controls';
 import { GameState } from '../types';
-import WinrarScreen from './winrar';
+import { WinnerPage } from './winner';
 import { SetupScreen } from './basicSetup';
 import { GameStateProvider, useGameState } from './context';
 import { useUiInsets } from '../hooks/useUiInsets';
@@ -18,7 +18,7 @@ const App: React.FC = () => {
       {gameState === GameState.MAIN_MENU && <Splash />}
       {gameState === GameState.CONFIG_GAME && <SetupScreen />}
       {gameState === GameState.INGAME && <ControlPanel />}
-      {gameState === GameState.SCORESCREEN && <WinrarScreen />}
+      {gameState === GameState.SCORESCREEN && <WinnerPage />}
       {gameState === GameState.EDITOR && <EditorScreen />}
     </>
   );

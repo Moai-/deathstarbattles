@@ -3,7 +3,7 @@ import { buildColliderCache } from "shared/src/ai/functions";
 import { Collision, Renderable, Wormhole } from "shared/src/ecs/components";
 import { ExitTypes } from "shared/src/ecs/components/wormhole";
 import { GameWorld } from "shared/src/ecs/world";
-import { ObjectTypes } from "shared/src/types";
+import { Colour, ObjectTypes } from "shared/src/types";
 import { getType } from "shared/src/utils";
 
 export const finalizeScenario = (world: GameWorld, ignoreWormholes = false) => {
@@ -14,21 +14,28 @@ export const finalizeScenario = (world: GameWorld, ignoreWormholes = false) => {
       .filter((o) => hasComponent(world, o.eid, Wormhole))
       .map((o) => o.eid);
   
+    let wormholeColour: number = 0;
     for (let i = 0; i < wormholes.length; ) {
+      const wormhole = wormholes[i];
+      if (i === 0) {
+        wormholeColour = Renderable.col[wormhole]
+      } else {
+        Renderable.col[wormhole] = wormholeColour;
+      }
       const remaining = wormholes.length - i;
   
       if (remaining === 1) {
-        scrambleWormhole(wormholes[i]);
+        scrambleWormhole(wormhole);
         i += 1;
       } else {
         if (world.random.oneIn(6)) {
-          scrambleWormhole(wormholes[i]);
+          scrambleWormhole(wormhole);
           i += 1;
         } else if (world.random.oneIn(6)) {
-          chaosifyWormhole(world, wormholes, wormholes[i]);
+          chaosifyWormhole(world, wormholes, wormhole);
           i += 1;
         } else {
-          pairWormholes(wormholes[i], wormholes[i + 1]);
+          pairWormholes(wormhole, wormholes[i + 1]);
           i += 2;
         }
       }

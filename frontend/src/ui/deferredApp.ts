@@ -11,7 +11,6 @@ class DeferredAppClass {
 
   private async loadApp() {
     if (this.loading) {
-      console.time('App loaded in');
     }
     if (!this.appPromise) {
       this.appPromise = (async () => {
@@ -21,7 +20,6 @@ class DeferredAppClass {
   
         const mod = await import('src/game/app');
         if (this.loading) {
-          console.timeEnd('App loaded in');
           this.loadCallback();
           this.loadCallback = () => {};
         }

@@ -3,7 +3,7 @@ import { NeonButton } from '../styled';
 import { WinnerContent, WinnerScreen } from '../styled/containers';
 import { GameState, useGameState } from './context';
 
-const WinrarScreen: React.FC = () => {
+export const WinnerPage: React.FC = () => {
   const { setGameState, winnerData } = useGameState();
 
   const renderWinnerInfo = () => {
@@ -11,7 +11,7 @@ const WinrarScreen: React.FC = () => {
       return (<h1 style={{ color: 'white' }}>Nobody won! Total annihilation!</h1>)
     }
     const { playerId, col } = winnerData;
-    return (<h1 style={{ color: toHTMLHex(col) }}>Player {playerId + 1} wins!</h1>)
+    return (<h1 style={{ color: toHTMLHex(col) }}>Player {playerId} wins!</h1>)
   }
 
   return (
@@ -33,5 +33,3 @@ const WinrarScreen: React.FC = () => {
     </WinnerScreen>
   );
 };
-
-export default WinrarScreen;

@@ -163,9 +163,7 @@ export class FiringIndicatorHandler {
 
     if (!simulateShot || !gfx) return;
     this.isSimulating = true;
-    // console.time('shotsim')
     const res = await simulateShot({ angle: angleDeg, power, stationId: this.getTargetId() });
-    // console.timeEnd('shotsim')
 
     if (res.buffer) {
       this.traceBuffer.x = new Int16Array(res.buffer.x);

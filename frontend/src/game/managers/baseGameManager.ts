@@ -27,10 +27,11 @@ import { Renderable } from 'shared/src/ecs/components';
 import { objectClearance } from 'shared/src/content/scenarios/placement';
 
 // There is a 1 sec timeout between each turn. We use this time to do processing stuff
-const TURN_TIME_GAP = 1000;
+// This includes hyperspace time as well -- if anyone teleported, we remove 1 sec from this
+const TURN_TIME_GAP = 2000;
 
 // This manager is capable of running an automatic game with bots.
-// It does not concern itself with players.
+// It does not concern itself with human players.
 export class BaseGameManager extends BaseSceneManager {
 
   // Current station index, corresponding to this station's index in the `stations` array
@@ -54,14 +55,12 @@ export class BaseGameManager extends BaseSceneManager {
   // Whether we are in a hyperspace-type arena
   protected isHyperspace = false;
   // How much of the turn gap is remaining
-  protected turnTimeGapRemaining = 0;
+  protected turnTimeGapRemaining = TURN_TIME_GAP;
 
   ready() {
     this.numTurn = 0;
     this.activeStationIndex = -1;
     this.turnInputs = [];
-
-
   }
 
   destroy() {
@@ -112,11 +111,9 @@ export class BaseGameManager extends BaseSceneManager {
   }
 
   protected async startPhase() {
-    await wait(this.turnTimeGapRemaining);
     if (!this.scene.scene.isActive()) {
       return;
     }
-    this.turnTimeGapRemaining = TURN_TIME_GAP;
     this.activeStationIndex = 0;
     if (this.checkEndgameCondition()) {
       return;
@@ -143,7 +140,7 @@ export class BaseGameManager extends BaseSceneManager {
     const playerInfo = this.getActivePlayer();
     const currentStation = this.getActiveStation();
     if (playerInfo.type === PlayerTypes.HUMAN) {
-      // This will be overridden and handled in the game manager
+      // This will be overridden and handled in the single player game manager
       return;
     }
     const lastTurn = this.isHyperspace
@@ -217,11 +214,19 @@ export class BaseGameManager extends BaseSceneManager {
       ? this.stations.filter((p) => !this.willHyperspace.includes(p))
       : this.willHyperspace;
 
-    const hyperspacers = shouldHyperspace.map(getGameObject);
 
-    const newPositions = generateNonOverlappingPositions(this.world, hyperspacers, objectClearance);
+    if (shouldHyperspace.length > 0) {
+      const hyperspacers = shouldHyperspace.map(getGameObject);
+      const newPositions = generateNonOverlappingPositions(this.world, hyperspacers, objectClearance);
+      // Generally the time to hyperspace should be 1 second, but let's subtract it carefully just in case
+      const beforeHyperspace = Date.now();
+      await Promise.all(shouldHyperspace.map((eid, idx) => this.useHyperspace(eid, newPositions[idx])));
+      this.decrementTimeGap(Date.now() - beforeHyperspace);
+    } else {
+      // No one hyperspaced, so we don't need the extra 1 second padding
+      this.decrementTimeGap(1000);
+    }
 
-    await Promise.all(shouldHyperspace.map((eid, idx) => this.useHyperspace(eid, newPositions[idx])));
     this.willHyperspace = [];
 
     // We sneak in an updated map of colliders to the worker during the post-combat pause
@@ -236,6 +241,8 @@ export class BaseGameManager extends BaseSceneManager {
     if (!this.scene.scene.isActive()) {
       return;
     }
+    await wait(this.turnTimeGapRemaining);
+    this.turnTimeGapRemaining = TURN_TIME_GAP;
     this.startPhase();
   }
 

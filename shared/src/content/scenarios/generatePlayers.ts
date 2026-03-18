@@ -1,6 +1,6 @@
 import { GameWorld } from 'shared/src/ecs/world';
 import { PlayerSetup, PlayerInfo } from 'shared/src/types';
-import { playerCols, rgb } from 'shared/src/utils';
+import { playerCols, rgb, ui32ToRgb } from 'shared/src/utils';
 import { createDeathStar } from 'shared/src/content/entities';
 import { Collision } from 'shared/src/ecs/components';
 
@@ -27,9 +27,9 @@ export const generatePlayers = (
       }
     }
     const stationEids: Array<number> = [];
-    for (let i = 0; i < stationPerPlayer; i++) {
+    for (let s = 0; s < stationPerPlayer; s++) {
       stationEids.push(createDeathStar(world, {x: 0, y: 0}, {
-        colour: world.random.colour(rgb(100, 100, 100), rgb(100, 100, 100)),
+        colour: ui32ToRgb(playerCols[i]),
         owner: playerIdx,
       }))
 
