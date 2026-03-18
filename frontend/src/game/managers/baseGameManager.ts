@@ -60,6 +60,8 @@ export class BaseGameManager extends BaseSceneManager {
     this.numTurn = 0;
     this.activeStationIndex = -1;
     this.turnInputs = [];
+
+
   }
 
   destroy() {
@@ -78,6 +80,10 @@ export class BaseGameManager extends BaseSceneManager {
   async startGame(conf: GameConfig) {
     this.ready();
     const { players, bg } = runGameSetup(this.world, conf);
+    // Re-render everything to make sure all things spawned correctly
+    getAllObjects(this.world).forEach(({eid}) => {
+      this.renderManager.refreshObject(eid);
+    })
     this.backgroundArtManager.setBackground(bg ?? Backgrounds.STARS);
     this.scene.fxManager.update();
     this.isHyperspace = getHyperLocus(this.world) !== null;

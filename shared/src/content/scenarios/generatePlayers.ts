@@ -2,11 +2,13 @@ import { GameWorld } from 'shared/src/ecs/world';
 import { PlayerSetup, PlayerInfo } from 'shared/src/types';
 import { playerCols, rgb } from 'shared/src/utils';
 import { createDeathStar } from 'shared/src/content/entities';
+import { Collision } from 'shared/src/ecs/components';
 
 export const generatePlayers = (
   world: GameWorld,
   playerSetup: Array<PlayerSetup>,
-  stationPerPlayer: number = 1
+  size: number,
+  stationPerPlayer: number = 1,
 ) => {
   const parsedPlayers: Array<PlayerInfo> = [];
   const allRandom = playerSetup.find((p) => p.difficulty === 6);
@@ -32,6 +34,11 @@ export const generatePlayers = (
       }))
 
     }
+    if (size > 1) {
+      stationEids.forEach((eid) => {
+        Collision.radius[eid] = Collision.radius[eid] * size;
+      });
+    } 
     parsedPlayers.push({
       idx: playerIdx,
       type: parsedType,
@@ -43,7 +50,7 @@ export const generatePlayers = (
   return parsedPlayers;
 };
 
-export const generateRandomBots = (world: GameWorld) => {
+export const generateRandomBots = (world: GameWorld, size: number) => {
   // const numPlayers = 2
   const numPlayers = world.random.between(4, 12);
   const rawPlayers: Array<PlayerSetup> = [];
@@ -56,5 +63,5 @@ export const generateRandomBots = (world: GameWorld) => {
       // difficulty: Phaser.Math.Between(1, 5),
     });
   }
-  return generatePlayers(world, rawPlayers);
+  return generatePlayers(world, rawPlayers, size, world.random.between(1, 2));
 };

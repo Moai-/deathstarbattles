@@ -6,9 +6,9 @@ import { GameWorld } from "shared/src/ecs/world";
 import { ObjectTypes } from "shared/src/types";
 import { getType } from "shared/src/utils";
 
-export const finalizeScenario = (world: GameWorld, stationSize: number, ignoreWormholes = false) => {
+export const finalizeScenario = (world: GameWorld, ignoreWormholes = false) => {
   const objectsInWorld = buildColliderCache(world);
-  // 1. String together wormholes
+  // String together wormholes
   if (!ignoreWormholes) {
     const wormholes = objectsInWorld
       .filter((o) => hasComponent(world, o.eid, Wormhole))
@@ -35,15 +35,6 @@ export const finalizeScenario = (world: GameWorld, stationSize: number, ignoreWo
     }
   }
 
-  // 2. INFLATE
-  if (stationSize > 1) {
-    objectsInWorld
-      .filter((o) => getType(o.eid) === ObjectTypes.DEATHSTAR)
-      .map((o) => o.eid)
-      .forEach((eid) => {
-        Collision.radius[eid] = Collision.radius[eid] * stationSize;
-      });
-  } 
 }
 
 const scrambleWormhole = (eid: number) => {

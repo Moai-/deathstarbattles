@@ -12,6 +12,7 @@ import {
 import {
   Active,
   AffectedByGravity,
+  AffectedByJets,
   Collision,
   Destructible,
   HasLifetime,
@@ -271,6 +272,7 @@ const fireProjectile = (input: TurnInput) => {
   addComponent(world, proj, Collision);
   addComponent(world, proj, Projectile);
   addComponent(world, proj, AffectedByGravity);
+  addComponent(world, proj, AffectedByJets);
   addComponent(world, proj, HasLifetime);
   addComponent(world, proj, Active);
 

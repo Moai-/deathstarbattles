@@ -12,14 +12,14 @@ export const runGameSetup = (world: GameWorld, config: GameConfig) => {
 
   // 1. If just bots, pick some random values and off we go
   if (config.justBots) {
-    const bots = generateRandomBots(world);
+    const size = world.random.between(1, 3);
+    const bots = generateRandomBots(world, size);
     const stationEids = bots.flatMap((b) => b.stationEids)
     // const scenario = getScenarioTypes(world)[6];
     const scenario = world.random.pickElement(getScenarioTypes(world));
     const num = world.random.between(10, 20);
     const objects = generateScenarioItems(world, scenario.items, {num}, stationEids);
-    const size = world.random.between(1, 3);
-    finalizeScenario(world, size);
+    finalizeScenario(world);
     return {
       players: bots,
       objectPlacements: objects,
@@ -36,13 +36,13 @@ export const runGameSetup = (world: GameWorld, config: GameConfig) => {
     instantiateScenario(config.savedScenario, world);
 
     // 2.2 Generate and place players
-    const players = generatePlayers(world, config.players, config.stationPerPlayer);
+    const size = config.stationSize === undefined ? 2 : config.stationSize;
+    const players = generatePlayers(world, config.players, size, config.stationPerPlayer);
     const stationEids = players.flatMap((b) => b.stationEids);
     placePlayers(world, stationEids);
 
     // 2.3 For finalization, all we need is to inflate stations. Deserializer should take care of wormholes
-    const size = config.stationSize === undefined ? 2 : config.stationSize;
-    finalizeScenario(world, size, true);
+    finalizeScenario(world, true);
     const objectPlacements = getAllObjects(world);
     return {
       players,
@@ -55,15 +55,15 @@ export const runGameSetup = (world: GameWorld, config: GameConfig) => {
   if (!config.players) {
     throw new Error('runGameSetup: failed to generate players as there is no players rule');
   }
-  const players = generatePlayers(world, config.players, config.stationPerPlayer);
+  const size = config.stationSize === undefined ? 2 : config.stationSize;
+  const players = generatePlayers(world, config.players, size, config.stationPerPlayer);
   const stationEids = players.flatMap((b) => b.stationEids);
   if (!config.itemRules) {
     throw new Error('runGameSetup: failed to generate scenario as there is no items rule');
   }
   const itemCounts = {max: config.maxItems || 20, num: config.numItems};
   const objects = generateScenarioItems(world, config.itemRules, itemCounts, stationEids)
-  const size = config.stationSize === undefined ? 2 : config.stationSize;
-  finalizeScenario(world, size);
+  finalizeScenario(world);
   return {
     players,
     objectPlacements: objects,

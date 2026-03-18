@@ -62,8 +62,8 @@ export interface SimSnapshot {
   innerRadius: Float32Array;
   rotation: Float32Array;
   length: Float32Array;
-  _tanHalfSpread: Float32Array;
   spreadRad: Float32Array;
+  _tanHalfSpread: Float32Array;
   _dirX: Float32Array;
   _dirY: Float32Array;
   _perpX: Float32Array;

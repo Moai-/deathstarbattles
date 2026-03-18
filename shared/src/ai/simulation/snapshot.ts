@@ -84,10 +84,10 @@ export const buildSnapshot = (
     innerRadius: new Float32Array(n),
     rotation: new Float32Array(n),
     length: new Float32Array(n),
+    spreadRad: new Float32Array(n),
     _tanHalfSpread: new Float32Array(n),
     _prevRotation: new Float32Array(n),
     _prevSpread: new Float32Array(n),
-    spreadRad: new Float32Array(n),
     _dirX: new Float32Array(n),
     _dirY: new Float32Array(n),
     _perpX: new Float32Array(n),
@@ -143,8 +143,9 @@ export const buildSnapshot = (
     snap.jetStrength[i] = HasPolarJets.jetStrength[src];
     snap.innerRadius[i] = HasPolarJets.innerRadius[src];
     snap.length[i] = HasPolarJets.length[src];
-    snap._tanHalfSpread[i] = HasPolarJets._tanHalfSpread[src];
     snap.spreadRad[i] = HasPolarJets.spreadRad[src];
+    snap.rotation[i] = HasPolarJets.rotation[src];
+    snap._tanHalfSpread[i] = HasPolarJets._tanHalfSpread[src];
     snap._dirX[i] = HasPolarJets._dirX[src];
     snap._dirY[i] = HasPolarJets._dirY[src];
     snap._perpX[i] = HasPolarJets._perpX[src];
@@ -190,6 +191,7 @@ export const buffersOf = (s: SimSnapshot) => [
   s.length.buffer,
   s._tanHalfSpread.buffer,
   s.spreadRad.buffer,
+  s.rotation.buffer,
   s._dirX.buffer,
   s._dirY.buffer,
   s._perpX.buffer,
@@ -297,6 +299,7 @@ export const restoreSnapshot = (snapshot: SimSnapshot, world: GameWorld) => {
   HasPolarJets.length.set(snapshot.length.subarray(0, n), startEid);
   HasPolarJets._tanHalfSpread.set(snapshot._tanHalfSpread.subarray(0, n), startEid);
   HasPolarJets.spreadRad.set(snapshot.spreadRad.subarray(0, n), startEid);
+  HasPolarJets.rotation.set(snapshot.rotation.subarray(0, n), startEid);
   HasPolarJets._dirX.set(snapshot._dirX.subarray(0, n), startEid);
   HasPolarJets._dirY.set(snapshot._dirY.subarray(0, n), startEid);
   HasPolarJets._perpX.set(snapshot._perpX.subarray(0, n), startEid);

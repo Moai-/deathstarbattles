@@ -89,6 +89,7 @@ export class EditorManager extends BaseSceneManager {
     }
     this.renderManager.setPendingGhostEid(eid);
     setPosition(eid, { x: 0, y: 0 });
+    this.renderManager.refreshObject(eid);
     this.placementState = { mode: 'add', objectType, ghostEid: eid };
   }
 
