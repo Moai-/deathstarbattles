@@ -9,3 +9,5 @@ node_modules
 !.yarn/versions
 dist
 github-pages-domain
+
+.DS_Store

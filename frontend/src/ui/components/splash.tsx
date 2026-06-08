@@ -62,7 +62,7 @@ const Splash: React.FC = () => {
       </MuteButton>
       <Title>Death Star Battles</Title>
       <Subtitle>
-        © 2001 Ian Bolland // © 2025 Sergei Gmyria // v.{pkg.version}
+        © 2001 Chloe Bolland // © 2025 Sergei Gmyria // v.{pkg.version}
       </Subtitle>
       <SubBlock>{instructions}</SubBlock>
       <SubBlock>

@@ -2,7 +2,9 @@
 
 ![preview](./preview.png)
 
-A modern JavaScript/PhaserJS port of the 2001 game **Death Star Battles**, originally created by Ian Bolland. Take control of your own space station, adjust the angle and power of your shots, and fire at your opponents. Use the gravitational pull of nearby stars and planets to your advantage, and when things get too close for comfort, activate hyperspace to jump to a random location. The last surviving station wins. Play the live version [here!](https://deathstarbattles.ca/)
+A modern JavaScript/PhaserJS port of the 2001 game **Death Star Battles**, originally created by Chloe Bolland. Take control of your own space station, adjust the angle and power of your shots, and fire at your opponents. Use the gravitational pull of nearby stars and planets to your advantage, and when things get too close for comfort, activate hyperspace to jump to a random location. The last surviving station wins. Play the live version [here!](https://deathstarbattles.ca/)
+
+Chloe has made her own version of her game in JS, you can check it out [at the old website](https://deathstarbattles.co.uk). It's very fun!
 
 ## Features
 
@@ -58,7 +60,7 @@ This project is licensed under the [ISC License](LICENSE).
 
 ## Credits
 
-- Original concept and Java version by **Ian Bolland** from [the old Death Star Battles website](http://deathstarbattles.co.uk).
+- Original concept and Java version by **Chloe Bolland** from [the old Death Star Battles website](http://deathstarbattles.co.uk).
 - Music by **Ivo de Vero**
 - Sounds by **Nick Rinchiuso**
 - Code by **Sergei Gmyria** [aka Moai](https://github.com/Moai-)
